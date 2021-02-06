@@ -1,0 +1,673 @@
+0000000000000000001 byte{
+	primitive 8 bit integer signed,
+}
+0000000000000000002 boolean{
+	primitive 8 bit boolean,
+}
+0000000000000000003 short{
+	primitive 16 bit integer signed,
+}
+0000000000000000004 char{
+	primitive 16 bit integer unicode,
+}
+0000000000000000005 int{
+	primitive 32 bit integer signed,
+}
+0000000000000000006 float{
+	primitive 32 bit decimal IEEE754,
+}
+0000000000000000007 long{
+	primitive 64 bit integer signed,
+}
+0000000000000000008 double{
+	primitive 64 bit decimal IEEE754,
+}
+0000000000000000010 java.lang.Object{}
+0000000000000000011 java.lang.Byte{
+	byte value,
+}
+0000000000000000012 java.lang.Boolean{
+	boolean value,
+}
+0000000000000000013 java.lang.Short{
+	short value,
+}
+0000000000000000014 java.lang.Character{
+	char value,
+}
+0000000000000000015 java.lang.Integer{
+	int value,
+}
+0000000000000000016 java.lang.Float{
+	float value,
+}
+0000000000000000017 java.lang.Long{
+	long value,
+}
+0000000000000000018 java.lang.Double{
+	double value,
+}
+0000000000000000019 java.lang.Void{}
+0000000000000000020 java.lang.Class{
+	long value,
+}
+0000000000000000030 java.lang.String{
+	[char] value,
+}
+0000000000000000032 java.lang.StringBuffer{
+	long   capacity,
+	[char] value   ,
+}
+0000000000000000033 java.lang.StringBuilder{
+	long   capacity,
+	[char] value   ,
+}
+0000000000000000034 java.io.File{
+	[char] path,
+}
+0000000000000000035 java.util.Date{
+	long timestamp,
+}
+0000000000000000037 java.math.BigInteger{
+	[byte] value,
+}
+0000000000000000038 java.math.BigDecimal{
+	[char] value,
+}
+0000000000000000043 java.util.ArrayList{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000044 java.util.HashSet{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000046 java.util.HashMap{
+	[list] elements(
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000048 java.util.Hashtable{
+	[list] elements(
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000049 java.util.ArrayDeque{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000050 java.util.IdentityHashMap{
+	[list] elements(
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000051 java.util.LinkedHashMap{
+	[list] elements(
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000052 java.util.LinkedHashSet{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000054 java.util.LinkedList{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000056 java.util.PriorityQueue{
+	java.util.Comparator comparator,
+	[list]               elements  (
+		java.lang.Object element,
+	),
+}
+0000000000000000057 java.util.TreeMap{
+	java.util.Comparator comparator,
+	[list]               elements  (
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000058 java.util.TreeSet{
+	java.util.Comparator comparator,
+	[list]               elements  (
+		java.lang.Object element,
+	),
+}
+0000000000000000059 java.util.Vector{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000060 java.util.Stack{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000061 java.util.Properties{
+	[list] elements(
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000062 java.util.concurrent.ConcurrentHashMap{
+	[list] elements(
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000063 java.util.concurrent.ConcurrentLinkedDeque{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000064 java.util.concurrent.ConcurrentLinkedQueue{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000000065 java.util.concurrent.ConcurrentSkipListMap{
+	java.util.Comparator comparator,
+	[list]               elements  (
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000000000066 java.util.concurrent.ConcurrentSkipListSet{
+	java.util.Comparator comparator,
+	[list]               elements  (
+		java.lang.Object element,
+	),
+}
+0000000000000000068 java.util.Locale{
+	[char] languageTag,
+}
+0000000000000000101 [B{
+	[list] elements(
+		byte element,
+	),
+}
+0000000000000000102 [Z{
+	[list] elements(
+		boolean element,
+	),
+}
+0000000000000000103 [S{
+	[list] elements(
+		short element,
+	),
+}
+0000000000000000104 [C{
+	[list] elements(
+		char element,
+	),
+}
+0000000000000000105 [I{
+	[list] elements(
+		int element,
+	),
+}
+0000000000000000106 [F{
+	[list] elements(
+		float element,
+	),
+}
+0000000000000000107 [J{
+	[list] elements(
+		long element,
+	),
+}
+0000000000000000108 [D{
+	[list] elements(
+		double element,
+	),
+}
+0000000000000000110 [Ljava.lang.Object;{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000000010000 one.microstream.reference.Lazy$Default{
+	java.lang.Object subject,
+}
+0000000000001000001 java.util.Currency{
+	[char] currencyCode,
+}
+0000000000001000002 java.util.regex.Pattern{
+	int    flags  ,
+	[char] pattern,
+}
+0000000000001000003 java.net.InetAddress{
+	[char] address,
+}
+0000000000001000004 java.net.Inet4Address{
+	[char] address,
+}
+0000000000001000005 java.net.Inet6Address{
+	[char] address,
+}
+0000000000001000006 java.nio.file.Path{
+	[char] uri,
+}
+0000000000001000007 java.net.InetSocketAddress{
+	java.lang.String     hostname,
+	java.net.InetAddress address ,
+	int                  port    ,
+}
+0000000000001000009 java.net.URI{
+	[char] address,
+}
+0000000000001000010 java.net.URL{
+	[char] address,
+}
+0000000000001000011 java.sql.Date{
+	long timestamp,
+}
+0000000000001000012 java.sql.Time{
+	long timestamp,
+}
+0000000000001000013 java.sql.Timestamp{
+	long timestamp,
+}
+0000000000001000014 java.util.OptionalInt{
+	boolean isPresent,
+	int     value    ,
+}
+0000000000001000015 java.util.OptionalLong{
+	boolean isPresent,
+	long    value    ,
+}
+0000000000001000016 java.util.OptionalDouble{
+	boolean isPresent,
+	double  value    ,
+}
+0000000000001000017 java.util.Collections$UnmodifiableNavigableSet$EmptyNavigableSet{}
+0000000000001000022 java.util.Collections$UnmodifiableNavigableMap$EmptyNavigableMap{}
+0000000000001000026 java.util.Collections$ReverseComparator{}
+0000000000001000027 java.util.WeakHashMap{
+	[list] elements(
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000001000028 java.util.concurrent.CopyOnWriteArrayList{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000001000029 java.util.Comparators$NaturalOrderComparator{
+	enum INSTANCE,
+}
+0000000000001000030 java.util.Optional{
+	java.lang.Object java.util.Optional#value,
+}
+0000000000001000031 one.microstream.collections.BulkList{
+	long   capacity,
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000001000036 one.microstream.collections.LimitList{
+	long   capacity,
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000001000037 one.microstream.collections.FixedList{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000001000038 one.microstream.collections.ConstList{
+	[list] elements(
+		java.lang.Object element,
+	),
+}
+0000000000001000039 one.microstream.collections.EqBulkList{
+	one.microstream.hashing.HashEqualator hashEqualator,
+	long                                  capacity     ,
+	[list]                                elements     (
+		java.lang.Object element,
+	),
+}
+0000000000001000040 one.microstream.collections.HashEnum{
+	float  hashDensity,
+	[list] elements   (
+		java.lang.Object element,
+	),
+}
+0000000000001000042 one.microstream.collections.ConstHashEnum{
+	float  hashDensity,
+	[list] elements   (
+		java.lang.Object element,
+	),
+}
+0000000000001000043 one.microstream.collections.EqHashEnum{
+	one.microstream.hashing.HashEqualator hashEqualator,
+	float                                 hashDensity  ,
+	[list]                                elements     (
+		java.lang.Object element,
+	),
+}
+0000000000001000044 one.microstream.collections.EqConstHashEnum{
+	one.microstream.hashing.HashEqualator hashEqualator,
+	float                                 hashDensity  ,
+	[list]                                elements     (
+		java.lang.Object element,
+	),
+}
+0000000000001000045 one.microstream.collections.HashTable{
+	one.microstream.collections.HashTable$Keys   keys       ,
+	one.microstream.collections.HashTable$Values values     ,
+	float                                        hashDensity,
+	[list]                                       elements   (
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000001000047 one.microstream.collections.ConstHashTable{
+	one.microstream.collections.ConstHashTable$Keys   keys       ,
+	one.microstream.collections.ConstHashTable$Values values     ,
+	float                                             hashDensity,
+	[list]                                            elements   (
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000001000048 one.microstream.collections.EqHashTable{
+	one.microstream.hashing.HashEqualator          hashEqualator,
+	one.microstream.collections.EqHashTable$Keys   keys         ,
+	one.microstream.collections.EqHashTable$Values values       ,
+	float                                          hashDensity  ,
+	[list]                                         elements     (
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000001000049 one.microstream.collections.EqConstHashTable{
+	one.microstream.hashing.HashEqualator               hashEqualator,
+	one.microstream.collections.EqConstHashTable$Keys   keys         ,
+	one.microstream.collections.EqConstHashTable$Values values       ,
+	float                                               hashDensity  ,
+	[list]                                              elements     (
+		java.lang.Object key  ,
+		java.lang.Object value,
+	),
+}
+0000000000001000050 one.microstream.collections.Singleton{
+	java.lang.Object element,
+}
+0000000000001000051 one.microstream.util.Substituter$Default{
+	one.microstream.hashing.HashEqualator hashEqualator,
+	float                                 hashDensity  ,
+	[list]                                elements     (
+		java.lang.Object element,
+	),
+}
+0000000000001000052 one.microstream.persistence.types.PersistenceRoots$Default{
+	[list] instances  (
+		java.lang.Object instance,
+	),
+	[list] identifiers(
+		[char] identifier,
+	),
+}
+0000000000001000053 one.microstream.persistence.types.PersistenceRootReference$Default{
+	java.lang.Object root,
+}
+0000000000001000054 one.microstream.hashing.XHashing$SingletonValueHashEqualator{}
+0000000000001000055 one.microstream.hashing.XHashing$SingletonIdentityHashEqualator{}
+0000000000001000056 one.microstream.hashing.XHashing$SingletonKeyValueIdentityHashEqualator{}
+0000000000001000057 one.microstream.collections.Empty{}
+0000000000001000058 one.microstream.collections.EmptyTable{
+	one.microstream.collections.EmptyTable$Keys   one.microstream.collections.EmptyTable#keys  ,
+	one.microstream.collections.EmptyTable$Values one.microstream.collections.EmptyTable#values,
+}
+0000000000001000059 one.microstream.collections.EmptyTable$Keys{
+	one.microstream.collections.EmptyTable one.microstream.collections.EmptyTable$Keys#this$0,
+}
+0000000000001000060 one.microstream.collections.EmptyTable$Values{
+	one.microstream.collections.EmptyTable one.microstream.collections.EmptyTable$Values#this$0,
+}
+0000000000001000061 java.util.Collections$EmptyList{}
+0000000000001000062 java.util.Collections$EmptySet{}
+0000000000001000063 java.util.Collections$EmptyMap{}
+0000000000001000064 com.vx6.tools.DataRoot{
+	java.util.Date com.vx6.tools.DataRoot#creationDate ,
+	java.util.Map  com.vx6.tools.DataRoot#graphProfiles,
+	java.util.Map  com.vx6.tools.DataRoot#graphModels  ,
+	long           com.vx6.tools.DataRoot#revision     ,
+}
+0000000000001000065 java.util.Map{}
+0000000000001000066 com.vx6.tools.GraphProfile{
+	java.util.Map io.vertx.core.json.JsonObject#map,
+}
+0000000000001000067 io.vertx.core.json.JsonObject{
+	java.util.Map io.vertx.core.json.JsonObject#map,
+}
+0000000000001000068 io.vertx.core.json.JsonArray{
+	java.util.List io.vertx.core.json.JsonArray#list,
+}
+0000000000001000069 java.util.List{}
+0000000000001000070 com.mxgraph.model.mxGraphModel{
+	java.lang.Object          com.mxgraph.util.mxEventSource#eventSource       ,
+	com.mxgraph.model.mxICell com.mxgraph.model.mxGraphModel#root              ,
+	java.util.Map             com.mxgraph.model.mxGraphModel#cells             ,
+	boolean                   com.mxgraph.util.mxEventSource#eventsEnabled     ,
+	boolean                   com.mxgraph.model.mxGraphModel#maintainEdgeParent,
+	boolean                   com.mxgraph.model.mxGraphModel#createIds         ,
+	int                       com.mxgraph.model.mxGraphModel#nextId            ,
+}
+0000000000001000072 com.mxgraph.model.mxICell{}
+0000000000001000073 com.mxgraph.model.mxCell{
+	java.lang.String             com.mxgraph.model.mxCell#id          ,
+	java.lang.Object             com.mxgraph.model.mxCell#value       ,
+	java.lang.Object             com.mxgraph.model.mxCell#data        ,
+	java.lang.String             com.mxgraph.model.mxCell#uid         ,
+	java.lang.String             com.mxgraph.model.mxCell#name        ,
+	java.lang.String             com.mxgraph.model.mxCell#type        ,
+	java.lang.String             com.mxgraph.model.mxCell#version     ,
+	java.lang.String             com.mxgraph.model.mxCell#direction   ,
+	com.vx6.tools.VueComponent   com.mxgraph.model.mxCell#vueComponent,
+	com.mxgraph.model.mxGeometry com.mxgraph.model.mxCell#geometry    ,
+	java.lang.String             com.mxgraph.model.mxCell#style       ,
+	com.mxgraph.model.mxICell    com.mxgraph.model.mxCell#parent      ,
+	com.mxgraph.model.mxICell    com.mxgraph.model.mxCell#source      ,
+	com.mxgraph.model.mxICell    com.mxgraph.model.mxCell#target      ,
+	java.util.List               com.mxgraph.model.mxCell#children    ,
+	java.util.List               com.mxgraph.model.mxCell#edges       ,
+	boolean                      com.mxgraph.model.mxCell#vertex      ,
+	boolean                      com.mxgraph.model.mxCell#edge        ,
+	boolean                      com.mxgraph.model.mxCell#connectable ,
+	boolean                      com.mxgraph.model.mxCell#visible     ,
+	boolean                      com.mxgraph.model.mxCell#collapsed   ,
+}
+0000000000001000074 com.vx6.tools.VueComponent{
+	java.lang.String com.vx6.tools.VueComponent#name,
+	java.lang.String com.vx6.tools.VueComponent#as  ,
+}
+0000000000001000075 com.mxgraph.model.mxGeometry{
+	com.mxgraph.util.mxRectangle com.mxgraph.model.mxGeometry#alternateBounds,
+	com.mxgraph.util.mxPoint     com.mxgraph.model.mxGeometry#sourcePoint    ,
+	com.mxgraph.util.mxPoint     com.mxgraph.model.mxGeometry#targetPoint    ,
+	java.util.List               com.mxgraph.model.mxGeometry#points         ,
+	com.mxgraph.util.mxPoint     com.mxgraph.model.mxGeometry#offset         ,
+	double                       com.mxgraph.util.mxPoint    #x              ,
+	double                       com.mxgraph.util.mxPoint    #y              ,
+	double                       com.mxgraph.util.mxRectangle#width          ,
+	double                       com.mxgraph.util.mxRectangle#height         ,
+	boolean                      com.mxgraph.model.mxGeometry#relative       ,
+}
+0000000000001000076 com.mxgraph.util.mxRectangle{
+	double com.mxgraph.util.mxPoint    #x     ,
+	double com.mxgraph.util.mxPoint    #y     ,
+	double com.mxgraph.util.mxRectangle#width ,
+	double com.mxgraph.util.mxRectangle#height,
+}
+0000000000001000077 com.mxgraph.util.mxPoint{
+	double com.mxgraph.util.mxPoint#x,
+	double com.mxgraph.util.mxPoint#y,
+}
+0000000000001000078 com.sun.org.apache.xerces.internal.dom.DeferredElementImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl         com.sun.org.apache.xerces.internal.dom.NodeImpl   #ownerNode      ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode  #previousSibling,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode  #nextSibling    ,
+	com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl com.sun.org.apache.xerces.internal.dom.ParentNode #ownerDocument  ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ParentNode #firstChild     ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.ElementImpl#name           ,
+	com.sun.org.apache.xerces.internal.dom.AttributeMap     com.sun.org.apache.xerces.internal.dom.ElementImpl#attributes     ,
+	short                                                   com.sun.org.apache.xerces.internal.dom.NodeImpl   #flags          ,
+}
+0000000000001000079 com.sun.org.apache.xerces.internal.dom.ElementImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl         com.sun.org.apache.xerces.internal.dom.NodeImpl   #ownerNode      ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode  #previousSibling,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode  #nextSibling    ,
+	com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl com.sun.org.apache.xerces.internal.dom.ParentNode #ownerDocument  ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ParentNode #firstChild     ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.ElementImpl#name           ,
+	com.sun.org.apache.xerces.internal.dom.AttributeMap     com.sun.org.apache.xerces.internal.dom.ElementImpl#attributes     ,
+	short                                                   com.sun.org.apache.xerces.internal.dom.NodeImpl   #flags          ,
+}
+0000000000001000081 com.sun.org.apache.xerces.internal.dom.ChildNode{}
+0000000000001000082 com.sun.org.apache.xerces.internal.dom.NodeImpl{}
+0000000000001000083 com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl         com.sun.org.apache.xerces.internal.dom.NodeImpl        #ownerNode         ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode       #previousSibling   ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode       #nextSibling       ,
+	com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl com.sun.org.apache.xerces.internal.dom.ParentNode      #ownerDocument     ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ParentNode      #firstChild        ,
+	com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#docType           ,
+	com.sun.org.apache.xerces.internal.dom.ElementImpl      com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#docElement        ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#encoding          ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#actualEncoding    ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#version           ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#fDocumentURI      ,
+	java.util.Map                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#nodeUserData      ,
+	java.util.Map                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#identifiers       ,
+	java.util.Map                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#nodeTable         ,
+	short                                                   com.sun.org.apache.xerces.internal.dom.NodeImpl        #flags             ,
+	boolean                                                 com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#standalone        ,
+	int                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#changes           ,
+	boolean                                                 com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#allowGrammarAccess,
+	boolean                                                 com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#errorChecking     ,
+	boolean                                                 com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#ancestorChecking  ,
+	boolean                                                 com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#xmlVersionChanged ,
+	int                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#documentNumber    ,
+	int                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#nodeCounter       ,
+	boolean                                                 com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#xml11Version      ,
+}
+0000000000001000084 com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl         com.sun.org.apache.xerces.internal.dom.NodeImpl        #ownerNode      ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode       #previousSibling,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ChildNode       #nextSibling    ,
+	com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl com.sun.org.apache.xerces.internal.dom.ParentNode      #ownerDocument  ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode        com.sun.org.apache.xerces.internal.dom.ParentNode      #firstChild     ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#name           ,
+	com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#entities       ,
+	com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#notations      ,
+	com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#elements       ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#publicID       ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#systemID       ,
+	java.lang.String                                        com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#internalSubset ,
+	java.util.Map                                           com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#userData       ,
+	short                                                   com.sun.org.apache.xerces.internal.dom.NodeImpl        #flags          ,
+	int                                                     com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl#doctypeNumber  ,
+}
+0000000000001000085 com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl{
+	java.util.List                                  com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl#nodes    ,
+	com.sun.org.apache.xerces.internal.dom.NodeImpl com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl#ownerNode,
+	short                                           com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl#flags    ,
+}
+0000000000001000086 com.sun.org.apache.xerces.internal.dom.AttributeMap{
+	java.util.List                                  com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl#nodes    ,
+	com.sun.org.apache.xerces.internal.dom.NodeImpl com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl#ownerNode,
+	short                                           com.sun.org.apache.xerces.internal.dom.NamedNodeMapImpl#flags    ,
+}
+0000000000001000087 com.sun.org.apache.xerces.internal.dom.DeferredDocumentImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl                   com.sun.org.apache.xerces.internal.dom.NodeImpl            #ownerNode         ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode                  com.sun.org.apache.xerces.internal.dom.ChildNode           #previousSibling   ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode                  com.sun.org.apache.xerces.internal.dom.ChildNode           #nextSibling       ,
+	com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl           com.sun.org.apache.xerces.internal.dom.ParentNode          #ownerDocument     ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode                  com.sun.org.apache.xerces.internal.dom.ParentNode          #firstChild        ,
+	com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #docType           ,
+	com.sun.org.apache.xerces.internal.dom.ElementImpl                com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #docElement        ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #encoding          ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #actualEncoding    ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #version           ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #fDocumentURI      ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #nodeUserData      ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #identifiers       ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #nodeTable         ,
+	java.util.List                                                    com.sun.org.apache.xerces.internal.dom.DocumentImpl        #iterators         ,
+	java.util.List                                                    com.sun.org.apache.xerces.internal.dom.DocumentImpl        #ranges            ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.DocumentImpl        #eventListeners    ,
+	com.sun.org.apache.xerces.internal.dom.DocumentImpl$EnclosingAttr com.sun.org.apache.xerces.internal.dom.DocumentImpl        #savedEnclosingAttr,
+	short                                                             com.sun.org.apache.xerces.internal.dom.NodeImpl            #flags             ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #standalone        ,
+	int                                                               com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #changes           ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #allowGrammarAccess,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #errorChecking     ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #ancestorChecking  ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #xmlVersionChanged ,
+	int                                                               com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #documentNumber    ,
+	int                                                               com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #nodeCounter       ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl    #xml11Version      ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.DocumentImpl        #mutationEvents    ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.DeferredDocumentImpl#fNamespacesEnabled,
+}
+0000000000001000088 com.sun.org.apache.xerces.internal.dom.DocumentImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl                   com.sun.org.apache.xerces.internal.dom.NodeImpl        #ownerNode         ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode                  com.sun.org.apache.xerces.internal.dom.ChildNode       #previousSibling   ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode                  com.sun.org.apache.xerces.internal.dom.ChildNode       #nextSibling       ,
+	com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl           com.sun.org.apache.xerces.internal.dom.ParentNode      #ownerDocument     ,
+	com.sun.org.apache.xerces.internal.dom.ChildNode                  com.sun.org.apache.xerces.internal.dom.ParentNode      #firstChild        ,
+	com.sun.org.apache.xerces.internal.dom.DocumentTypeImpl           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#docType           ,
+	com.sun.org.apache.xerces.internal.dom.ElementImpl                com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#docElement        ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#encoding          ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#actualEncoding    ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#version           ,
+	java.lang.String                                                  com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#fDocumentURI      ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#nodeUserData      ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#identifiers       ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#nodeTable         ,
+	java.util.List                                                    com.sun.org.apache.xerces.internal.dom.DocumentImpl    #iterators         ,
+	java.util.List                                                    com.sun.org.apache.xerces.internal.dom.DocumentImpl    #ranges            ,
+	java.util.Map                                                     com.sun.org.apache.xerces.internal.dom.DocumentImpl    #eventListeners    ,
+	com.sun.org.apache.xerces.internal.dom.DocumentImpl$EnclosingAttr com.sun.org.apache.xerces.internal.dom.DocumentImpl    #savedEnclosingAttr,
+	short                                                             com.sun.org.apache.xerces.internal.dom.NodeImpl        #flags             ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#standalone        ,
+	int                                                               com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#changes           ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#allowGrammarAccess,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#errorChecking     ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#ancestorChecking  ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#xmlVersionChanged ,
+	int                                                               com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#documentNumber    ,
+	int                                                               com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#nodeCounter       ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl#xml11Version      ,
+	boolean                                                           com.sun.org.apache.xerces.internal.dom.DocumentImpl    #mutationEvents    ,
+}
+0000000000001000089 com.sun.org.apache.xerces.internal.dom.DocumentImpl$EnclosingAttr{
+	com.sun.org.apache.xerces.internal.dom.AttrImpl     com.sun.org.apache.xerces.internal.dom.DocumentImpl$EnclosingAttr#node    ,
+	java.lang.String                                    com.sun.org.apache.xerces.internal.dom.DocumentImpl$EnclosingAttr#oldvalue,
+	com.sun.org.apache.xerces.internal.dom.DocumentImpl com.sun.org.apache.xerces.internal.dom.DocumentImpl$EnclosingAttr#this$0  ,
+}
+0000000000001000090 com.sun.org.apache.xerces.internal.dom.AttrImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl com.sun.org.apache.xerces.internal.dom.NodeImpl#ownerNode,
+	java.lang.Object                                com.sun.org.apache.xerces.internal.dom.AttrImpl#value    ,
+	java.lang.String                                com.sun.org.apache.xerces.internal.dom.AttrImpl#name     ,
+	short                                           com.sun.org.apache.xerces.internal.dom.NodeImpl#flags    ,
+}
+0000000000001000091 com.sun.org.apache.xerces.internal.dom.DeferredAttrImpl{
+	com.sun.org.apache.xerces.internal.dom.NodeImpl com.sun.org.apache.xerces.internal.dom.NodeImpl#ownerNode,
+	java.lang.Object                                com.sun.org.apache.xerces.internal.dom.AttrImpl#value    ,
+	java.lang.String                                com.sun.org.apache.xerces.internal.dom.AttrImpl#name     ,
+	short                                           com.sun.org.apache.xerces.internal.dom.NodeImpl#flags    ,
+}
