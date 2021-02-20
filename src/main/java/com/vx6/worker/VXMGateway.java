@@ -263,7 +263,6 @@ public class VXMGateway extends AbstractVerticle {
     return pro;
   }
 
-
   private void getGraph(Message msg) {
     this.eb.request("registry",
       msg.body(), new DeliveryOptions().setHeaders(msg.headers()), reg -> {

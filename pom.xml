@@ -91,6 +91,11 @@
       <artifactId>vertx-jdbc-client</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-templ-freemarker</artifactId>
+      <!--<classifier>shaded</classifier>-->
+    </dependency>
+    <dependency>
       <groupId>one.microstream</groupId>
       <artifactId>storage.embedded</artifactId>
       <version>04.01.00-MS-GA</version>
@@ -114,6 +119,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.11</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.6</version>
     </dependency>
     <dependency>
       <groupId>com.stevesoft.pat</groupId>

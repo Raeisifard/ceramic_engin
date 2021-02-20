@@ -52,7 +52,7 @@
       "name": "SunyBsiSseVerticle",
       "description": "Data Pusher for 'Suny' system",
       "main": "com.ceramic.api.SseSunyVerticle",
-      "deploy": true,
+      "deploy": false,
       "options": {
         "config": {
           "http-port": "default",

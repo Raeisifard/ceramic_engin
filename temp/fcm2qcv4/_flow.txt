@@ -1,0 +1,295 @@
+[ {
+  "id" : "62",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class OutTest1 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        //JsonObject body = (JsonObject) msg.body();\r\n        System.out.println(\"out1#\" + \": \" + msg.body().toString());\r\n        try {\r\n            super.process(msg);\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "OutTest1",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "process.22.result" ]
+}, {
+  "id" : "40",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp\\ceramic_temp",
+      "fileNameMask" : "mq*.txt",
+      "fileNameDoneExt" : ".done",
+      "fileNameLockExt" : ".$"
+    }
+  },
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.49.input" ],
+  "Trigger" : [ "switch.45.output" ]
+}, {
+  "id" : "10",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport org.w3c.dom.*;\r\nimport org.xml.sax.InputSource;\r\nimport org.xml.sax.SAXException;\r\nimport java.io.StringReader;\r\nimport javax.xml.parsers.*;\r\nimport java.io.*;\r\n\r\npublic class ReadXmlPattern extends MasterVerticle {\r\n    private DocumentBuilder builder;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) {\r\n        try {\r\n            //Parser that produces DOM object trees from XML content\r\n            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();\r\n\r\n            //API to obtain DOM Document instance\r\n            //DocumentBuilder builder = null;\r\n\r\n            //Create DocumentBuilder with default configuration\r\n            builder = factory.newDocumentBuilder();\r\n\r\n            initPromise.complete();\r\n        } catch (Exception e) {\r\n            initPromise.fail(\"xml builder not initialized!\");\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        //System.out.println(\"msg: \" + msg.body().toString());\r\n        //Use method to convert XML string content to XML Document object\r\n        Document doc = convertStringToXMLDocument(msg.body().toString());\r\n        doc.getDocumentElement().normalize();\r\n        Element root = doc.getDocumentElement();\r\n        JsonObject joRoot = new JsonObject();\r\n        joRoot.put(\"root_tag_name\", root.getTagName());\r\n        NamedNodeMap attrs = root.getAttributes();\r\n        for (int i = 0; i < attrs.getLength(); ++i) {\r\n            Node attr = attrs.item(i);\r\n            joRoot.put(attr.getNodeName(), attr.getNodeValue());\r\n        }\r\n        //System.out.println(\"joRoot: \" + joRoot.toString());\r\n        NodeList pattern = root.getElementsByTagName(\"Pattern\");\r\n        for (int i = 0; i < pattern.getLength(); i++) {\r\n            JsonObject joPattern = new JsonObject();\r\n            Node patElement = pattern.item(i);\r\n            joPattern.put(\"pattern_tag_name\", patElement.getNodeName());\r\n            NamedNodeMap atts = patElement.getAttributes();\r\n            for (int j = 0; j < atts.getLength(); j++) {\r\n                Node att = atts.item(j);\r\n                joPattern.put(att.getNodeName(), att.getNodeValue());\r\n            }\r\n            joPattern.put(\"text\", patElement.getTextContent());\r\n            joPattern.mergeIn(joRoot.copy());\r\n            eb.publish(addressBook.getResult(), joPattern, addressBook.getDeliveryOptions(msg));\r\n            //System.out.println(\"Pattern#\" + i + \": \" + joPattern.toString());\r\n        }\r\n    }\r\n\r\n    private void sendError(Message msg, Exception e) {\r\n        eb.publish(addressBook.getError(), msg.body(), addressBook.getDeliveryOptions(msg).addHeader(\"error\", e.getMessage()));\r\n    }\r\n\r\n    private Document convertStringToXMLDocument(String xmlString) {\r\n\r\n        try {\r\n            //Parse the content to Document object\r\n            Document doc = builder.parse(new InputSource(new StringReader(xmlString)));\r\n            return doc;\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n        return null;\r\n    }\r\n}",
+    "fName" : "ReadXmlPattern",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.16.input" ],
+  "Input" : [ "parquet.2.result" ]
+}, {
+  "id" : "45",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "autoNext" : true,
+      "_" : {
+        "state" : false,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "file.40.trigger" ]
+}, {
+  "id" : "2",
+  "type" : "parquet",
+  "data" : {
+    "type" : "parquet",
+    "xml" : "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"xml_element\" id=\"`p-NoGYbtGU1vs5I0LmE\" x=\"88\" y=\"62\"><field name=\"trans\">Active</field><field name=\"tag\">Patterns</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\",J0+o!eswVj%k.[x{gb`\"><field name=\"attr\">group</field><field name=\"val\">suny</field></block></value><statement name=\"childs\"><block type=\"xml_element\" id=\"R@|8hL;9.tn_8LE@8s8T\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"4rL2r1k|:u+p06LiW#?4\"><field name=\"attr\">TransId</field><field name=\"val\">ACH0C</field><value name=\"oth\"><block type=\"xml_attribute_string\" id=\"BP^cka^1w9]U7hs4Qo/t\"><field name=\"attr\">TransGroup</field><field name=\"val\">B</field></block></value></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"yzNt!il$LnKvDME68cmw\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\",C$TL4t{U*GM`;NsD?1(\"><field name=\"text\">بانک ملی</field></block></value><next><block type=\"pattern_freemarker_concat\" id=\"dIkJ`.+VAuw!HtE?PyF+\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"P?GwrHx]:!XT*v!_m=lS\"><field name=\"text\">stmtCode</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"m#cVKA;)7q3tH=%~O~9{\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"f(D]m,WABb|@F(TwMdy}\"><field name=\"FIELD\">stmtCode</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"(!/Am9j4t]C$Smr(j`3h\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"~r()%zSjVuwUes-Wf9_B\"><field name=\"text\">TxnKey</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"I-5!^Z?zYT$v6xH$$MKX\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"T1*}EGAF.;,5Cudh2DvR\"><field name=\"FIELD\">TxnKey</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"m^IK3#9o~q6u8j(Fvs{)\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"d.8uoBQtGufowOy^UPT*\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\";?Y0;$sW,rizH:a*LuKC\"><field name=\"text\">چک</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"uP3G=Sl;z8942]8d():Q\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"^SdYT)mp_?flF.GMuoj-\"><field name=\"text\">amount</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"(VoWj$B6jzXb[*ySKfMk\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"xh@)wqGi%8kLptEs//u)\"><field name=\"FIELD\">amount</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"U?LP;1i;J(WT(4k~DG:r\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"EK@{/GBxE,%-ut@:?ue{\"><field name=\"text\">AccountNumberx</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"~WB*P=e;w/QeeSC-;)7L\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"W?1?#]HL29)Y~Qy_1UYn\"><field name=\"FIELD\">AccountNumberx</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"%w!}jHS4:3Eb59}qqk#U\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"I97G!$lu,09^!,V]aUw`\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"GbQg5ni*S{8/5WV+2Ak$\"><field name=\"text\">حساب</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"kxzidq.h^X%|uJB)H0/#\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"cHDf1}OsqB@Q*}rhp}kp\"><field name=\"text\">optionalInfo</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"pnD5ADya893g1H*8a_;C\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\";qqfsF9;0YSE|6G=~bfh\"><field name=\"FIELD\">optionalInfo</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"@A9M=d1WYL{{G?k8zQQ^\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"s/Pe0ftD5w=EU(!XaVVX\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"+J:o2joHaY^l6T+PZy|3\"><field name=\"text\">قابل برداشت</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"IMF$O|5orx#Ur(=#Z[YR\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"uec.Q(#tx7NA;S76K_LW\"><field name=\"FIELD\">txnPDate</field><value name=\"INPUT\"><block type=\"pattern_freemarker_text\" id=\"@=LITrTKAd2=k)G,Epjc\"><field name=\"text\">-</field><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"A{`~AS(~U/f)J|?Pw{[m\"><field name=\"FIELD\">txnTime</field></block></value></block></value></block></value></block></next></block></next></block></next></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\"H6bd7Q{A:fe56dh|6D*0\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"b~.L[CMnou2,Uxlc0KQ=\"><field name=\"attr\">TransId</field><field name=\"val\">ACH0D</field><value name=\"oth\"><block type=\"xml_attribute_string\" id=\"b70eww8s}r;lSFod+AWM\"><field name=\"attr\">TransGroup</field><field name=\"val\">B</field></block></value></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"ZzqJJd{!)XDCz0;H,84m\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"O{Ic;d[LfH9-Am[*/jTD\"><field name=\"text\">بانک ملی</field></block></value><next><block type=\"pattern_freemarker_concat\" id=\"l{--3|R-`XGkSMM)xNpB\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"YrYsBm?gXF7wI;]7a,yg\"><field name=\"text\">stmtCode1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"zyE7k^qOM=NTA+b@2h#(\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"HJY|`T+%wn{Z1wzAD=F2\"><field name=\"FIELD\">stmtCode1</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"a^Z0,q3@6^dE$Nib-_i.\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"Mb;zfOC1^^Z@Xt-Cz)qw\"><field name=\"text\">TxnKey1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"h=ZaaS(HvD?%AYEnXAkd\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"P;JP`,Iv,.y($F9uHA#T\"><field name=\"FIELD\">TxnKey1</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"1|4K%.v{xgr^WEXAzL5a\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"!$A$,-0#TeDI:@@Bw%nZ\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"s5aH@3;s|i%dR9|BbtSL\"><field name=\"text\">چک</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"p~=6Phd[`=cV.UvrzQQ`\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"!_!rw:{,xn_QZJ^XJejS\"><field name=\"text\">amount1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"$I.H;NzaZmZfN+lsg4WY\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"u_JT)EPMl!iudU29[eq?\"><field name=\"FIELD\">amount1</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"E)Y3?hR}3sBi%{(9S=J5\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"qK]$ZA|eWmV(KRQS.LQa\"><field name=\"text\">AccountNumberx1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"EF-j2MR!5bV2@9(^$xH0\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"Yn}BV2eg@?rjE}u,Z4]a\"><field name=\"FIELD\">AccountNumberx1</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"kVR4),B_1*TSm?5L{@9#\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"Ro@[v0=G*vGS}bKGR7/0\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"@Dtbe::o?IwS$q/yoRfw\"><field name=\"text\">حساب</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"nnOL}(L%+Qz`E:TVF4c{\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"Rkwh5ejH_}9*-WxIEnva\"><field name=\"text\">optionalInfo1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"%jDGug9hzDgc-P)l^I.q\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"|Ra$M,fafUz2shaED0zt\"><field name=\"FIELD\">optionalInfo1</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"8CZ`Xp~]5_TnhR98y9nq\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"iJ@UCiT5qppPd3WtporG\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\")Ge/j6VCEcHrMe(fm+Cm\"><field name=\"text\">قابل برداشت</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"+*c4yu3WF;=qn2MrXeH(\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"$#@1K#1h(|nR4VvS5Oc;\"><field name=\"FIELD\">txnPDate</field><value name=\"INPUT\"><block type=\"pattern_freemarker_text\" id=\"*3rllCsMH1`FxepkuP*)\"><field name=\"text\">-</field><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"sYJxz~2kdIu[ST0IZ04i\"><field name=\"FIELD\">txnTime</field></block></value></block></value></block></value></block></next></block></next></block></next></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\"vgLB~E;!9A7ifgA*`VmS\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"||)7zUb~**WXgjM}:i%G\"><field name=\"attr\">TransId</field><field name=\"val\">ACH0N</field><value name=\"oth\"><block type=\"xml_attribute_string\" id=\"|lc[B.]B+c7QseKpSm:S\"><field name=\"attr\">TransGroup</field><field name=\"val\">B</field></block></value></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"pX#k*j{e*L5exaFA;I/5\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"=;Iik1+;+r9y,%BJY?ND\"><field name=\"text\">بانک ملی</field></block></value><next><block type=\"pattern_freemarker_concat\" id=\"u79f;1G4%fVEIv72bwi3\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"-kNwauHWL%hXV*,@gZYb\"><field name=\"text\">stmtCode1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\")a.I]?+%0nr4*[Hv4n|P\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"iV%1D.H4m]{|{gGCL!w[\"><field name=\"FIELD\">stmtCode1</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"r/wP-%Bdebh5/)jtGF_`\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"|s`7`lex]@cUN*iZj_6R\"><field name=\"text\">TxnKey1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"LEeaf[u4#O;-)(WNDCMU\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"P3eZr!dak]4CN^66t:TT\"><field name=\"FIELD\">TxnKey1</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"NqcZq_57EmQ!?OqzKL3(\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"Ju{Q|IKaso#`L)E}?gXU\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"FS=,a+r-e4;+3dV9_,?9\"><field name=\"text\">چک</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"T#iVfNR,S_M3cA)`XBGF\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"bCcS1l{jQZBdMPASfKi[\"><field name=\"text\">amount1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"{wq%-,RxTb}J+HuUCkYo\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"F!BIh|D0j`,dN.d0Sv%y\"><field name=\"FIELD\">amount1</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"{M-*vFPdw9wslgYGqFz)\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"V-I~X,J=v?DRiU?Hh,~f\"><field name=\"text\">AccountNumberx1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"{Q(L%gIr4*(L[+V4;o.$\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"x66Ed{bhwp-/b:T-w8CF\"><field name=\"FIELD\">AccountNumberx1</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\":Q(]`dN5Y+[=-+Vg^QxX\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"bXFEttB[4#ovf]9K[Iw/\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"]wNDI)zFKA;UsFv)pdW*\"><field name=\"text\">حساب</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"V{JqVy6Qs^+4xqdB)Y[M\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"ny/-@K}wV0Cb[i`Wq4Q;\"><field name=\"text\">optionalInfo1</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"3MqIh0QA_djr}ac79)lC\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"!L9$cJk2.E#paT%m`%}y\"><field name=\"FIELD\">optionalInfo1</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"T$xUvP-0|St800X;^zs|\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"1V0OlRo3%-ETa(e})Mub\"><field name=\"text\">:</field><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"2~O0yknM,~$Rh(CrO|}a\"><field name=\"text\">قابل برداشت</field></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"|if-mI/!{He+Om,o!-;R\"><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"wx34s7]vj9MNI3a]jw2H\"><field name=\"text\">txnPDate1</field><value name=\"NAME\"><block type=\"pattern_freemarker_has_content\" id=\"Yls+/.p_3LScu3].2lhK\"><field name=\"text\">txnTime1</field><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"89_-CSmrMr*)|2K[Iu}_\"><field name=\"FIELD\">txnPDate1</field><value name=\"INPUT\"><block type=\"pattern_freemarker_text\" id=\"S2h{##TVR5#CQ=mcNQGB\"><field name=\"text\">-</field><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"yrWqr7A[T;f:*UioT!x4\"><field name=\"FIELD\">txnTime1</field></block></value></block></value></block></value></block></value></block></value></block></next></block></next></block></next></block></next></block></next></block></next></block></statement></block></next></block></next></block></statement></block></xml>",
+    "lang" : "freemarker",
+    "config" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    },
+    "setting" : { },
+    "code" : "<Patterns group = \"suny\" >  <Pattern TransId = \"ACH0C\" TransGroup = \"B\" >  بانک ملی\n    &lt;#if stmtCode?has_content&gt;${stmtCode}\n    &lt;/#if&gt;&lt;#if TxnKey?has_content&gt;چک: ${TxnKey}\n    &lt;/#if&gt;&lt;#if amount?has_content&gt;${amount}\n    &lt;/#if&gt;&lt;#if AccountNumberx?has_content&gt;حساب: ${AccountNumberx}\n    &lt;/#if&gt;&lt;#if optionalInfo?has_content&gt;قابل برداشت: ${optionalInfo}\n    &lt;/#if&gt;${txnTime}-${txnPDate}</Pattern><Pattern TransId = \"ACH0D\" TransGroup = \"B\" >  بانک ملی\n    &lt;#if stmtCode1?has_content&gt;${stmtCode1}\n    &lt;/#if&gt;&lt;#if TxnKey1?has_content&gt;چک: ${TxnKey1}\n    &lt;/#if&gt;&lt;#if amount1?has_content&gt;${amount1}\n    &lt;/#if&gt;&lt;#if AccountNumberx1?has_content&gt;حساب: ${AccountNumberx1}\n    &lt;/#if&gt;&lt;#if optionalInfo1?has_content&gt;قابل برداشت: ${optionalInfo1}\n    &lt;/#if&gt;${txnTime}-${txnPDate}</Pattern><Pattern TransId = \"ACH0N\" TransGroup = \"B\" >  بانک ملی\n    &lt;#if stmtCode1?has_content&gt;${stmtCode1}\n    &lt;/#if&gt;&lt;#if TxnKey1?has_content&gt;چک: ${TxnKey1}\n    &lt;/#if&gt;&lt;#if amount1?has_content&gt;${amount1}\n    &lt;/#if&gt;&lt;#if AccountNumberx1?has_content&gt;حساب: ${AccountNumberx1}\n    &lt;/#if&gt;&lt;#if optionalInfo1?has_content&gt;قابل برداشت: ${optionalInfo1}\n    &lt;/#if&gt;&lt;#if txnPDate1?has_content&gt;&amp;lt;#if txnTime1?has_content&amp;gt;${txnTime1}-${txnPDate1}&amp;lt;/#if&amp;gt;&lt;/#if&gt;</Pattern></Patterns>"
+  },
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.10.input" ],
+  "Trigger" : [ "switch.7.output" ]
+}, {
+  "id" : "16",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\n\r\npublic class Pattern2LocalMap extends MasterVerticle {\r\n    private SharedData sharedData;\r\n    private LocalMap<String, JsonObject> patterns;\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sharedData = vertx.sharedData();\r\n        patterns = sharedData.getLocalMap(\"json_patterns\");\r\n        super.initialize(initPromise);\r\n    }\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject pattern = (JsonObject) msg.body();\r\n        patterns.put(pattern.getString(\"TransId\"), pattern);\r\n        eb.publish(addressBook.getResult(), pattern, addressBook.getDeliveryOptions(msg));\r\n    }\r\n}",
+    "fName" : "Pattern2LocalMap",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.22.input" ],
+  "Input" : [ "process.10.result" ]
+}, {
+  "id" : "49",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\npublic class SplitTrans extends MasterVerticle {\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject joTran = new JsonObject();\r\n        String transRaw = msg.body().toString();\r\n        if (transRaw.trim().length() == 0)\r\n            return;\r\n        String[] transSplit = transRaw.split(\"\\\\|\");\r\n        System.out.println(transRaw);\r\n        joTran.put(\"AccountNumber\", transSplit[0])\r\n        .put(\"TxnKey\", transSplit[1])\r\n        .put(\"Date\", transSplit[2])\r\n        .put(\"module\", transSplit[3])\r\n        .put(\"inputSource\", transSplit[4])\r\n        .put(\"amount\", transSplit[5])\r\n        .put(\"branchCode\", transSplit[6])\r\n        .put(\"stmtCode\", transSplit[7])\r\n        .put(\"userID\", transSplit[8].trim())\r\n        .put(\"tranIndicator\", transSplit[9])\r\n        .put(\"overrideUserID\", transSplit[10])\r\n        .put(\"modeFlag\", transSplit[11])\r\n        .put(\"bookIndicator\", transSplit[12])\r\n        .put(\"txnPDate\", transSplit[13].substring(0, 2) + transSplit[13].substring(2, 4) + transSplit[13].substring(4, 6))\r\n        .put(\"txnTime\", transSplit[14].substring(0, 2) + transSplit[14].substring(2, 4) + transSplit[14].substring(4, 6))\r\n        .put(\"terminalID\", transSplit[15])\r\n        .put(\"seqNo\", transSplit[16])\r\n        .put(\"variableData\", transSplit[17])\r\n        .put(\"optionalInfo\", transSplit[18])\r\n        .put(\"comment3\", transSplit[19]);\r\n        \r\n        if (transSplit[3].equals(\"ACH0\") && transSplit[7].equals(\"399\")) {\r\n            joTran.put(\"chequeNumber\", transSplit[17].trim());\r\n            }\r\n        eb.publish(addressBook.getResult(), joTran, addressBook.getDeliveryOptions(msg));\r\n    }\r\n}",
+    "fName" : "SplitTrans",
+    "theme" : "gruvbox",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.55.input" ],
+  "Input" : [ "file.40.result" ]
+}, {
+  "id" : "7",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "body" : { },
+      "header" : {
+        "cmd" : "code"
+      },
+      "_" : {
+        "state" : true,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "parquet.2.trigger" ]
+}, {
+  "id" : "22",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\nimport freemarker.cache.NullCacheStorage;\r\nimport freemarker.template.Configuration;\r\nimport freemarker.template.Template;\r\nimport freemarker.template.TemplateExceptionHandler;\r\nimport freemarker.template.Version;\r\nimport io.vertx.ext.web.common.template.impl.TemplateHolder;\r\n\r\nimport java.io.IOException;\r\nimport java.io.StringReader;\r\n\r\npublic class Template2LocalMap extends MasterVerticle {\r\n    private Configuration config;\r\n    private LocalMap<String, TemplateHolder<Template>> cache;\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        SharedData sharedData = vertx.sharedData();\r\n        cache = sharedData.getLocalMap(\"template_patterns\");\r\n        /* ------------------------------------------------------------------------ */\r\n        /* You should do this ONLY ONCE in the whole application life-cycle:        */\r\n\r\n        /* Create and adjust the configuration singleton */\r\n        this.config = new Configuration(Configuration.VERSION_2_3_29);\r\n        //this.config.setDirectoryForTemplateLoading(new File(\"/templates\"));\r\n        // Recommended settings for new projects:\r\n        this.config.setDefaultEncoding(\"UTF-8\");\r\n        this.config.setIncompatibleImprovements(new Version(2, 3, 20));\r\n        this.config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);\r\n        this.config.setLogTemplateExceptions(false);\r\n        this.config.setWrapUncheckedExceptions(true);\r\n        this.config.setFallbackOnNullLoopVariable(false);\r\n        /* ------------------------------------------------------------------------ */\r\n        this.config.setCacheStorage(new NullCacheStorage());\r\n\r\n        super.initialize(initPromise);\r\n    }\r\n    @Override\r\n    public void process(Message msg) {\r\n        TemplateHolder<Template> template;\r\n        JsonObject pat = (JsonObject) msg.body();\r\n        String transId = pat.getString(\"TransId\");\r\n        String text = pat.getString(\"text\");\r\n        try {\r\n            template = new TemplateHolder(new Template(transId, new StringReader(text), this.config));\r\n            this.cache.put(transId, template);\r\n            eb.publish(addressBook.getResult(), pat, addressBook.getDeliveryOptions(msg));\r\n        } catch (IOException e) {\r\n            eb.publish(addressBook.getError(), e.getMessage(), addressBook.getDeliveryOptions(msg));\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "Template2LocalMap",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.62.input" ],
+  "Input" : [ "process.16.result" ]
+}, {
+  "id" : "55",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "\r\nimport com.vx6.master.MasterVerticle;\r\nimport freemarker.template.Template;\r\nimport freemarker.template.TemplateException;\r\nimport io.vertx.core.AsyncResult;\r\nimport io.vertx.core.Future;\r\nimport io.vertx.core.Handler;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.buffer.Buffer;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\nimport io.vertx.ext.web.common.template.impl.TemplateHolder;\r\n\r\nimport java.io.ByteArrayOutputStream;\r\nimport java.io.IOException;\r\nimport java.io.OutputStreamWriter;\r\nimport java.io.StringWriter;\r\n\r\npublic class TransRender extends MasterVerticle {\r\n    private LocalMap<String, TemplateHolder<Template>> cache;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        SharedData sharedData = vertx.sharedData();\r\n        cache = sharedData.getLocalMap(\"template_patterns\");\r\n        super.initialize(initPromise);\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject trans = (JsonObject) msg.body();\r\n        TemplateHolder<Template> th = cache.get(trans.getString(\"module\"));\r\n        if (th != null) {\r\n            StringWriter stringWriter = new StringWriter();\r\n            try {\r\n                (th.template()).process(trans.getMap(), stringWriter);\r\n                eb.publish(addressBook.getResult(), stringWriter.toString(), addressBook.getDeliveryOptions(msg));\r\n            } catch (TemplateException | IOException e) {\r\n                eb.publish(addressBook.getError(), trans, addressBook.getDeliveryOptions(msg).addHeader(\"cause\", e.getMessage()));\r\n                //e.printStackTrace();\r\n            }\r\n        } else {\r\n            eb.publish(addressBook.getError(), trans, addressBook.getDeliveryOptions(msg).addHeader(\"cause\", \"template_not_found\"));\r\n        }\r\n    }\r\n}",
+    "fName" : "TransRender",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.28.input" ],
+  "Input" : [ "process.49.result" ]
+}, {
+  "id" : "28",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class OutTest2 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        //JsonObject body = (JsonObject) msg.body();\r\n        System.out.println(\"sms#\" + \": \" + msg.body().toString());\r\n        try {\r\n            super.process(msg);\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "OutTest2",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "process.55.result" ]
+} ]

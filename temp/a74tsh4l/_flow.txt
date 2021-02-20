@@ -1,0 +1,31 @@
+[ {
+  "id" : "10",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport org.w3c.dom.*;\r\nimport org.xml.sax.InputSource;\r\nimport org.xml.sax.SAXException;\r\nimport java.io.StringReader;\r\nimport javax.xml.parsers.*;\r\nimport java.io.*;\r\n\r\npublic class ReadXmlPattern extends MasterVerticle {\r\n    private DocumentBuilder builder;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) {\r\n        try {\r\n            //Parser that produces DOM object trees from XML content\r\n            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();\r\n\r\n            //API to obtain DOM Document instance\r\n            //DocumentBuilder builder = null;\r\n\r\n            //Create DocumentBuilder with default configuration\r\n            builder = factory.newDocumentBuilder();\r\n\r\n            initPromise.complete();\r\n        } catch (Exception e) {\r\n            initPromise.fail(\"xml builder not initialized!\");\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        //System.out.println(\"msg: \" + msg.body().toString());\r\n        //Use method to convert XML string content to XML Document object\r\n        Document doc = convertStringToXMLDocument(msg.body().toString());\r\n        doc.getDocumentElement().normalize();\r\n        Element root = doc.getDocumentElement();\r\n        JsonObject joRoot = new JsonObject();\r\n        joRoot.put(\"root_tag_name\", root.getTagName());\r\n        NamedNodeMap attrs = root.getAttributes();\r\n        for (int i = 0; i < attrs.getLength(); ++i) {\r\n            Node attr = attrs.item(i);\r\n            joRoot.put(attr.getNodeName(), attr.getNodeValue());\r\n        }\r\n        //System.out.println(\"joRoot: \" + joRoot.toString());\r\n        NodeList pattern = root.getElementsByTagName(\"Pattern\");\r\n        for (int i = 0; i < pattern.getLength(); i++) {\r\n            JsonObject joPattern = new JsonObject();\r\n            Node patElement = pattern.item(i);\r\n            joPattern.put(\"pattern_tag_name\", patElement.getNodeName());\r\n            NamedNodeMap atts = patElement.getAttributes();\r\n            for (int j = 0; j < atts.getLength(); j++) {\r\n                Node att = atts.item(j);\r\n                joPattern.put(att.getNodeName(), att.getNodeValue());\r\n            }\r\n            joPattern.put(\"text\", patElement.getTextContent());\r\n            joPattern.mergeIn(joRoot.copy());\r\n            eb.publish(addressBook.getResult(), joPattern, addressBook.getDeliveryOptions(msg));\r\n            //System.out.println(\"Pattern#\" + i + \": \" + joPattern.toString());\r\n        }\r\n    }\r\n\r\n    private void sendError(Message msg, Exception e) {\r\n        eb.publish(addressBook.getError(), msg.body(), addressBook.getDeliveryOptions(msg).addHeader(\"error\", e.getMessage()));\r\n    }\r\n\r\n    private Document convertStringToXMLDocument(String xmlString) {\r\n\r\n        try {\r\n            //Parse the content to Document object\r\n            Document doc = builder.parse(new InputSource(new StringReader(xmlString)));\r\n            return doc;\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n        return null;\r\n    }\r\n}",
+    "fName" : "ReadXmlPattern",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ ]
+} ]

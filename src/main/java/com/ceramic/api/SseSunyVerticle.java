@@ -54,7 +54,7 @@ private final Router router = Router.router(vertx);
       System.out.println("Last Id: " + sseConnection.lastId());
     });
     server = vertx.createHttpServer();
-    vertx.setPeriodic(5000, this::fetchISSPosition);
+    //vertx.setPeriodic(5000, this::fetchISSPosition);
     server.requestHandler(router);
     server.listen(PORT, http -> {
       if (http.succeeded()) {

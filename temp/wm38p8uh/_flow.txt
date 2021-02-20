@@ -1,0 +1,579 @@
+[ {
+  "id" : "69",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\n\r\npublic class SampleVerticle2 extends MasterVerticle {\r\n\r\n}",
+    "fName" : "SampleVerticle2",
+    "theme" : "monokai",
+    "outNumber" : 3,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "file.59.input" ],
+  "Out0" : [ ],
+  "Out1" : [ ],
+  "Out2" : [ ],
+  "Input" : [ "switch.52.output" ]
+}, {
+  "id" : "137",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "OrangeSubscribeButtons"
+    },
+    "setting" : {
+      "header" : {
+        "cmd" : "flush"
+      },
+      "body" : { },
+      "_" : {
+        "state" : true,
+        "period" : 1000,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "file.128.trigger" ]
+}, {
+  "id" : "10",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport org.w3c.dom.*;\r\nimport org.xml.sax.SAXException;\r\n\r\nimport javax.xml.parsers.*;\r\nimport java.io.*;\r\nimport java.util.Random;\r\n\r\npublic class SampleVerticle extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    private DocumentBuilder builder;\r\n    private StringBuilder xmlStringBuilder = new StringBuilder();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) {\r\n        try {\r\n            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();\r\n            builder = factory.newDocumentBuilder();\r\n            initPromise.complete();\r\n        } catch (Exception e) {\r\n            initPromise.fail(\"xml builder not initialized!\");\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        xmlStringBuilder.delete(0, xmlStringBuilder.length());//xmlStringBuilder..setLength(0);\r\n        xmlStringBuilder.append(msg.body());\r\n        ByteArrayInputStream input = null;\r\n        Document doc = null;\r\n        try {\r\n            input = new ByteArrayInputStream(xmlStringBuilder.toString().getBytes(\"UTF-8\"));\r\n        } catch (UnsupportedEncodingException e) {\r\n            eb.publish(addressBook.getError(), msg.body(), addressBook.getDeliveryOptions(msg).addHeader(\"error\", \"UnsupportedEncodingException\"));\r\n            return;\r\n        }\r\n        try {\r\n            doc = builder.parse(input);\r\n        } catch (SAXException | IOException e) {\r\n            sendError(msg, e);\r\n            return;\r\n        }\r\n        doc.getDocumentElement().normalize();\r\n        Element root = doc.getDocumentElement();\r\n        JsonObject joTran = new JsonObject();\r\n        joTran.put(\"TRANSACTION_NAME\", root.getTagName());\r\n        NamedNodeMap attrs = root.getAttributes();\r\n        for (int i = 0; i < attrs.getLength(); ++i) {\r\n            Node attr = attrs.item(i);\r\n            joTran.put(attr.getNodeName(), attr.getNodeValue());\r\n        }\r\n        eb.publish(addressBook.getResult(), joTran, addressBook.getDeliveryOptions(msg));\r\n        //System.out.println(\"trans: \" + joTran.toString());\r\n    }\r\n\r\n    private void sendError(Message msg, Exception e) {\r\n        eb.publish(addressBook.getError(), msg.body(), addressBook.getDeliveryOptions(msg).addHeader(\"error\", e.getMessage()));\r\n    }\r\n}",
+    "fName" : "SampleVerticle",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.16.input" ],
+  "Input" : [ "file.4.result" ]
+}, {
+  "id" : "16",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.DeliveryOptions;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class SampleVerticle1 extends MasterVerticle {\r\n    private JsonObject joStat = new JsonObject();\r\n    private Integer overAllCount = 0, billPaidCount = 0;\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject joBody = (JsonObject) msg.body();\r\n        overAllCount++;\r\n        if (joBody.getString(\"TRANSACTION_NAME\").equalsIgnoreCase(\"BillPaid\")) {\r\n            billPaidCount++;\r\n            String billType = joBody.getString(\"Bill_Type\").trim();\r\n            if (billType.length() > 0) {\r\n                Integer count = joStat.getInteger(billType, 0);\r\n                joStat.put(billType, ++count);\r\n            }\r\n        } else {\r\n            eb.publish(addressBook.getError(), msg.body(), addressBook.getDeliveryOptions(msg).addHeader(\"error\", \"NotBillPaid\"));\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public <T> void noCmd(Message<T> tMessage, String cmd) {\r\n        DeliveryOptions dO = addressBook.getDeliveryOptions(tMessage);\r\n        dO.addHeader(\"OverAllCount\", overAllCount + \"\").addHeader(\"BillPaidCount\", billPaidCount + \"\");\r\n        eb.publish(addressBook.getResult(), joStat, dO);\r\n    }\r\n}",
+    "fName" : "SampleVerticle1",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Error" : [ ],
+  "Result" : [ "chart.39.input", "chart.43.input", "chart.22.input" ],
+  "Input" : [ "process.10.result" ],
+  "Trigger" : [ "switch.26.output" ]
+}, {
+  "id" : "2",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "body" : {
+        "autoNext" : true
+      },
+      "header" : {
+        "cmd" : "next"
+      },
+      "_" : {
+        "state" : false,
+        "period" : 10,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "file.4.trigger" ]
+}, {
+  "id" : "4",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp",
+      "fileNameMask" : "mq*.txt",
+      "fileNameDoneExt" : ".done",
+      "fileNameLockExt" : ".$"
+    }
+  },
+  "Error" : [ ],
+  "Result" : [ "process.10.input" ],
+  "Input" : [ ],
+  "Trigger" : [ "switch.2.output" ]
+}, {
+  "id" : "80",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "GreenGrayOnOffBreak"
+    },
+    "setting" : {
+      "number" : 5,
+      "_" : {
+        "state" : false,
+        "period" : 100,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "webspheremq.82.trigger" ]
+}, {
+  "id" : "82",
+  "type" : "webspheremq",
+  "data" : {
+    "type" : "webspheremq",
+    "config" : {
+      "ip" : "192.168.165.230",
+      "port" : 1414,
+      "qm" : "QMAYANDE",
+      "qName" : "TEST.2",
+      "user" : "mqm",
+      "pass" : "mqm",
+      "channelName" : "SVRCONN",
+      "instance" : 3,
+      "mode" : "reading",
+      "codePage" : "1098",
+      "readAhead" : false
+    },
+    "setting" : {
+      "count" : 1
+    }
+  },
+  "Input" : [ ],
+  "Error" : [ "file.87.input" ],
+  "Result" : [ "file.92.input" ],
+  "Trigger" : [ "switch.80.output" ]
+}, {
+  "id" : "87",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp",
+      "fileNameMask" : "tran_mq_err.txt",
+      "fileNameDoneExt" : "",
+      "fileNameLockExt" : ""
+    }
+  },
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "webspheremq.82.error" ],
+  "Trigger" : [ ]
+}, {
+  "id" : "22",
+  "type" : "chart",
+  "data" : {
+    "type" : "chart",
+    "config" : {
+      "kind" : "line",
+      "chartName" : "BasicLineChart",
+      "fillColor" : "rgba(150,241,255,0.65)",
+      "adaptorTheme" : "gruvbox"
+    },
+    "setting" : {
+      "dataLimit" : 100,
+      "adaptor" : "//let body = JSON.parse(msg.body);\r\nif (msg.body.signal){\r\n    ctx.chartData = {\r\n          labels: [],\r\n          datasets: [\r\n            {\r\n              //label: 'test',\r\n              data: [],\r\n              backgroundColor: 'rgb(153, 102, 255)',\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgb(75,192,192)\"\r\n            }\r\n          ]\r\n        };\r\n    return true;\r\n}\r\nif (JSON.parse(msg.body).redraw){\r\n    return true;\r\n}\r\n\r\nif (msg.body.signal){\r\n    return true\r\n}\r\nlet headers = [];\r\nif (typeof msg.headers === 'string')\r\n    headers = JSON.parse(msg.headers);\r\nelse\r\n    headers = msg.headers;\r\nif (typeof headers[\"BillPaidCount\"] === 'undefined')\r\n  return false;\r\n    \r\nctx.chartData.labels.push(new Date());\r\nctx.chartData.datasets[0].data.push(headers[\"BillPaidCount\"]);\r\n\r\nctx.chartData.datasets[0].data.splice(0, (ctx.chartData.datasets[0].data.length - options.size));\r\nctx.chartData.labels.splice(0, (ctx.chartData.labels.length - options.size));\r\n\r\n/*if (chartData.labels.length > options.size){\r\n   ctx.chartData.datasets[0].data.shift();\r\n   ctx.chartData.labels.shift();\r\n}*/\r\nreturn true;",
+      "options" : {
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "scales" : {
+          "yAxes" : [ {
+            "stacked" : false,
+            "ticks" : {
+              "beginAtZero" : true,
+              "stepSize" : 1
+            }
+          } ],
+          "xAxes" : [ {
+            "type" : "time",
+            "time" : {
+              "displayFormats" : {
+                "second" : "hh:mm:ss"
+              }
+            }
+          } ]
+        },
+        "legend" : {
+          "display" : false
+        },
+        "showLines" : false,
+        "animation" : {
+          "duration" : 0
+        },
+        "hover" : {
+          "animationDuration" : 0
+        },
+        "responsiveAnimationDuration" : 0,
+        "elements" : {
+          "line" : {
+            "tension" : 0
+          }
+        },
+        "size" : 10
+      }
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.16.result" ]
+}, {
+  "id" : "26",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "OrangeSubscribeButtons"
+    },
+    "setting" : {
+      "count" : 0,
+      "_" : {
+        "state" : false,
+        "period" : 1000,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.16.trigger" ]
+}, {
+  "id" : "92",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp",
+      "fileNameMask" : "tran_mq_readdate(mm).txt",
+      "fileNameDoneExt" : "",
+      "fileNameLockExt" : ""
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "webspheremq.82.result" ]
+}, {
+  "id" : "39",
+  "type" : "chart",
+  "data" : {
+    "type" : "chart",
+    "config" : {
+      "kind" : "bar",
+      "chartName" : "BasicBarChart",
+      "fillColor" : "rgba(150,241,255,0.65)",
+      "adaptorTheme" : "monokai"
+    },
+    "setting" : {
+      "dataLimit" : 100,
+      "adaptor" : "//let body = JSON.parse(msg.body);\r\nif (msg.body.signal){\r\n    ctx.chartData = {\r\n          labels: [],\r\n          datasets: [\r\n            {\r\n              data: [],\r\n              backgroundColor: [\r\n\t\t\t\t'rgb(255, 99, 132)',\r\n\t\t\t\t'rgb(255, 159, 64)',\r\n\t\t\t\t'rgb(255, 205, 86)',\r\n\t\t\t\t'rgb(75, 192, 192)',\r\n\t\t\t\t'rgb(54, 162, 235)',\r\n\t\t\t\t'rgb(153, 102, 255)',\r\n\t\t\t\t'rgb(201, 203, 207)'\r\n\t\t\t  ],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgb(75,192,192)\"\r\n            }\r\n          ]\r\n        };\r\n    return true;\r\n}\r\nif (JSON.parse(msg.body).redraw){\r\n    return true;\r\n}\r\n\r\nif (msg.body.signal){\r\n    return true\r\n}\r\nlet body = {};\r\nif (typeof msg.body === 'string')\r\n    body = JSON.parse(msg.body);\r\nelse\r\n    body = msg.body;\r\nctx.chartData.labels = [];\r\nctx.chartData.datasets[0].data = [];\r\n\r\nfor (let [key, value] of Object.entries(body)) {\r\n    ctx.chartData.labels.push(key);\r\n    ctx.chartData.datasets[0].data.push(value);\r\n}\r\nreturn true;",
+      "options" : {
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "scales" : {
+          "yAxes" : [ {
+            "stacked" : false,
+            "ticks" : {
+              "beginAtZero" : true,
+              "stepSize" : 1
+            }
+          } ]
+        },
+        "legend" : {
+          "display" : false
+        }
+      }
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.16.result" ]
+}, {
+  "id" : "101",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "cmd" : "executeQuery",
+      "autoNext" : true,
+      "_" : {
+        "state" : false,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "database.103.trigger" ]
+}, {
+  "id" : "103",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "BXX_SAPTA11",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 1
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : "/****** Script for SelectTopNRows command from SSMS  ******/\r\nSELECT TOP (1000) [UniqId]\r\n      ,[AccountNo]\r\n      ,[Enable]\r\n      ,[CustomerId]\r\n      ,[TransGroupsStr]\r\n      ,[Phones]\r\n      ,[AutoRenewRegister]\r\n      ,[RemainAmount]\r\n      ,[RemainDays]\r\n      ,[DueDate]\r\n      ,[LowLimitCredit]\r\n      ,[LowLimitDebit]\r\n      ,[ExpireDate]\r\n      ,[NearExpireNotifyDate]\r\n      ,[ExpiredNotifyDate]\r\n      ,[EditDT]\r\n      ,[AutoRenewRegCancelNotifyDate]\r\n      ,[Flag]\r\n  FROM [BXX_SAPTA11].[dbo].[TblAccounts3]"
+    },
+    "dbType" : "SqlServer"
+  },
+  "Input" : [ ],
+  "Error" : [ "file.108.input" ],
+  "Result" : [ "file.108.input" ],
+  "Trigger" : [ "switch.101.output" ]
+}, {
+  "id" : "108",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp",
+      "fileNameMask" : "Sapta_BXX.txt",
+      "fileNameDoneExt" : "",
+      "fileNameLockExt" : ""
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "database.103.result", "database.103.error" ]
+}, {
+  "id" : "43",
+  "type" : "chart",
+  "data" : {
+    "type" : "chart",
+    "config" : {
+      "kind" : "pie",
+      "chartName" : "BasicPieChart",
+      "fillColor" : "rgba(150,241,255,0.65)",
+      "adaptorTheme" : "monokai"
+    },
+    "setting" : {
+      "dataLimit" : 100,
+      "adaptor" : "//let body = JSON.parse(msg.body);\r\nif (msg.body.signal){\r\n    ctx.chartData = {\r\n          labels: [],\r\n          datasets: [\r\n            {\r\n              data: [],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgb(75,192,192)\",\r\n              backgroundColor: [\r\n\t\t\t\t\t\t'rgb(255, 99, 132)',\r\n\t\t\t\t\t\t'rgb(255, 159, 64)',\r\n\t\t\t\t\t\t'rgb(255, 205, 86)',\r\n\t\t\t\t\t\t'rgb(75, 192, 192)',\r\n\t\t\t\t\t\t'rgb(54, 162, 235)',\r\n\t\t\t\t\t\t'rgb(153, 102, 255)',\r\n\t\t\t\t\t\t'rgb(201, 203, 207)'\r\n\t\t\t\t\t],\r\n            }\r\n          ]\r\n        };\r\n    return true;\r\n}\r\nif (JSON.parse(msg.body).redraw){\r\n    return true;\r\n}\r\n\r\nif (msg.body.signal){\r\n    return true\r\n}\r\nlet body = {};\r\nif (typeof msg.body === 'string')\r\n    body = JSON.parse(msg.body);\r\nelse\r\n    body = msg.body;\r\nctx.chartData.labels = [];\r\nctx.chartData.datasets[0].data = [];\r\n\r\nfor (let [key, value] of Object.entries(body)) {\r\n    ctx.chartData.labels.push(key);\r\n    ctx.chartData.datasets[0].data.push(value);\r\n}\r\nreturn true;",
+      "options" : {
+        "responsive" : true,
+        "maintainAspectRatio" : true,
+        "scales" : {
+          "yAxes" : [ {
+            "stacked" : false,
+            "display" : false
+          } ],
+          "xAxes" : [ {
+            "display" : false,
+            "thicks" : {
+              "display" : false
+            }
+          } ]
+        },
+        "legend" : {
+          "display" : true
+        }
+      }
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.16.result" ]
+}, {
+  "id" : "116",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "cmd" : "executupdate",
+      "autoNext" : true,
+      "_" : {
+        "state" : false,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "database.118.trigger" ]
+}, {
+  "id" : "118",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "Ceramic1.0.0",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 1
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : "INSERT INTO SqlServerWidget\r\nVALUES ('behzad', 60, 'Canada, Otawa, No307');"
+    },
+    "dbType" : "SqlServer"
+  },
+  "Input" : [ ],
+  "Error" : [ "file.128.input" ],
+  "Result" : [ "process.123.input" ],
+  "Trigger" : [ "switch.116.output" ]
+}, {
+  "id" : "52",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "GreenGrayOnOffBreak"
+    },
+    "setting" : {
+      "name" : "behnam",
+      "age" : 43,
+      "_" : {
+        "state" : false,
+        "period" : 10,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.69.input" ]
+}, {
+  "id" : "59",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\\\temp",
+      "fileNameMask" : "brdate(yyMMdd_HHmm).txt",
+      "fileNameDoneExt" : "",
+      "fileNameLockExt" : ""
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "process.69.result" ]
+}, {
+  "id" : "123",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport static java.lang.Integer.parseInt;\r\n\r\nimport java.util.Random;\r\n\r\npublic class SampleVerticle extends MasterVerticle {\r\n  private static Random rand = new Random();\r\n\r\n  @Override\r\n  public void process(Message msg) {\r\n    JsonObject body = (JsonObject) msg.body();\r\n    body.put(\"duration\", parseInt(msg.headers().get(\"duration\")));\r\n    System.out.println(msg.headers().get(\"duration\"));\r\n    try {\r\n      eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg));\r\n    } catch (Exception e) {\r\n      e.printStackTrace();\r\n    }\r\n  }\r\n}",
+    "fName" : "SampleVerticle",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "file.128.input" ],
+  "Input" : [ "database.118.result" ]
+}, {
+  "id" : "128",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp",
+      "fileNameMask" : "SqlServerWriteWidget.txt",
+      "fileNameDoneExt" : "",
+      "fileNameLockExt" : ""
+    }
+  },
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "database.118.error", "process.123.result" ],
+  "Trigger" : [ "switch.137.output" ]
+} ]

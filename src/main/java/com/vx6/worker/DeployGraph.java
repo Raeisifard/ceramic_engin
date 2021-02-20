@@ -13,8 +13,10 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,7 @@ public class DeployGraph extends AbstractVerticle {
   private List<Future> futures = new ArrayList<>();
   private boolean fixedTempPath = false;
   private boolean clearTempPath = false;
-  private boolean useTimestampInTempPath = true;
+  private boolean useTimestampInTempPath = false;
   private String graph_name, graph_id;
   private AddressBook addressBook;
   private String graph_xml;
@@ -46,8 +48,9 @@ public class DeployGraph extends AbstractVerticle {
     JsonArray ja = new GraphProcess(objGraph).getJsonArrayGraph();
     if (vertx.fileSystem().existsBlocking(tempPath)) { //System.out.println(tempPath + " exist!");
       if (clearTempPath) {//Delete folder contents
+        FileUtils.cleanDirectory(new File(tempPath + "/"));
         //vertx.fileSystem().deleteRecursiveBlocking(tempPath + "temp_DEBUGGER/", true);
-        vertx.fileSystem().deleteRecursiveBlocking(tempPath + "/", true);
+        //vertx.fileSystem().deleteRecursiveBlocking(tempPath + "/", true);
         //System.out.println(tempPath + "temp_DEBUGGER/ deleted.");
       }
     } else {
@@ -58,8 +61,13 @@ public class DeployGraph extends AbstractVerticle {
       subTempPath = "_DEBUGGER/";
     else if (useTimestampInTempPath)
       subTempPath = graph_id + "_" + timestamp.getTime() + "/";
-    else
+    else {
       subTempPath = graph_id + "/";
+      if (vertx.fileSystem().existsBlocking(tempPath + subTempPath)) {
+          FileUtils.cleanDirectory(new File(tempPath + subTempPath));
+          FileUtils.deleteDirectory(new File(tempPath + subTempPath));
+      }
+    }
     vertx.fileSystem().mkdirBlocking(tempPath + subTempPath);
     vertx.fileSystem().writeFile(tempPath + subTempPath + "_flow.txt", Buffer.buffer(ja.encodePrettily()), result -> {
       if (!result.succeeded()) {
@@ -132,6 +140,11 @@ public class DeployGraph extends AbstractVerticle {
           options.setWorker(false);
           options.setConfig(jo);
           vertx.deployVerticle(new com.vx6.widget.DbVerticle(), options, pro);
+          break;
+        case "parquet":
+          options.setWorker(false);
+          options.setConfig(jo);
+          vertx.deployVerticle(new com.vx6.widget.ParquetVerticle(), options, pro);
           break;
         /*case "buffer":
           options.setWorker(false);
