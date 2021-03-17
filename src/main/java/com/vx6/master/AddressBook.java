@@ -157,4 +157,8 @@ public class AddressBook {
     public List<String> getPushBackPorts() {
         return pushBackPorts;
     }
+
+    public String getOut(String outName){
+        return String.join(".", graph_id, type, id, outName).toLowerCase();
+    }
 }

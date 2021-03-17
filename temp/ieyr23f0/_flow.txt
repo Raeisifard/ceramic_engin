@@ -1,0 +1,49 @@
+[ {
+  "id" : "10",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true
+      }
+    }
+  },
+  "Output" : [ ],
+  "Input" : [ "process.2.out0" ]
+}, {
+  "id" : "2",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class SampleVerticle extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.getJsonObject(\"dataset\").put(\"data\", rand.nextInt(101));\r\n        try {\r\n            super.process(body.encode());\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "SampleVerticle",
+    "theme" : "monokai",
+    "outNumber" : 1,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Out0" : [ "switch.10.input" ]
+} ]

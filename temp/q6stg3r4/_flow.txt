@@ -1,0 +1,109 @@
+[ {
+  "id" : "2",
+  "type" : "chart",
+  "data" : {
+    "type" : "chart",
+    "config" : {
+      "kind" : "line",
+      "chartName" : "HighchartsLine",
+      "fillColor" : "rgba(150,241,255,0.65)",
+      "adaptorTheme" : "monokai"
+    },
+    "setting" : {
+      "dataLimit" : 100,
+      "adaptor" : "if (msg.body.signal){\r\n    ctx.chartData = {\r\n          labels: [],\r\n          datasets: [\r\n            {\r\n              //label: 'test',\r\n              backgroundColor: '#8ce368',\r\n              data: [],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgb(75,192,192)\"\r\n            },\r\n            {\r\n              //label: 'sample',\r\n              backgroundColor: 'rgba(236,84,84,0.78)',\r\n              data: [],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgba(237,112,250,0.76)\"\r\n            }\r\n          ]\r\n        };\r\n    return true;\r\n}\r\nif (JSON.parse(msg.body).redraw){\r\n    return true;\r\n}\r\nlet body = JSON.parse(msg.body);\r\nctx.chartData.labels.push(Math.floor(Math.random() * ( body.x)));\r\nctx.chartData.datasets[0].data.push(Math.floor(Math.random() * ( body.y)));\r\nctx.chartData.datasets[1].data.push(Math.floor(Math.random() * ( body.y)));\r\nreturn true;",
+      "options" : {
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "scales" : {
+          "yAxes" : [ {
+            "stacked" : false
+          } ]
+        },
+        "legend" : {
+          "show" : false
+        }
+      }
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.11.output" ]
+}, {
+  "id" : "11",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "chart.8.input", "chart.2.input", "chart.5.input" ]
+}, {
+  "id" : "5",
+  "type" : "chart",
+  "data" : {
+    "type" : "chart",
+    "config" : {
+      "kind" : "line",
+      "chartName" : "HighchartsLine",
+      "fillColor" : "rgba(150,241,255,0.65)",
+      "adaptorTheme" : "monokai"
+    },
+    "setting" : {
+      "dataLimit" : 100,
+      "adaptor" : "if (msg.body.signal){\r\n    ctx.chartData = {\r\n          labels: [],\r\n          datasets: [\r\n            {\r\n              //label: 'test',\r\n              backgroundColor: '#8ce368',\r\n              data: [],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgb(75,192,192)\"\r\n            },\r\n            {\r\n              //label: 'sample',\r\n              backgroundColor: 'rgba(236,84,84,0.78)',\r\n              data: [],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgba(237,112,250,0.76)\"\r\n            }\r\n          ]\r\n        };\r\n    return true;\r\n}\r\nif (JSON.parse(msg.body).redraw){\r\n    return true;\r\n}\r\nlet body = JSON.parse(msg.body);\r\nctx.chartData.labels.push(Math.floor(Math.random() * ( body.x)));\r\nctx.chartData.datasets[0].data.push(Math.floor(Math.random() * ( body.y)));\r\nctx.chartData.datasets[1].data.push(Math.floor(Math.random() * ( body.y)));\r\nreturn true;",
+      "options" : {
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "scales" : {
+          "yAxes" : [ {
+            "stacked" : false
+          } ]
+        },
+        "legend" : {
+          "show" : false
+        }
+      }
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.11.output" ]
+}, {
+  "id" : "8",
+  "type" : "chart",
+  "data" : {
+    "type" : "chart",
+    "config" : {
+      "kind" : "line",
+      "chartName" : "BasicLineChart",
+      "fillColor" : "rgba(150,241,255,0.65)",
+      "adaptorTheme" : "monokai"
+    },
+    "setting" : {
+      "dataLimit" : 100,
+      "adaptor" : "if (msg.body.signal){\r\n    ctx.chartData = {\r\n          labels: [],\r\n          datasets: [\r\n            {\r\n              //label: 'test',\r\n              backgroundColor: '#8ce368',\r\n              data: [],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgb(75,192,192)\"\r\n            },\r\n            {\r\n              //label: 'sample',\r\n              backgroundColor: 'rgba(236,84,84,0.78)',\r\n              data: [],\r\n              fill: false,\r\n              lineTension: 0.1,\r\n              borderColor: \"rgba(237,112,250,0.76)\"\r\n            }\r\n          ]\r\n        };\r\n    return true;\r\n}\r\nif (JSON.parse(msg.body).redraw){\r\n    return true;\r\n}\r\nlet body = JSON.parse(msg.body);\r\nctx.chartData.labels.push(Math.floor(Math.random() * ( body.x)));\r\nctx.chartData.datasets[0].data.push(Math.floor(Math.random() * ( body.y)));\r\nctx.chartData.datasets[1].data.push(Math.floor(Math.random() * ( body.y)));\r\nreturn true;",
+      "options" : {
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "scales" : {
+          "yAxes" : [ {
+            "stacked" : false
+          } ]
+        },
+        "legend" : {
+          "show" : false
+        }
+      }
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.11.output" ]
+} ]

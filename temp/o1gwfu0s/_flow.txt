@@ -1,0 +1,94 @@
+[ {
+  "id" : "2",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "cmd" : "executupdate",
+      "autoNext" : true,
+      "_" : {
+        "state" : true,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "database.9.trigger" ]
+}, {
+  "id" : "4",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp",
+      "fileNameMask" : "SqlServerWriteWidget.txt",
+      "fileNameDoneExt" : "",
+      "fileNameLockExt" : ""
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "process.17.result", "database.9.error" ]
+}, {
+  "id" : "9",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "Ceramic1.0.0",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 1
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : "INSERT INTO SqlServerWidget\r\nVALUES ('behrooz', 60, 'Canada, Otawa, No307');"
+    },
+    "dbType" : "SqlServer"
+  },
+  "Input" : [ ],
+  "Error" : [ "file.4.input" ],
+  "Result" : [ "process.17.input" ],
+  "Trigger" : [ "switch.2.output" ]
+}, {
+  "id" : "17",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport static java.lang.Integer.parseInt;\r\n\r\nimport java.util.Random;\r\n\r\npublic class SampleVerticle extends MasterVerticle {\r\n  private static Random rand = new Random();\r\n\r\n  @Override\r\n  public void process(Message msg) {\r\n    JsonObject body = (JsonObject) msg.body();\r\n    body.put(\"duration\", parseInt(msg.headers().get(\"duration\")));\r\n    System.out.println(msg.headers().get(\"duration\"));\r\n    try {\r\n      eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg));\r\n    } catch (Exception e) {\r\n      e.printStackTrace();\r\n    }\r\n  }\r\n}",
+    "fName" : "SampleVerticle",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "file.4.input" ],
+  "Input" : [ "database.9.result" ]
+} ]

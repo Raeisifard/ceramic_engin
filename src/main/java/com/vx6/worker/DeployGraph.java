@@ -43,6 +43,7 @@ public class DeployGraph extends AbstractVerticle {
     graph_xml = config().getString("graph_xml");
     this.addressBook = new AddressBook(config());
     Document document = mxXmlUtils.parseXml(graph_xml);
+    assert document != null;
     mxCodec codec = new mxCodec(document);
     mxGraphModel objGraph = (mxGraphModel) codec.decode(document.getDocumentElement());
     JsonArray ja = new GraphProcess(objGraph).getJsonArrayGraph();

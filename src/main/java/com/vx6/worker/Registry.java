@@ -90,6 +90,28 @@ public class Registry extends AbstractVerticle {
             case "delete_profile":
                 unregister(tMessage);
                 break;
+            case "remove":
+                removeGraphId(tMessage);
+                break;
+            case "save":
+                String graph_id = tMessage.headers().get("uid").toLowerCase();
+                String graph_name = tMessage.headers().get("name");
+                gp = new GraphProfile((JsonObject) tMessage.body());
+                gp.addRevision();
+                JsonObject queryJo = query(graph_id);
+                if (queryJo != null){
+                    gp.setDeploy_id(queryJo.getString("deploy_id", "THERE_IS_NO_DEPLOY_ID"));
+                    gp.setActive(queryJo.getBoolean("active"));
+                    gp.addModification();
+                }else{
+                    gp.setDeploy_id("NEVER_BEEN_DEPLOYED_YET");
+                    gp.setActive(false);
+                }
+                root.addOrReplace(gp);
+                storageManager.store(root.getGraphProfiles());
+                storageManager.store(root.graphModels);
+                tMessage.reply(root.getProfile(gp.getGraph_id()).toSimpleJsonObject());
+                break;
             case "set":
                 set2MxGraphModel(tMessage);
                 break;
@@ -182,6 +204,28 @@ public class Registry extends AbstractVerticle {
             tMessage.reply(root.getProfile(gp.getGraph_id()).toSimpleJsonObject());
         } catch (Exception e) {
             tMessage.fail(5, e.getMessage());
+        }
+    }
+
+    private <T> void removeGraphId(Message<T> tMessage) {
+        String graphId = tMessage.body().toString();
+        String graphName = tMessage.headers().get("name");
+        GraphProfile gp = root.getProfile(graphId);
+        if (gp == null) {
+            tMessage.fail(3, "Graph id not exist");
+        } else {
+            if (gp.isActive()) {
+                tMessage.fail(1, "Can't remove an active graph");
+            } else {
+                try {
+                    root.removeProfile(graphId);
+                    storageManager.store(root.getGraphProfiles());
+                    storageManager.store(root.graphModels);
+                    tMessage.reply("Graph " + graphName + "(" + graphId + ") removed");
+                } catch (Exception e) {
+                    tMessage.fail(2, e.getMessage());
+                }
+            }
         }
     }
 

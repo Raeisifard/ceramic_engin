@@ -1,0 +1,458 @@
+[ {
+  "id" : "65",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false
+      }
+    }
+  },
+  "Output" : [ "file.45.input" ],
+  "Input" : [ "process.76.out0" ]
+}, {
+  "id" : "68",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false
+      }
+    }
+  },
+  "Output" : [ "file.50.input" ],
+  "Input" : [ "process.76.out1" ]
+}, {
+  "id" : "76",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\npublic class Routing extends MasterVerticle {\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        eb.publish(addressBook.getOut(\"out0\"), body, addressBook.getDeliveryOptions(msg));\r\n        if (body.getString(\"Bill_Type\").equals(\"UD\") && body.getString(\"Operation_Type\").equals(\"02\")){\r\n            eb.publish(addressBook.getOut(\"out1\"), body, addressBook.getDeliveryOptions(msg));\r\n        }\r\n        try {\r\n            super.process(body.encode());\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "Routing",
+    "theme" : "monokai",
+    "outNumber" : 2,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Out0" : [ "switch.65.input", "process.86.input" ],
+  "Out1" : [ "switch.68.input", "process.91.input" ],
+  "Input" : [ "process.12.result" ]
+}, {
+  "id" : "12",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.Promise;\r\nimport org.w3c.dom.*;\r\nimport org.xml.sax.InputSource;\r\nimport java.io.StringReader;\r\nimport javax.xml.parsers.*;\r\n\r\npublic class Xml2Dom extends MasterVerticle {\r\n    private DocumentBuilder builder;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) {\r\n        try {\r\n\r\n            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();\r\n            builder = factory.newDocumentBuilder();\r\n            initPromise.complete();\r\n        } catch (Exception e) {\r\n            initPromise.fail(\"xml builder not initialized!\");\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        //Use method to convert XML string content to XML Document object\r\n        Document doc = convertStringToXMLDocument(msg.body().toString());\r\n        doc.getDocumentElement().normalize();\r\n        Element root = doc.getDocumentElement();\r\n        JsonObject joRoot = new JsonObject();\r\n        joRoot.put(\"root_tag_name\", root.getTagName());\r\n        NamedNodeMap attrs = root.getAttributes();\r\n        for (int i = 0; i < attrs.getLength(); ++i) {\r\n            Node attr = attrs.item(i);\r\n            joRoot.put(attr.getNodeName(), attr.getNodeValue());\r\n        }\r\n        eb.publish(addressBook.getResult(), joRoot, addressBook.getDeliveryOptions(msg));\r\n    }\r\n\r\n    private Document convertStringToXMLDocument(String xmlString) {\r\n\r\n        try {\r\n            //Parse the content to Document object\r\n            Document doc = builder.parse(new InputSource(new StringReader(xmlString)));\r\n            return doc;\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n        return null;\r\n    }\r\n}",
+    "fName" : "Xml2Dom",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.76.input" ],
+  "Input" : [ "webspheremq.7.result", "file.2.result" ]
+}, {
+  "id" : "17",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "webspheremq.7.trigger" ]
+}, {
+  "id" : "19",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "body" : { },
+      "header" : {
+        "cmd" : "next"
+      },
+      "_" : {
+        "state" : false,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "file.2.trigger" ]
+}, {
+  "id" : "2",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp\\BmiPaidBill\\",
+      "fileNameMask" : "mq*.txt",
+      "fileNameDoneExt" : ".done",
+      "fileNameLockExt" : ".$"
+    }
+  },
+  "Error" : [ ],
+  "Trigger" : [ "switch.19.output" ],
+  "Result" : [ "process.12.input" ],
+  "Input" : [ ]
+}, {
+  "id" : "147",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "dbType" : "SqlServer",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "test",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 1
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : ""
+    }
+  },
+  "Input" : [ ],
+  "Error" : [ "process.126.input", "file.164.input" ],
+  "Result" : [ ],
+  "Trigger" : [ "process.86.result" ]
+}, {
+  "id" : "7",
+  "type" : "webspheremq",
+  "data" : {
+    "type" : "webspheremq",
+    "config" : {
+      "ip" : "192.168.165.230",
+      "port" : 1414,
+      "qm" : "QMAYANDE",
+      "qName" : "TEST.3",
+      "user" : "mqm",
+      "pass" : "mqm",
+      "channelName" : "SVRCONN",
+      "instance" : 1,
+      "mode" : "reading",
+      "codePage" : "1098",
+      "readAhead" : false
+    },
+    "setting" : {
+      "count" : 10
+    }
+  },
+  "Input" : [ ],
+  "Result" : [ "process.12.input", "switch.30.input" ],
+  "Trigger" : [ "switch.17.output" ],
+  "Error" : [ ]
+}, {
+  "id" : "86",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport freemarker.cache.NullCacheStorage;\r\nimport freemarker.template.*;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport java.io.IOException;\r\nimport java.io.StringReader;\r\nimport java.io.StringWriter;\r\n\r\npublic class BmiPaidBill extends MasterVerticle {\r\n    private Configuration config;\r\n    private Template template;\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n\r\n        this.config = new Configuration(Configuration.VERSION_2_3_29);\r\n        this.config.setDefaultEncoding(\"UTF-8\");\r\n        this.config.setIncompatibleImprovements(new Version(2, 3, 20));\r\n        this.config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);\r\n        this.config.setLogTemplateExceptions(false);\r\n        this.config.setWrapUncheckedExceptions(true);\r\n        this.config.setFallbackOnNullLoopVariable(false);\r\n        /* ------------------------------------------------------------------------ */\r\n        this.config.setCacheStorage(new NullCacheStorage());\r\n        this.template = new Template(this.getClass().getSimpleName(), new StringReader(this.setting.getString(\"query\")), this.config);\r\n        super.initialize(initPromise);\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        StringWriter stringWriter = new StringWriter();\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.put(\"ID\", body.getString(\"UniqueId\"));\r\n        try {\r\n            template.process(body.getMap(), stringWriter);\r\n            eb.publish(addressBook.getResult(), new JsonObject()\r\n            .put(\"query\", stringWriter.toString())\r\n            .put(\"cmd\", \"executupdate\"), addressBook.getDeliveryOptions(msg));\r\n        } catch (TemplateException | IOException e) {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"cause\", e.getMessage()));\r\n            //e.printStackTrace();\r\n        }\r\n        //eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg));\r\n    }\r\n}",
+    "fName" : "BmiPaidBill",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "query" : "INSERT INTO Paid_Bill (Bill_Type, Operation_Type, Bill_ID, Pay_ID, Amount, Org_Fee, Iss_Fee, IssInst, AcqInst, Payment_No, Pay_Code, Pay_Cap_Date, PayTime, Pan, Account_From, Code_Pri, Code_Sec, TimeIn, DateIn, RefNum, TermID, ID) VALUES ('${Bill_Type}', ${Operation_Type}, '${Bill_ID}', '${Pay_ID}', ${Amount}, ${Org_Fee}, ${Iss_Fee}, '${IssInst}', '${AcqInst}', ${Payment_No}, ${Pay_Code}, '${Pay_Cap_Date}', '${PayTime}', '${Pan}', '${Account_From}', ${Code_Pri}, ${Code_Sec}, '${TimeIn}', '${DateIn}', '${RefNum}', '${TermID}', ${UniqueId});"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "switch.98.input", "database.147.trigger" ],
+  "Input" : [ "process.76.out0" ]
+}, {
+  "id" : "23",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp\\BmiPaidBill\\",
+      "fileNameMask" : "InputFromMQ.xml",
+      "fileNameDoneExt" : "",
+      "fileNameLockExt" : ""
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "switch.30.output" ]
+}, {
+  "id" : "153",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "dbType" : "SqlServer",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "test",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 1
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : ""
+    }
+  },
+  "Input" : [ ],
+  "Error" : [ "process.126.input", "file.164.input" ],
+  "Result" : [ "process.116.input" ],
+  "Trigger" : [ "process.91.result" ]
+}, {
+  "id" : "91",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport freemarker.cache.NullCacheStorage;\r\nimport freemarker.template.*;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport java.io.IOException;\r\nimport java.io.StringReader;\r\nimport java.io.StringWriter;\r\n\r\npublic class SadadPinCharg extends MasterVerticle {\r\n    private Configuration config;\r\n    private Template template;\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n\r\n        this.config = new Configuration(Configuration.VERSION_2_3_29);\r\n        this.config.setDefaultEncoding(\"UTF-8\");\r\n        this.config.setIncompatibleImprovements(new Version(2, 3, 20));\r\n        this.config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);\r\n        this.config.setLogTemplateExceptions(false);\r\n        this.config.setWrapUncheckedExceptions(true);\r\n        this.config.setFallbackOnNullLoopVariable(false);\r\n        /* ------------------------------------------------------------------------ */\r\n        this.config.setCacheStorage(new NullCacheStorage());\r\n        this.template = new Template(this.getClass().getSimpleName(), new StringReader(this.setting.getString(\"query\")), this.config);\r\n        super.initialize(initPromise);\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        StringWriter stringWriter = new StringWriter();\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.put(\"ID\", body.getString(\"UniqueId\"));\r\n        try {\r\n            template.process(body.getMap(), stringWriter);\r\n            eb.publish(addressBook.getResult(), new JsonObject()\r\n            .put(\"query\", stringWriter.toString())\r\n            .put(\"cmd\", \"executupdate\"), addressBook.getDeliveryOptions(msg));\r\n        } catch (TemplateException | IOException e) {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"cause\", e.getMessage()));\r\n            //e.printStackTrace();\r\n        }\r\n        //eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg));\r\n    }\r\n}",
+    "fName" : "SadadPinCharg",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "query" : "INSERT INTO Paid_Bill (Bill_Type, Operation_Type, Bill_ID, Pay_ID, Amount, Org_Fee, Iss_Fee, IssInst, AcqInst, Payment_No, Pay_Code, Pay_Cap_Date, PayTime, Pan, Account_From, Code_Pri, Code_Sec, TimeIn, DateIn, RefNum, TermID, ID) VALUES ('${Bill_Type}', ${Operation_Type}, '${Bill_ID}', '${Pay_ID}', ${Amount}, ${Org_Fee}, ${Iss_Fee}, '${IssInst}', '${AcqInst}', ${Payment_No}, ${Pay_Code}, '${Pay_Cap_Date}', '${PayTime}', '${Pan}', '${Account_From}', ${Code_Pri}, ${Code_Sec}, '${TimeIn}', '${DateIn}', '${RefNum}', '${TermID}', ${UniqueId});"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ "switch.101.input", "database.153.trigger" ],
+  "Input" : [ "process.76.out1" ]
+}, {
+  "id" : "30",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true
+      }
+    }
+  },
+  "Output" : [ "file.23.input" ],
+  "Input" : [ "webspheremq.7.result" ]
+}, {
+  "id" : "98",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true
+      }
+    }
+  },
+  "Output" : [ "file.45.input" ],
+  "Input" : [ "process.86.result" ]
+}, {
+  "id" : "164",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp\\BmiPaidBill",
+      "fileNameMask" : "Error_date(yyMMdd).err)",
+      "fileNameDoneExt" : "done",
+      "fileNameLockExt" : "$"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "database.153.error", "database.147.error" ]
+}, {
+  "id" : "101",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true
+      }
+    }
+  },
+  "Output" : [ "file.50.input" ],
+  "Input" : [ "process.91.result" ]
+}, {
+  "id" : "45",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp\\BmiPaidBill",
+      "fileNameMask" : "BmiPaidBill.txt",
+      "fileNameDoneExt" : ".done",
+      "fileNameLockExt" : ".$"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "switch.65.output", "switch.98.output" ]
+}, {
+  "id" : "116",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\n\r\npublic class Probe extends MasterVerticle {\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        System.out.println(\"prob-> \" + msg.body().toString());\r\n        try {\r\n            super.process(msg);\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "Probe",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "database.153.result" ]
+}, {
+  "id" : "50",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "D:\\temp\\BmiPaidBill",
+      "fileNameMask" : "SadadPinCharg.txt",
+      "fileNameDoneExt" : ".done",
+      "fileNameLockExt" : ".$"
+    }
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "switch.68.output", "switch.101.output" ]
+}, {
+  "id" : "126",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\n\r\npublic class ProbeError extends MasterVerticle {\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        System.out.println(\"Error-> \" + msg.body().toString());\r\n        try {\r\n            super.process(msg);\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "ProbeError",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Input" : [ "database.153.error", "database.147.error" ]
+} ]

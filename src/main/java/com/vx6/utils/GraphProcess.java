@@ -26,7 +26,7 @@ public class GraphProcess {
     JsonArray ja = new JsonArray();
     graphModel.getCells().forEach((k, c) -> {
       mxCell cell = (mxCell) c;
-      if (cell.isVertex() && StringUtils.isNotEmpty(cell.getType())) {
+      if (cell.isVertex() && StringUtils.isNotEmpty(cell.getType()) && !cell.getType().equalsIgnoreCase("info")) {
         JsonObject jo = new JsonObject();
         jo.put("id", cell.getId());
         jo.put("type", cell.getType());
