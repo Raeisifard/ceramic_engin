@@ -58,7 +58,7 @@ public class GraphProcess {
             String type = StringUtils.isNotEmpty(sourceCell.getType()) ? sourceCell.getType() : ((mxCell) sourceCell.getParent()).getType();
             String id = StringUtils.isNotEmpty(sourceCell.getType()) ? sourceCell.getId() : ((mxCell) sourceCell.getParent()).getId();
             String value = sourceCell.getValue().toString();
-            edges.add(String.join(".", type, id, value).toLowerCase());
+            edges.add(String.join(".", type, id, value).replaceAll(" ", "_").toLowerCase());
           }
         }
         jo.put(cell.getValue().toString(), edges);
@@ -69,7 +69,18 @@ public class GraphProcess {
             String type = StringUtils.isNotEmpty(targetCell.getType()) ? targetCell.getType() : ((mxCell) targetCell.getParent()).getType();
             String id = StringUtils.isNotEmpty(targetCell.getType()) ? targetCell.getId() : ((mxCell) targetCell.getParent()).getId();
             String value = targetCell.getValue().toString();
-            edges.add(String.join(".", type, id, value).toLowerCase());
+            edges.add(String.join(".", type, id, value).replaceAll(" ", "_").toLowerCase());
+          }
+        }
+        jo.put(cell.getValue().toString(), edges);
+      }else if (cell.getDirection().equalsIgnoreCase("inout")) {
+        for (int i = 0; i < cell.getEdgeCount(); i++) {
+          mxCell targetCell = (mxCell) ((mxCell) cell.getEdgeAt(i)).getTarget();
+          if (!Objects.equals(targetCell.getId(), cell.getId())) {
+            String type = StringUtils.isNotEmpty(targetCell.getType()) ? targetCell.getType() : ((mxCell) targetCell.getParent()).getType();
+            String id = StringUtils.isNotEmpty(targetCell.getType()) ? targetCell.getId() : ((mxCell) targetCell.getParent()).getId();
+            String value = targetCell.getValue().toString();
+            edges.add(String.join(".", type, id, value).replaceAll(" ", "_").toLowerCase());
           }
         }
         jo.put(cell.getValue().toString(), edges);

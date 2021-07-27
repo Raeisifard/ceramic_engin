@@ -1,5 +1,6 @@
 package com.ceramic.api;
 
+import com.ceramic.shared.ShareableHealthCheckHandler;
 import com.ceramic.shared.ShareableRouter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -7,7 +8,9 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.HealthChecks;
+import io.vertx.ext.healthchecks.Status;
 import io.vertx.ext.web.Router;
 
 public class BarVerticle extends AbstractVerticle {
@@ -17,12 +20,25 @@ public class BarVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
     log.info("Starting verticle {" + this + "}");
-    HealthChecks healthChecks = HealthChecks.create(vertx);
+    //HealthChecks healthChecks = HealthChecks.create(vertx);
+    HealthCheckHandler healthCheckHandler = ShareableHealthCheckHandler.create(vertx);
+    healthCheckHandler.register(
+            "status/bar-verticle",
+            promise -> {
+              promise.complete(Status.OK());
+              /*vertx.eventBus().request("bar.verticle.health", "ping")
+                      .onSuccess(msg -> {
+                        promise.complete(Status.OK());
+                      })
+                      .onFailure(err -> {
+                        promise.complete(Status.KO());
+                      });*/
+            });
     HttpServer server = vertx.createHttpServer();
-    vertx.eventBus().consumer("bar.verticle.health",
+    /*vertx.eventBus().consumer("bar.verticle.health",
       message -> healthChecks.checkStatus()
         .onSuccess(res -> message.reply("OK"))
-        .onFailure(err -> message.fail(0, err.getMessage())));
+        .onFailure(err -> message.fail(0, err.getMessage())));*/
     final Router router = Router.router(vertx);
     router.route("/bar").handler(rc -> {
       rc.response().putHeader("ContentType", "text/html")

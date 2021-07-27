@@ -105,8 +105,10 @@ public class IbmMqReadVerticle extends AbstractVerticle {
                 tMessage.fail(2033, "empty queue");
             } else {
                 tMessage.fail(8, "mq exception");
+                e.printStackTrace();
             }
-            e.printStackTrace();
+        } catch (Exception e){
+            tMessage.fail(0, "general exception");
         }
     }
 

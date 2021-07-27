@@ -1,5 +1,6 @@
 package com.ceramic.api;
 
+import com.ceramic.shared.ShareableHealthCheckHandler;
 import com.ceramic.shared.ShareableRouter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -18,7 +19,8 @@ public class HealthCheckVerticle extends AbstractVerticle {
   public void start(Promise<Void> startPromise){
     log.info("Starting verticle {" + this + "}");
     HttpServer server = vertx.createHttpServer();
-    HealthCheckHandler healthCheckHandler = HealthCheckHandler.create(vertx);
+    HealthCheckHandler healthCheckHandler = ShareableHealthCheckHandler.create(vertx);
+    //HealthCheckHandler healthCheckHandler = HealthCheckHandler.create(vertx);
     healthCheckHandler.register(
       "status/eventbus-bridge-verticle",
       promise -> {
@@ -30,7 +32,7 @@ public class HealthCheckVerticle extends AbstractVerticle {
             promise.complete(Status.KO());
           });
       });
-    healthCheckHandler.register(
+    /*healthCheckHandler.register(
       "status/bar-verticle",
       promise -> {
         vertx.eventBus().request("bar.verticle.health", "ping")
@@ -40,7 +42,7 @@ public class HealthCheckVerticle extends AbstractVerticle {
           .onFailure(err -> {
             promise.complete(Status.KO());
           });
-      });
+      });*/
     healthCheckHandler.register(
       "status/foo-verticle",
       promise -> {

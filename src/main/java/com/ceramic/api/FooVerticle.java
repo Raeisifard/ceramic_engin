@@ -1,6 +1,7 @@
 package com.ceramic.api;
 
 import com.ceramic.shared.ShareableRouter;
+import com.stevesoft.pat.FileRegex;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
@@ -15,6 +16,7 @@ public class FooVerticle extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
+    new FileRegex("mq*.xml");
     log.info("Starting verticle {" + this + "}");
     HealthChecks healthChecks = HealthChecks.create(vertx);
     HttpServer server = vertx.createHttpServer();

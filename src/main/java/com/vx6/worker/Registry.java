@@ -127,6 +127,9 @@ public class Registry extends AbstractVerticle {
             case "graph_detail":
                 tMessage.reply(getGraphDetail(tMessage));
                 break;
+            case "graphs_detail":
+                tMessage.reply(getGraphDetail(tMessage));
+                break;
             case "get_graph":
                 getGraph(tMessage);
                 break;
@@ -240,6 +243,10 @@ public class Registry extends AbstractVerticle {
     }
 
     private <T> JsonObject getGraphDetail(Message<T> tMessage) {
+        return query(tMessage.body().toString());
+    }
+
+    private <T> JsonObject getGraphsDetail(Message<T> tMessage) {
         JsonArray ja = new JsonArray();
         JsonObject jo = new JsonObject();
         root.getGraphProfiles().forEach((id, gp) -> {

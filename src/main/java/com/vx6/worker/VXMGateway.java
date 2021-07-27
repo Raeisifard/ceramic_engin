@@ -165,6 +165,17 @@ public class VXMGateway extends AbstractVerticle {
             case "set_graph_name":
                 setGraph_name(msg);
                 break;
+            case "query":
+                eb.request("registry", graph_id, new DeliveryOptions().addHeader("cmd", "query"), reg -> {
+                    if (reg.succeeded())
+                        msg.reply(reg.result().body());
+                    else
+                        msg.fail(-1, reg.result().body().toString());
+                });
+                break;
+            case "graphs_detail":
+                getGraphsDetail(msg);
+                break;
             case "graph_detail":
                 getGraphDetail(msg);
                 break;
@@ -210,6 +221,16 @@ public class VXMGateway extends AbstractVerticle {
                 });
     }
 
+    private void getGraphsDetail(Message msg) {
+        this.eb.request("registry",
+                msg.body(), new DeliveryOptions().setHeaders(msg.headers()), reg -> {
+                    if (reg.succeeded())
+                        msg.reply(reg.result().body());
+                    else
+                        msg.fail(-1, reg.result().body().toString());
+                });
+    }
+
     private void getGraphDetail(Message msg) {
         this.eb.request("registry",
                 msg.body(), new DeliveryOptions().setHeaders(msg.headers()), reg -> {
@@ -222,7 +243,9 @@ public class VXMGateway extends AbstractVerticle {
 
     private void deployVerticle(Message msg, GraphProfile graphProfile, boolean newGraphXml) {
         DeploymentOptions opt = new DeploymentOptions();
-        opt.setWorker(false).setConfig(graphProfile);
+        JsonObject jo = new JsonObject();
+        jo.put("graphProfile", graphProfile).put("config", config());
+        opt.setWorker(false).setConfig(jo);
         vertx.deployVerticle(new DeployGraph(), opt, res -> {
             if (res.succeeded()) {
                 graphProfile.setDeploy_id(res.result());

@@ -79,7 +79,7 @@ public class FreeboardApiVerticle extends AbstractVerticle {
       // start server
       this.server = vertx.createHttpServer().requestHandler(main).listen(this.http_port, http -> {
         if (http.succeeded()) {
-          vertx.setPeriodic(5000, this::fetchISSPosition);
+          //vertx.setPeriodic(5000, this::fetchISSPosition);
           startPromise.complete();
           System.out.println("HTTP server started on port " + this.http_port);
         } else {

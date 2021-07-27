@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Built-By: B_Raeisifard
+Build-Jdk: 11.0.8
+Main-Class: com.core.Launcher
+Main-Verticle: com.core.MainVerticle
+Class-Path: lib
+

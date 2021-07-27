@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AddressBook {
-    private String graph_id = null, type = null, id = null;
+    private String graph_name = null, graph_id = null, type = null, id = null, class_name = null;
     private String triggerPortName = "Trigger", inputPortName = "Input", errorPortName = "Error", resultPortName = "Result";
     private String error = null, result = null; //Address for pub.
     private String trigger = null; //Address for pub/sub.
@@ -17,7 +17,7 @@ public class AddressBook {
     private final List<String> triggerIns = new ArrayList<>(), inputIns = new ArrayList<>(); //Address for sub.
     private final List<String> pushBackPorts = new ArrayList<>(); //Address for pub.
     private JsonObject port;
-
+    protected long triggerInboundCount = 0, inputInboundCount = 0, errorOutboundCount = 0, resultOutboundCount = 0;
     public AddressBook(String graph_id) {
         this.graph_id = graph_id;
     }
@@ -31,8 +31,11 @@ public class AddressBook {
             setErrorPortName(this.port.getString("errorPortName", getErrorPortName()));
             setResultPortName(this.port.getString("resultPortName", getResultPortName()));
         }
+        this.graph_name = config.getString("graph_name");
         this.type = config.getString("type");
         this.id = config.getString("id");
+        if (this.type != null && this.type.equals("process"))
+            this.class_name = config.getJsonObject("data").getString("fName");
         error = String.join(".", graph_id, type, id, errorPortName).toLowerCase();
         result = String.join(".", graph_id, type, id, resultPortName).toLowerCase();
         trigger = String.join(".", graph_id, type, id, triggerPortName).toLowerCase();
@@ -52,7 +55,10 @@ public class AddressBook {
     }
 
     public final DeliveryOptions getDeliveryOptions() {
-        return new DeliveryOptions().addHeader("type", type).addHeader("id", id).addHeader("graph_id", graph_id);
+        if (class_name != null)
+            return new DeliveryOptions().addHeader("graph_name", graph_name).addHeader("graph_id", graph_id).addHeader("type", type).addHeader("id", id).addHeader("class", class_name);
+        else
+            return new DeliveryOptions().addHeader("graph_name", graph_name).addHeader("graph_id", graph_id).addHeader("type", type).addHeader("id", id);
     }
 
     public final DeliveryOptions getDeliveryOptions(Message tMessage) {
@@ -158,7 +164,39 @@ public class AddressBook {
         return pushBackPorts;
     }
 
-    public String getOut(String outName){
+    public String getOut(String outName) {
         return String.join(".", graph_id, type, id, outName).toLowerCase();
+    }
+
+    public long getTriggerInboundCount() {
+        return triggerInboundCount;
+    }
+
+    public void setTriggerInboundCount(long triggerInboundCount) {
+        this.triggerInboundCount = triggerInboundCount;
+    }
+
+    public long getInputInboundCount() {
+        return inputInboundCount;
+    }
+
+    public void setInputInboundCount(long inputInboundCount) {
+        this.inputInboundCount = inputInboundCount;
+    }
+
+    public long getErrorOutboundCount() {
+        return errorOutboundCount;
+    }
+
+    public void setErrorOutboundCount(long errorOutboundCount) {
+        this.errorOutboundCount = errorOutboundCount;
+    }
+
+    public long getResultOutboundCount() {
+        return resultOutboundCount;
+    }
+
+    public void setResultOutboundCount(long resultOutboundCount) {
+        this.resultOutboundCount = resultOutboundCount;
     }
 }

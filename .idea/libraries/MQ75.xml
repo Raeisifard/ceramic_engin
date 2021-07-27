@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="MQ75">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/lib/MQ75" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/lib/MQ75" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/lib/MQ75" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/MQ75" recursive="false" type="SOURCES" />
+  </library>
+</component>

@@ -36,11 +36,16 @@ public class DeployGraph extends AbstractVerticle {
 
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
-    this.eb = vertx.eventBus();
+   this.eb = vertx.eventBus();
     futures.clear();
-    graph_name = config().getString("graph_name");
-    graph_id = config().getString("graph_id").toLowerCase();
-    graph_xml = config().getString("graph_xml");
+    JsonObject graphProfile = config().getJsonObject("graphProfile");
+    JsonObject config = config().getJsonObject("config");
+    this.fixedTempPath = config.getBoolean("fixedTempPath");
+    this.clearTempPath = config.getBoolean("clearTempPath");
+    this.useTimestampInTempPath = config.getBoolean("useTimestampInTempPath");
+    graph_name = graphProfile.getString("graph_name");
+    graph_id = graphProfile.getString("graph_id").toLowerCase();
+    graph_xml = graphProfile.getString("graph_xml");
     this.addressBook = new AddressBook(config());
     Document document = mxXmlUtils.parseXml(graph_xml);
     assert document != null;

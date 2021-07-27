@@ -139,10 +139,23 @@
       }
     },
     {
+      "name": "CronScheduler",
+      "description": "Cron Scheduler for Eclipse Vert.x",
+      "main": "com.ceramic.service.CronEventSchedulerVertical",
+      "deploy": true,
+      "options": {
+        "config": {
+          "address_base": "cron.scheduler"
+        },
+        "instances": 1,
+        "worker": true
+      }
+    },
+    {
       "name": "BarVerticle",
       "description": "Other sub_router define",
       "main": "com.ceramic.api.BarVerticle",
-      "deploy": true,
+      "deploy": false,
       "options": {
         "config": {
           "http-port": "default"
@@ -155,7 +168,7 @@
       "name": "FooVerticle",
       "description": "Other sub_router define",
       "main": "com.ceramic.api.FooVerticle",
-      "deploy": true,
+      "deploy": false,
       "options": {
         "config": {
           "http-port": "default"
