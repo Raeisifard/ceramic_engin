@@ -15,7 +15,7 @@ public class AddressBook {
     private String trigger = null; //Address for pub/sub.
     private static String client = null, master = null; //Address for pub/sub.
     private final List<String> triggerIns = new ArrayList<>(), inputIns = new ArrayList<>(); //Address for sub.
-    private final List<String> pushBackPorts = new ArrayList<>(); //Address for pub.
+    private final List<String> pushBackAddresses = new ArrayList<>(); //Address for pub.
     private JsonObject port;
     protected long triggerInboundCount = 0, inputInboundCount = 0, errorOutboundCount = 0, resultOutboundCount = 0;
     public AddressBook(String graph_id) {
@@ -51,7 +51,7 @@ public class AddressBook {
                 inputIns.add(String.join(".", graph_id, adrs.toString()).toLowerCase());
             });
         }
-        inputIns.forEach(port -> this.pushBackPorts.add(String.join(".", port.substring(0, port.lastIndexOf(".")), "trigger").toLowerCase()));
+        inputIns.forEach(port -> this.pushBackAddresses.add(String.join(".", port.substring(0, port.lastIndexOf(".")), "trigger").toLowerCase()));
     }
 
     public final DeliveryOptions getDeliveryOptions() {
@@ -160,8 +160,8 @@ public class AddressBook {
         return inputIns;
     }
 
-    public List<String> getPushBackPorts() {
-        return pushBackPorts;
+    public List<String> getpushBackAddresses() {
+        return pushBackAddresses;
     }
 
     public String getOut(String outName) {

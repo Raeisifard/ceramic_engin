@@ -13,9 +13,6 @@ import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.Status;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 enum Cmd {
     SET,
     UPDATE,
@@ -39,7 +36,9 @@ public class MasterVerticle extends AbstractVerticle {
     public int bufferSize = 0;
     //public Queue<Message> q = new LinkedList<>();//Input queue
     public int lt, ht;//low threshold & high threshold
-    public boolean holdOn = true, pushedBack = false, autoNext = true, ready = false;
+    public boolean holdOn = true, /*pushedBack = false,*/
+            autoNext = true, ready = false;
+    private int pushedBack = 0;
     public AddressBook addressBook;
     public Buffer buffer = null;
     protected long triggerInboundCount = 0, inputInboundCount = 0, errorOutboundCount = 0, resultOutboundCount = 0;
@@ -121,6 +120,7 @@ public class MasterVerticle extends AbstractVerticle {
 
     public void initConsumers() {
         this.eb.consumer(addressBook.getGraph_id(), this::trigger);
+        this.eb.consumer(String.join(".", addressBook.getGraph_id(), addressBook.getType(), addressBook.getId()).toLowerCase(), this::control);
         this.eb.consumer(addressBook.getTrigger(), this::trigger);
         //addressBook.getTriggerIns().forEach(adrs -> eb.consumer(adrs, this::trigger));
         addressBook.getTriggerIns().forEach(adrs -> eb.consumer(adrs, message -> {
@@ -132,6 +132,30 @@ public class MasterVerticle extends AbstractVerticle {
             this.inputInboundCount++;
             this.input(message);
         }));
+    }
+
+    private <T> void control(Message<T> tMessage) {
+        String cmd = tMessage.body().toString().toLowerCase();
+        if (inputConnected && buffer == null)
+            relayPushback(cmd);//I'm transparent just relay control message
+        switch (cmd) {
+            case "pause":
+                pushedBack++;
+                this.holdOn = true;
+                break;
+            case "resume":
+                if (pushedBack > 0)
+                    pushedBack--;
+                if (pushedBack < 1)
+                    this.holdOn = false;
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void relayPushback(String cmd) {
+            addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, cmd));
     }
 
     public <T> void input(Message<T> tMessage) {
@@ -184,10 +208,10 @@ public class MasterVerticle extends AbstractVerticle {
                         resume(tMessage);
                         break;
                     case BUFFER_FILLED:
-                        addressBook.getPushBackPorts().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
+                        addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
                         break;
                     case BUFFER_DRAINED:
-                        addressBook.getPushBackPorts().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
+                        addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
                         break;
                     case FLUSH:
                         flush(tMessage);
@@ -272,17 +296,19 @@ public class MasterVerticle extends AbstractVerticle {
 
     public <T> void pause(Message<T> tMessage) {
         holdOn = true;
+        pushedBack++;
         if (inputConnected && buffer == null) {
-            addressBook.getPushBackPorts().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
-            pushedBack = true;
+            addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
         }
     }
 
     public <T> void resume(Message<T> tMessage) {
-        holdOn = false;
-        if (inputConnected && buffer == null) {
-            addressBook.getPushBackPorts().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
-            pushedBack = false;
+        if (pushedBack > 0)
+            pushedBack--;
+        if (pushedBack < 1)
+            holdOn = false;
+        if (inputConnected && buffer == null) {//If I'm transparent
+            addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
         } else if (autoNext)
             eb.publish(addressBook.getTrigger(), "Next message", new DeliveryOptions().addHeader("cmd", "next"));
     }

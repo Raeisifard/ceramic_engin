@@ -13,13 +13,14 @@ import io.vertx.ext.healthchecks.Status;
 public class DbVerticle extends MasterVerticle {
     long count = 0;
     private LocalMap<String, Long> healthMap;
+    private Integer instance = 1;
 
     @Override
     public void initialize(Promise<Void> initPromise) throws Exception {
         JsonObject data = config().getJsonObject("data");
         String dbType = data.getString("dbType", "SqlServer");
         JsonObject config = data.getJsonObject("config");
-        Integer instance = config.getInteger("instance", 1);
+        instance = config.getInteger("instance", 1);
         config().put("dbverticleid", deploymentID());
         DeploymentOptions options = new DeploymentOptions().setWorker(false);
         options.setConfig(config());
@@ -37,7 +38,8 @@ public class DbVerticle extends MasterVerticle {
     public <T> void trigger(Message<T> tMessage) {
         if (tMessage.body().toString().equalsIgnoreCase("ready"))
             return;
-        eb.send(deploymentID() + ".trigger", tMessage.body(), addressBook.getDeliveryOptions(tMessage));
+        if (this.instance == 1)
+            eb.send(deploymentID() + ".trigger", tMessage.body(), addressBook.getDeliveryOptions(tMessage));
     }
 
     @Override
@@ -85,7 +87,7 @@ public class DbVerticle extends MasterVerticle {
     @Override
     public void healthCheck() {
         SharedData sharedData = vertx.sharedData();
-        healthMap = sharedData.getLocalMap(String.join(".",config().getString("graph_id"),config().getString("type"),config().getString("id")));
+        healthMap = sharedData.getLocalMap(String.join(".", config().getString("graph_id"), config().getString("type"), config().getString("id")));
         healthMap.put("errorOutboundCount", 0L);
         healthMap.put("resultOutboundCount", 0L);
         this.ports
