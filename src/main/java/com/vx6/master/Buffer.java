@@ -15,7 +15,7 @@ public class Buffer {
 
     public Buffer(EventBus eb, String address, int size) throws Exception {
         if (size < 3) {
-            throw new Exception("Buffer size must be greater than " + size);
+            throw new Exception("Buffer size must be greater than " + size + " (min = 3)");
         }
         this.eb = eb;
         this.address = address;

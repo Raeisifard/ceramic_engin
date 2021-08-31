@@ -37,7 +37,7 @@ public class MasterVerticle extends AbstractVerticle {
     public JsonObject setting = new JsonObject();
     public boolean inputConnected = false, outputConnected = false, errorConnected = false, triggerConnected = false;
     public int bufferSize = 0;
-    public Queue<Message> q = new LinkedList<>();//Input queue
+    //public Queue<Message> q = new LinkedList<>();//Input queue
     public int lt, ht;//low threshold & high threshold
     public boolean holdOn = true, pushedBack = false, autoNext = true, ready = false;
     public AddressBook addressBook;
@@ -96,21 +96,27 @@ public class MasterVerticle extends AbstractVerticle {
                 this.ports.put("out" + i, 0);
             }
         }
-        this.health
-                .put("type", addressBook.getType())
-                .put("ports", this.ports);
+        this.health.put("type", addressBook.getType());
+        if (addressBook.getType().equalsIgnoreCase("process")) {
+            this.health.put("class", this.getClass().getName());
+        }
+        this.health.put("ports", this.ports);
         this.healthCheckHandler = ShareableHealthCheckHandler.create(vertx);
         this.healthCheckHandler.register(
                 "status/" + config().getString("graph_id") + "/" + config().getString("id"),
                 1000,
                 promise -> {
-                    promise.complete(Status.OK(this.health
-                            .put("ports", this.ports
-                                    .put("trigger", this.triggerInboundCount)
-                                    .put("input", this.inputInboundCount)
-                                    .put("error", this.errorOutboundCount)
-                                    .put("result", this.resultOutboundCount))));
+                    promise.complete(Status.OK(getHealth()));
                 });
+    }
+
+    protected JsonObject getHealth() {
+        return this.health
+                .put("ports", this.ports
+                        .put("trigger", this.triggerInboundCount)
+                        .put("input", this.inputInboundCount)
+                        .put("error", this.errorOutboundCount)
+                        .put("result", this.resultOutboundCount));
     }
 
     public void initConsumers() {
@@ -266,20 +272,23 @@ public class MasterVerticle extends AbstractVerticle {
 
     public <T> void pause(Message<T> tMessage) {
         holdOn = true;
-        if (inputConnected && buffer == null)
+        if (inputConnected && buffer == null) {
             addressBook.getPushBackPorts().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
+            pushedBack = true;
+        }
     }
 
     public <T> void resume(Message<T> tMessage) {
         holdOn = false;
-        if (inputConnected && buffer == null)
+        if (inputConnected && buffer == null) {
             addressBook.getPushBackPorts().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
-        else if (autoNext)
+            pushedBack = false;
+        } else if (autoNext)
             eb.publish(addressBook.getTrigger(), "Next message", new DeliveryOptions().addHeader("cmd", "next"));
     }
 
     public <T> void next(Message<T> tMessage) {
-        if (inputConnected && buffer != null) {
+        if (inputConnected && buffer != null && !holdOn) {
             Message msg = buffer.getMessage();
             if (msg != null) {
                 process(tMessage);

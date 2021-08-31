@@ -16,6 +16,8 @@ import java.sql.*;
 import java.sql.DriverManager;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class SqlServer extends AbstractVerticle {
     private EventBus eb;
@@ -31,7 +33,7 @@ public class SqlServer extends AbstractVerticle {
     private String password;
     private String url;
     private AddressBook addressBook;
-    private String ibmmqverticleid;
+    private String dbverticleid;
     private String queryName = "query", paramsName = "params", cmdName = "cmd", resultName = "result";
     private String query, cmd;
     private JsonArray params;
@@ -44,7 +46,7 @@ public class SqlServer extends AbstractVerticle {
         SharedData sharedData = vertx.sharedData();
         this.eb = vertx.eventBus();
         setting = config().getJsonObject("data").getJsonObject("setting");
-        this.ibmmqverticleid = config().getString("ibmmqverticleid");
+        this.dbverticleid = config().getString("dbverticleid");
         addressBook = new AddressBook(config());
         if (config().containsKey("Result")) {
             outputConnected = !config().getJsonArray("Result").isEmpty();
@@ -78,8 +80,8 @@ public class SqlServer extends AbstractVerticle {
         Exception e = getSqlConnection();
         healthMap = sharedData.getLocalMap(String.join(".", config().getString("graph_id"), config().getString("type"), config().getString("id")));
         if (e == null) {
-            this.eb.consumer(this.ibmmqverticleid + ".trigger", this::trigger);
-            this.eb.consumer(this.ibmmqverticleid + ".input", this::input);
+            this.eb.consumer(this.dbverticleid + ".trigger", this::trigger);
+            this.eb.consumer(this.dbverticleid + ".input", this::input);
             startPromise.complete();
         } else {
             startPromise.fail(e);
@@ -121,9 +123,17 @@ public class SqlServer extends AbstractVerticle {
                         promise.fail(e);
                     }
                 }, res -> {
-                    if (res.succeeded())
+                    if (res.succeeded()) {
                         this.rs = (ResultSet) res.result();
-                    next();
+                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                        LocalDateTime now = LocalDateTime.now();
+                        eb.publish(addressBook.getError(), "Result set received on " + dtf.format(now) , addressBook.getDeliveryOptions().addHeader("type", "info"));
+                        addErrorOutboundCount();
+                        next();
+                    }else{
+                        eb.publish(addressBook.getError(), res.cause().getStackTrace(), addressBook.getDeliveryOptions().addHeader("type", "error"));
+                        addErrorOutboundCount();
+                    }
                 });
                 break;
             case "executeupdate":
@@ -206,11 +216,13 @@ public class SqlServer extends AbstractVerticle {
                 this.eb.publish(addressBook.getResult(), jo, addressBook.getDeliveryOptions().addHeader("rowCount", ++rowCount + ""));
                 addResultOutboundCount();
                 if (autoNext)
-                    /*this.eb.publish(this.ibmmqverticleid + ".trigger", new JsonObject().put("cmd", "next"));*/
+                    /*this.eb.publish(this.dbverticleid + ".trigger", new JsonObject().put("cmd", "next"));*/
                     this.eb.send(addressBook.getTrigger(), new JsonObject().put("cmd", "next"));
             } else {
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                LocalDateTime now = LocalDateTime.now();
                 this.eb.publish(addressBook.getError(), new JsonObject().put("msg", "result-set-end")
-                        .put("rowCount", rowCount), addressBook.getDeliveryOptions().addHeader("msg", "end"));
+                        .put("rowCount", rowCount).put("time", dtf.format(now)), addressBook.getDeliveryOptions().addHeader("msg", "end"));
                 addErrorOutboundCount();
                 this.rs.close();
                 this.st.close();

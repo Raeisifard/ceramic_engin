@@ -20,7 +20,7 @@ public class DbVerticle extends MasterVerticle {
         String dbType = data.getString("dbType", "SqlServer");
         JsonObject config = data.getJsonObject("config");
         Integer instance = config.getInteger("instance", 1);
-        config().put("ibmmqverticleid", deploymentID());
+        config().put("dbverticleid", deploymentID());
         DeploymentOptions options = new DeploymentOptions().setWorker(false);
         options.setConfig(config());
         vertx.deployVerticle("com.vx6.widget.db." + (inputConnected ? "write" : "read") + "." + dbType, options, result -> {
