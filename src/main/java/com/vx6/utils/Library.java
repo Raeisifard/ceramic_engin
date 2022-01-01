@@ -192,12 +192,13 @@ public final class Library {
             str = inStr + "+";
         return str;
     }
+
     public static String unRevSign(String inStr) {
         String str = "";
         if (inStr.endsWith("+") || inStr.endsWith("-"))
-            str = inStr.substring(inStr.length()-1, inStr.length())+inStr.substring(0, inStr.length()-1) ;
+            str = inStr.substring(inStr.length() - 1, inStr.length()) + inStr.substring(0, inStr.length() - 1);
         else
-            str = "+" +inStr;
+            str = "+" + inStr;
         return str;
     }
 
@@ -349,14 +350,16 @@ public final class Library {
 
     public static String correctPhoneNos(String inStr) {
         ArrayList<String> phones = new ArrayList<String>();
-        phones.addAll(Arrays.asList(inStr.replace(",", ";").split(";")));
-        for (int idx = phones.size() - 1; idx >= 0; idx--) {
-            String phone = phones.get(idx);
-            phone = correctPhoneNo(phone);
-            if (phone.isEmpty())
-                phones.remove(idx);
-            else
-                phones.set(idx, phone);
+        if (inStr != null) {
+            phones.addAll(Arrays.asList(inStr.replace(",", ";").split(";")));
+            for (int idx = phones.size() - 1; idx >= 0; idx--) {
+                String phone = phones.get(idx);
+                phone = correctPhoneNo(phone);
+                if (phone.isEmpty())
+                    phones.remove(idx);
+                else
+                    phones.set(idx, phone);
+            }
         }
         return Library.myJoin(phones, ";");
     }
@@ -587,8 +590,9 @@ public final class Library {
         }
         return inputConnection;
     }
-  public static Boolean isDir(Path path) {
-    if (path == null || !Files.exists(path)) return false;
-    else return Files.isDirectory(path);
-  }
+
+    public static Boolean isDir(Path path) {
+        if (path == null || !Files.exists(path)) return false;
+        else return Files.isDirectory(path);
+    }
 }

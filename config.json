@@ -176,6 +176,38 @@
         "instances": 1,
         "worker": false
       }
+    },
+    {
+      "name": "ChunkVerticle",
+      "description": "Accomplish multi-chunk message",
+      "main": "com.ceramic.api.ChunkVerticle",
+      "deploy": true,
+      "options": {
+        "config": {
+          "multiChunksMessage": {
+            "chunkLength": 16384,
+            "compression": true
+          }
+        },
+        "instances": 1,
+        "worker": true
+      }
+    },
+    {
+      "name": "TargetVerticle",
+      "description": "Target for multi-chunk message",
+      "main": "com.ceramic.api.TargetVerticle",
+      "deploy": true,
+      "options": {
+        "config": {
+          "multiChunksMessage": {
+            "chunkLength": 16384,
+            "compression": true
+          }
+        },
+        "instances": 1,
+        "worker": true
+      }
     }
   ]
 }

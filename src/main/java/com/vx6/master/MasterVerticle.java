@@ -31,6 +31,7 @@ enum Cmd {
 
 public class MasterVerticle extends AbstractVerticle {
     public EventBus eb;
+    public JsonObject config = new JsonObject();
     public JsonObject setting = new JsonObject();
     public boolean inputConnected = false, outputConnected = false, errorConnected = false, triggerConnected = false;
     public int bufferSize = 0;
@@ -59,6 +60,7 @@ public class MasterVerticle extends AbstractVerticle {
     @Override
     public void start() throws Exception {
         this.eb = vertx.eventBus();
+        config = config().getJsonObject("data").getJsonObject("config");
         setting = config().getJsonObject("data").getJsonObject("setting");
         addressBook = new AddressBook(config());
         if (config().containsKey("Result")) {
@@ -74,9 +76,15 @@ public class MasterVerticle extends AbstractVerticle {
             triggerConnected = !config().getJsonArray("Trigger").isEmpty();
         }
         if (inputConnected) {
-            bufferSize = config().getJsonObject("data").getJsonObject("config").getInteger("BUFFER_SIZE", 0);
-            if (bufferSize > 0)
-                buffer = new Buffer(eb, addressBook.getTrigger(), bufferSize);
+            if (config.containsKey("BUFFER_SIZE") || setting.containsKey("BUFFER_SIZE")) {
+                if (config.getInteger("BUFFER_SIZE") >= 3)
+                    bufferSize = config.getInteger("BUFFER_SIZE", 0);
+                else if (setting.getInteger("BUFFER_SIZE", 0) >= 3) {
+                    bufferSize = setting.getInteger("BUFFER_SIZE", 0);
+                }
+            }
+            if (bufferSize >= 3)
+                buffer = new Buffer(eb, addressBook, bufferSize);
         }
         healthCheck();
         initConsumers();
@@ -99,6 +107,9 @@ public class MasterVerticle extends AbstractVerticle {
         if (addressBook.getType().equalsIgnoreCase("process")) {
             this.health.put("class", this.getClass().getName());
         }
+        if (buffer != null) {
+            this.health.put("buf", buffer.getSize() + "|" + buffer.getBuffSize() + "|" + (buffer.isPushedBack() ? "1" : "0"));
+        }
         this.health.put("ports", this.ports);
         this.healthCheckHandler = ShareableHealthCheckHandler.create(vertx);
         this.healthCheckHandler.register(
@@ -110,6 +121,10 @@ public class MasterVerticle extends AbstractVerticle {
     }
 
     protected JsonObject getHealth() {
+        if (buffer != null) {
+            this.health.put("buf", buffer.getSize() + "|" + buffer.getBuffSize() + "|" + (buffer.isPushedBack() ? "1" : "0"))
+            .put("holdOn", this.holdOn ? "1" : "0");
+        }
         return this.health
                 .put("ports", this.ports
                         .put("trigger", this.triggerInboundCount)
@@ -142,12 +157,19 @@ public class MasterVerticle extends AbstractVerticle {
             case "pause":
                 pushedBack++;
                 this.holdOn = true;
+                if (inputConnected && buffer == null) {//If I'm transparent
+                    addressBook.getPushBackAddresses().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
+                }
                 break;
             case "resume":
                 if (pushedBack > 0)
                     pushedBack--;
                 if (pushedBack < 1)
                     this.holdOn = false;
+                if (inputConnected && buffer == null) {//If I'm transparent
+                    addressBook.getPushBackAddresses().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
+                } else if (autoNext && !holdOn)
+                    eb.publish(addressBook.getTrigger(), "Next message", new DeliveryOptions().addHeader("cmd", "next"));
                 break;
             default:
                 break;
@@ -155,7 +177,7 @@ public class MasterVerticle extends AbstractVerticle {
     }
 
     private void relayPushback(String cmd) {
-            addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, cmd));
+        addressBook.getPushBackAddresses().forEach(adrs -> eb.publish(adrs, cmd));
     }
 
     public <T> void input(Message<T> tMessage) {
@@ -208,10 +230,10 @@ public class MasterVerticle extends AbstractVerticle {
                         resume(tMessage);
                         break;
                     case BUFFER_FILLED:
-                        addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
+                        //addressBook.getPushBackAddresses().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
                         break;
                     case BUFFER_DRAINED:
-                        addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
+                        //addressBook.getPushBackAddresses().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
                         break;
                     case FLUSH:
                         flush(tMessage);
@@ -288,6 +310,9 @@ public class MasterVerticle extends AbstractVerticle {
 
     public <T> void set(Message<T> tMessage) {
         setting = new JsonObject(tMessage.body().toString());
+        if (buffer != null && setting.containsKey("BUFFER_SIZE") && setting.getInteger("BUFFER_SIZE") >= 3) {
+            buffer.setSize(setting.getInteger("BUFFER_SIZE"));
+        }
     }
 
     public <T> void update(Message<T> tMessage) {
@@ -297,8 +322,8 @@ public class MasterVerticle extends AbstractVerticle {
     public <T> void pause(Message<T> tMessage) {
         holdOn = true;
         pushedBack++;
-        if (inputConnected && buffer == null) {
-            addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
+        if (inputConnected && buffer == null) {//If I'm transparent
+            addressBook.getPushBackAddresses().forEach(adrs -> eb.publish(adrs, "Pause", new DeliveryOptions().addHeader("cmd", "pause")));
         }
     }
 
@@ -308,7 +333,7 @@ public class MasterVerticle extends AbstractVerticle {
         if (pushedBack < 1)
             holdOn = false;
         if (inputConnected && buffer == null) {//If I'm transparent
-            addressBook.getpushBackAddresses().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
+            addressBook.getPushBackAddresses().forEach(adrs -> eb.publish(adrs, "Resume", new DeliveryOptions().addHeader("cmd", "resume")));
         } else if (autoNext)
             eb.publish(addressBook.getTrigger(), "Next message", new DeliveryOptions().addHeader("cmd", "next"));
     }
@@ -317,7 +342,7 @@ public class MasterVerticle extends AbstractVerticle {
         if (inputConnected && buffer != null && !holdOn) {
             Message msg = buffer.getMessage();
             if (msg != null) {
-                process(tMessage);
+                process(msg);
                 this.resultOutboundCount++;
                 if (autoNext) {
                     eb.publish(addressBook.getTrigger(), "Next message", new DeliveryOptions().addHeader("cmd", "next"));

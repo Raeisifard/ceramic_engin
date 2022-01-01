@@ -4,6 +4,7 @@ import com.vx6.master.AddressBook;
 import com.vx6.master.Buffer;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -35,11 +36,15 @@ public class SqlServer extends AbstractVerticle {
     private AddressBook addressBook;
     private String dbverticleid;
     private String queryName = "query", paramsName = "params", cmdName = "cmd", resultName = "result";
+    private String type = "string", format = "json", delimiter = "|", headerString = "";
+    private boolean header = true;
     private String query, cmd;
     private JsonArray params;
     private Boolean autoNext = false;
     private int rowCount = 0;
     private LocalMap<String, Long> healthMap;
+    private Integer rate = null;
+    private ResultSetMetaData metadata = null;
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
@@ -107,11 +112,19 @@ public class SqlServer extends AbstractVerticle {
         String query = body.getString(queryName, this.query);
         JsonArray params = body.getJsonArray(paramsName, this.params);
         this.autoNext = body.getBoolean("autoNext", this.autoNext);
+        this.rate = body.getInteger("rate");
         switch (cmd.toLowerCase().replaceAll("[^a-z]", "")) {
             case "executequery":
                 rowCount = 0;
-                if (getSqlConnection() != null)
+                if (getSqlConnection() != null) {
+                    eb.publish(addressBook.getError(), "Connection was not establish!", addressBook.getDeliveryOptions(tMessage).addHeader("error", "CONNECTION_ERROR"));
+                    addErrorOutboundCount();
                     break;
+                }
+                this.format = body.getString("format", "json");
+                this.type = body.getString("type", "string");
+                this.header = body.getBoolean("header", true);
+                this.delimiter = body.getString("delimiter", this.delimiter);
                 vertx.executeBlocking(promise -> {
                     try {
                         if (!(st == null || st.isClosed()))
@@ -127,10 +140,18 @@ public class SqlServer extends AbstractVerticle {
                         this.rs = (ResultSet) res.result();
                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                         LocalDateTime now = LocalDateTime.now();
-                        eb.publish(addressBook.getError(), "Result set received on " + dtf.format(now) , addressBook.getDeliveryOptions().addHeader("type", "info"));
+                        eb.publish(addressBook.getError(), "Result set received on " + dtf.format(now), addressBook.getDeliveryOptions().addHeader("type", "info"));
                         addErrorOutboundCount();
-                        next();
-                    }else{
+                        try {
+                            this.metadata = this.rs.getMetaData();
+                            if (this.format.equalsIgnoreCase("csv") && this.header) {
+                                this.headerString = getHeaderString(this.metadata, this.delimiter);
+                            }
+                            next();
+                        } catch (SQLException throwables) {
+                            throwables.printStackTrace();
+                        }
+                    } else {
                         eb.publish(addressBook.getError(), res.cause().getStackTrace(), addressBook.getDeliveryOptions().addHeader("type", "error"));
                         addErrorOutboundCount();
                     }
@@ -196,6 +217,15 @@ public class SqlServer extends AbstractVerticle {
         }
     }
 
+    private String getHeaderString(ResultSetMetaData metadata, String delimiter) throws SQLException {
+        StringBuilder header = new StringBuilder();
+        for (int i = 1; i <= metadata.getColumnCount(); i++) {
+            header.append(metadata.getColumnName(i)).append(delimiter);
+        }
+        header.deleteCharAt(header.lastIndexOf(delimiter));
+        return header.toString();
+    }
+
     @Override
     public void stop(Promise<Void> stopPromise) throws Exception {
         if (this.rs != null) {
@@ -212,12 +242,23 @@ public class SqlServer extends AbstractVerticle {
     private void next() {
         try {
             if (!this.rs.isClosed() && this.rs.next()) {
-                JsonObject jo = rs2jo(this.rs);
-                this.eb.publish(addressBook.getResult(), jo, addressBook.getDeliveryOptions().addHeader("rowCount", ++rowCount + ""));
+                if (format.equalsIgnoreCase("json")) {
+                    JsonObject jo = rs2jo(this.rs);
+                    this.eb.publish(addressBook.getResult(), jo, addressBook.getDeliveryOptions().addHeader("rowCount", ++rowCount + ""));
+                } else if (format.equalsIgnoreCase("csv")) {
+                    String str = rs2str(this.rs);
+                    DeliveryOptions dO = addressBook.getDeliveryOptions().addHeader("rowCount", ++rowCount + "");
+                    if (this.header)
+                        dO.addHeader("header", this.headerString);
+                    this.eb.publish(addressBook.getResult(), str, dO);
+                }
                 addResultOutboundCount();
-                if (autoNext)
-                    /*this.eb.publish(this.dbverticleid + ".trigger", new JsonObject().put("cmd", "next"));*/
-                    this.eb.send(addressBook.getTrigger(), new JsonObject().put("cmd", "next"));
+                if (autoNext && this.rate != null && this.rate == 0)
+                    return;
+                if (autoNext && this.rate != null && this.rate > 0)
+                    this.rate--;
+                /*this.eb.publish(this.dbverticleid + ".trigger", new JsonObject().put("cmd", "next"));*/
+                this.eb.send(addressBook.getTrigger(), new JsonObject().put("cmd", "next"));
             } else {
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                 LocalDateTime now = LocalDateTime.now();
@@ -232,20 +273,63 @@ public class SqlServer extends AbstractVerticle {
         }
     }
 
-    private JsonObject rs2jo(ResultSet rset) throws SQLException {
+    private String rs2str(ResultSet rs) throws SQLException {
+        StringBuilder body = new StringBuilder();
+        for (int i = 1; i <= this.metadata.getColumnCount(); i++) {
+            body.append(rs.getString(i)).append(this.delimiter);
+        }
+        body.deleteCharAt(body.lastIndexOf(delimiter));
+        return body.toString();
+    }
+
+    private JsonObject rs2jo(ResultSet rSet) throws SQLException {
         JsonObject jo = new JsonObject();
-        ResultSetMetaData metadata = rset.getMetaData();
-        int columnCount = metadata.getColumnCount();
-        for (int i = 1; i <= columnCount; i++) {
-            jo.put(metadata.getColumnName(i), rset.getString(i));
+        int columnCount = this.metadata.getColumnCount();
+        if (this.type.equalsIgnoreCase("string")) {
+            for (int i = 1; i <= columnCount; i++) {
+                jo.put(metadata.getColumnName(i), rSet.getString(i));
+            }
+        } else if (this.type.equalsIgnoreCase("generic")) {
+            for (int i = 1; i <= columnCount; i++) {
+                switch (metadata.getColumnTypeName(i)) {
+                    case "int":
+                        jo.put(metadata.getColumnName(i), rSet.getInt(i));
+                        break;
+                    case "bigint":
+                        jo.put(metadata.getColumnName(i), rSet.getLong(i));
+                        break;
+                    case "bit":
+                        jo.put(metadata.getColumnName(i), rSet.getBoolean(i));
+                        break;
+                    case "date":
+                        try {
+                            jo.put(metadata.getColumnName(i), rSet.getDate(i) != null ? rSet.getDate(i).toString() : null);
+                        } catch (Exception e) {
+                            System.out.println(metadata.getColumnName(i) + " : " + rSet.getString(i));
+                        }
+                        break;
+                    case "datetime":
+                        jo.put(metadata.getColumnName(i), rSet.getTimestamp(i) != null ? rSet.getTimestamp(i).toString() : null);
+                        break;
+                    case "varchar":
+                    default:
+                        jo.put(metadata.getColumnName(i), rSet.getString(i));
+                }
+            }
         }
         return jo;
     }
 
     private Exception getSqlConnection() {
         try {
-            if (!(this.dbConnection == null || this.dbConnection.isValid(3)))
-                this.dbConnection.close();
+            /*if (!(this.dbConnection == null || this.dbConnection.isValid(3)))
+                this.dbConnection.close();*/
+            if (this.dbConnection != null) {
+                if (this.dbConnection.isValid(3))
+                    return null;
+                if (!this.dbConnection.isClosed())
+                    this.dbConnection.close();
+            }
             this.dbConnection = DriverManager.getConnection(this.url, this.userName, this.password);
             return null;
         } catch (Exception e) {

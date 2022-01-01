@@ -1,0 +1,1179 @@
+[ {
+  "id" : "290",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.text.SimpleDateFormat;\r\nimport java.util.Date;\r\n\r\npublic class UpdateAccount3 extends MasterVerticle {\r\n    private static final SimpleDateFormat sdf = new SimpleDateFormat(\"yyyyMMdd hh:mm:ss a\");\r\n    private StringBuilder query = new StringBuilder();\r\n    private static final String updateQuery = \"update tblAccounts3\" +\r\n            \" set CustomerId = '%s', [Enable] = '%b', TransGroupsStr = '%s', Phones = '%s',\" +\r\n            \" RemainAmount = %d, RemainDays = %d, DueDate = '%s',\" +\r\n            \" LowLimitCredit = %d, LowLimitDebit = %d,\" +\r\n            \" NearExpireNotifyDate = '%s', ExpiredNotifyDate = '%s', [ExpireDate] = '%s',\" +\r\n            \" [AutoRenewRegister] = '%b', [AutoRenewRegCancelNotifyDate] = '%s', EditDT = '%s'\" +\r\n            \" where AccountNo = '%s'; \";\r\n    private static final String insertQuery = \"insert into tblAccounts3\" +\r\n            \" (AccountNo, [Enable], CustomerId, TransGroupsStr, Phones, RemainAmount, RemainDays, DueDate,\" +\r\n            \" LowLimitCredit, LowLimitDebit, NearExpireNotifyDate, ExpiredNotifyDate, [ExpireDate] ,\" +\r\n            \" AutoRenewRegister, AutoRenewRegCancelNotifyDate, EditDT)\" +\r\n            \" values ( '%s', '%b', '%s', '%s', '%s', %d, %d, '%s', %d, %d, '%s', '%s', '%s', '%b', '%s', '%s' ); \";\r\n    private static final String historyQuery = \"insert into dbo.TblAccounts3History\" +\r\n            \" (AccountNo, Enable, CustomerId, TransGroupsStr, Phones, RemainAmount, RemainDays, DueDate,\" +\r\n            \" LowLimitCredit, LowLimitDebit, ExpireDate, NearExpireNotifyDate, ExpiredNotifyDate, EditDT,\" +\r\n            \" AutoRenewRegister, AutoRenewRegCancelNotifyDate, Flag)\" +\r\n            \" values ('%s', '%b', '%s', '%s', '%s', %d, %d, '%s', %d, %d, '%s', '%s', '%s', '%s', '%b', '%s', %d); \";\r\n    private static final String registerQuery = \"insert into [dbo].[tblRegister3]\" +\r\n            \" ([CreateDT] ,[Command] ,[AccountNo] ,[CustomerId] ,[PhoneNo] ,[ExpireDate] ,[LowLimitCredit] ,\" +\r\n            \" [TransactionGroupNames] ,[CreditItemName] ,[ExtraPhoneNo] ,[LanguageCode] ,[CmdDate] ,[CmdTime] ,\" +\r\n            \" [Branch] ,[TerminalId] ,[user])\" +\r\n            \" VALUES ('%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s'); \";\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        resultOutboundCount--;\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject newAccountInfo = body.getJsonObject(\"newAccountInfo\");\r\n        String sqlCmd = null;\r\n        if (body.containsKey(\"tran\")) {\r\n            //Insert transaction in register table\r\n            JsonObject tran = body.getJsonObject(\"tran\");\r\n            sqlCmd = String.format(registerQuery,\r\n                    sdf.format(new Date()),\r\n                    tran.getString(\"COMMAND\"),\r\n                    tran.getString(\"ACCOUNTNO\"),\r\n                    tran.getString(\"CUSTOMERID\"),\r\n                    tran.getString(\"PHONENO\"),\r\n                    tran.getString(\"EXPIREDATE\"),\r\n                    tran.getString(\"LOWLIMITCREDIT\"),\r\n                    tran.getString(\"TRANSACTIONGROUPNAMES\"),\r\n                    tran.getString(\"CREDITITEMNAME\"),\r\n                    tran.getString(\"EXTRAPHONENO\"),\r\n                    tran.getString(\"LANGUAGECODE\"),\r\n                    tran.getString(\"CMDDATE\"),\r\n                    tran.getString(\"CMDTIME\"),\r\n                    tran.getString(\"BRANCH\"),\r\n                    tran.getString(\"TERMINALID\"),\r\n                    tran.getString(\"USER\")\r\n            );\r\n            publishOut(0, sqlCmd);\r\n            query.append(sqlCmd);//.append(System.getProperty(\"line.separator\"));\r\n        }\r\n        if (body.containsKey(\"accountInfo\")) {\r\n            JsonObject accountInfo = body.getJsonObject(\"accountInfo\");\r\n            //Update account info in account table\r\n            sqlCmd = String.format(updateQuery,\r\n                    newAccountInfo.getString(\"CustomerId\"),\r\n                    newAccountInfo.getBoolean(\"Enable\"),\r\n                    newAccountInfo.getString(\"TransGroupsStr\"),\r\n                    newAccountInfo.getString(\"Phones\"),\r\n                    Long.parseLong(newAccountInfo.getString(\"RemainAmount\")),\r\n                    Long.parseLong(newAccountInfo.getString(\"RemainDays\")),\r\n                    newAccountInfo.getString(\"DueDate\"),\r\n                    Long.parseLong(newAccountInfo.getString(\"LowLimitCredit\")),\r\n                    Long.parseLong(newAccountInfo.getString(\"LowLimitDebit\")),\r\n                    newAccountInfo.getString(\"NearExpireNotifyDate\"),\r\n                    newAccountInfo.getString(\"ExpiredNotifyDate\"),\r\n                    newAccountInfo.getString(\"ExpireDate\"),\r\n                    newAccountInfo.getBoolean(\"AutoRenewRegister\"),\r\n                    newAccountInfo.getString(\"AutoRenewRegCancelNotifyDate\"),\r\n                    /*newAccountInfo.getString(\"EditDT\"),*/\r\n                    new Date().toInstant(),\r\n                    newAccountInfo.getString(\"AccountNo\")\r\n            );\r\n            publishOut(0, sqlCmd);\r\n            query.append(sqlCmd);//.append(System.getProperty(\"line.separator\"));\r\n            //Insert previous account info in history table\r\n            sqlCmd = String.format(historyQuery,\r\n                    accountInfo.getString(\"AccountNo\"),\r\n                    accountInfo.getBoolean(\"Enable\"),\r\n                    accountInfo.getString(\"CustomerId\"),\r\n                    accountInfo.getString(\"TransGroupsStr\"),\r\n                    accountInfo.getString(\"Phones\"),\r\n                    Long.parseLong(accountInfo.getString(\"RemainAmount\")),\r\n                    Long.parseLong(accountInfo.getString(\"RemainDays\")),\r\n                    accountInfo.getString(\"DueDate\"),\r\n                    Long.parseLong(accountInfo.getString(\"LowLimitCredit\")),\r\n                    Long.parseLong(accountInfo.getString(\"LowLimitDebit\")),\r\n                    accountInfo.getString(\"ExpireDate\"),\r\n                    accountInfo.getString(\"NearExpireNotifyDate\"),\r\n                    accountInfo.getString(\"ExpiredNotifyDate\"),\r\n                    accountInfo.getString(\"EditDT\"),\r\n                    accountInfo.getBoolean(\"AutoRenewRegister\"),\r\n                    accountInfo.getString(\"AutoRenewRegCancelNotifyDate\"),\r\n                    accountInfo.getString(\"Flag\") == null ? null : Integer.parseInt(accountInfo.getString(\"Flag\"))\r\n            );\r\n            publishOut(0, sqlCmd);\r\n            query.append(sqlCmd);\r\n        } else {\r\n            //Insert account info in account table\r\n            sqlCmd = String.format(insertQuery,\r\n                    newAccountInfo.getString(\"AccountNo\"),\r\n                    newAccountInfo.getBoolean(\"Enable\"),\r\n                    newAccountInfo.getString(\"CustomerId\"),\r\n                    newAccountInfo.getString(\"TransGroupsStr\"),\r\n                    newAccountInfo.getString(\"Phones\"),\r\n                    Long.parseLong(newAccountInfo.getString(\"RemainAmount\")),\r\n                    Long.parseLong(newAccountInfo.getString(\"RemainDays\")),\r\n                    newAccountInfo.getString(\"DueDate\"),\r\n                    Long.parseLong(newAccountInfo.getString(\"LowLimitCredit\")),\r\n                    Long.parseLong(newAccountInfo.getString(\"LowLimitDebit\")),\r\n                    newAccountInfo.getString(\"NearExpireNotifyDate\"),\r\n                    newAccountInfo.getString(\"ExpiredNotifyDate\"),\r\n                    newAccountInfo.getString(\"ExpireDate\"),\r\n                    newAccountInfo.getBoolean(\"AutoRenewRegister\"),\r\n                    newAccountInfo.getString(\"AutoRenewRegCancelNotifyDate\"),\r\n                    /*newAccountInfo.getString(\"EditDT\")*/\r\n                    new Date().toInstant()\r\n            );\r\n            publishOut(0, sqlCmd);\r\n            query.append(sqlCmd);\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public <T> void noCmd(Message<T> tMessage, String cmd) {\r\n        if (query.length() > 0) {\r\n            eb.publish(addressBook.getResult(), new JsonObject().put(\"query\", this.query.toString().replaceAll(\"'null'\", \"''\")).put(\"cmd\", \"executeUpdate\"),\r\n                    addressBook.getDeliveryOptions().addHeader(\"cmd\", \"executeUpdate\")\r\n                        /*.addHeader(\"count\", msg.headers().get(\"count\")).addHeader(\"key\", msg.headers().get(\"key\"))\r\n                        .addHeader(\"channel\", msg.headers().get(\"channel\"))*/);\r\n            query.setLength(0);\r\n            resultOutboundCount++;\r\n        }\r\n    }\r\n}",
+    "fName" : "UpdateAccount3",
+    "theme" : "monokai",
+    "outNumber" : 1,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ "switch.397.output" ],
+  "Input" : [ "process.279.result", "process.274.result" ],
+  "Error" : [ ],
+  "Result" : [ "switch.382.input" ],
+  "Out0" : [ "switch.392.input" ]
+}, {
+  "id" : "298",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "dbType" : "SqlServer",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "BXX_SAPTA11",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 5
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : "update tblAccounts3\r\n      set CustomerId = @CustomerId,[Enable]=@Enable,TransGroupsStr = @TransGroupsStr,Phones = @Phones,\r\n\t      RemainAmount = @RemainAmount,RemainDays = @RemainDays,DueDate = @DueDate,\r\n\t\t  LowLimitCredit = @LowLimitCredit,LowLimitDebit = @LowLimitDebit,\r\n\t\t  NearExpireNotifyDate=@NearExpireNotifyDate, ExpiredNotifyDate=@ExpiredNotifyDate,\r\n\t\t  [ExpireDate]=@ExpireDate\r\n\t\t  ,[AutoRenewRegister]=@AutoRenewRegister\r\n\t\t  ,[AutoRenewRegCancelNotifyDate]=@AutoRenewRegCancelNotifyDate\r\n\t\t  ,EditDT=getdate()\r\n      where AccountNo = @AccountNo    \r\n      \r\ninsert into tblAccounts3 (AccountNo,[Enable],CustomerId,TransGroupsStr,Phones,\r\n\t            RemainAmount,RemainDays,DueDate,LowLimitCredit,LowLimitDebit,\r\n\t\t\t\tNearExpireNotifyDate,ExpiredNotifyDate,[ExpireDate]\r\n\t\t\t\t,AutoRenewRegister\r\n\t\t\t\t,AutoRenewRegCancelNotifyDate\r\n\t\t\t\t,EditDT\r\n\t\t\t\t)\r\n      values (@AccountNo,@Enable,@CustomerId,@TransGroupsStr,@Phones,\r\n\t          @RemainAmount,@RemainDays,@DueDate,@LowLimitCredit,@LowLimitDebit,\r\n\t\t\t  @NearExpireNotifyDate,@ExpiredNotifyDate,@ExpireDate\r\n\t\t\t  ,@AutoRenewRegister\r\n\t\t\t  ,@AutoRenewRegCancelNotifyDate\r\n\t\t\t  ,getdate()\r\n\t\t\t  )    \r\n\t\t\t  \r\ninsert into dbo.TblAccounts3History (AccountNo, Enable, CustomerId, TransGroupsStr, Phones, RemainAmount, RemainDays, DueDate, LowLimitCredit, LowLimitDebit,\r\n                              ExpireDate, NearExpireNotifyDate, ExpiredNotifyDate, EditDT, AutoRenewRegister, AutoRenewRegCancelNotifyDate, Flag)\r\n      select AccountNo, Enable, CustomerId, TransGroupsStr, Phones, RemainAmount, RemainDays, DueDate, LowLimitCredit, LowLimitDebit,\r\n                              ExpireDate, NearExpireNotifyDate, ExpiredNotifyDate, EditDT, AutoRenewRegister, AutoRenewRegCancelNotifyDate, Flag\r\n      from dbo.TblAccounts3 where AccountNo=@AccountNo\r\n      \r\nINSERT INTO tblTransactions (SendRefNo2,MsgPart,ProviderName,PhoneNo,TxnPDate,TxnTime,TransId,TransType,AccountNo,StmtCode,CardNo,TxnKey,Amount,FinalBalance,Msg,UniqKey, Channel,TxnDT,ProcessDT) \" +\r\n                        \"VALUES (%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');"
+    }
+  },
+  "Trigger" : [ "switch.382.output" ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "12",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.text.SimpleDateFormat;\r\nimport java.util.Date;\r\nimport java.util.Random;\r\n\r\n\r\npublic class AtiehSqlBuilder extends MasterVerticle {\r\n    private String providerName;\r\n    private String srcPhoneNo;\r\n    Random rd = new Random();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        this.providerName = config().getJsonObject(\"data\").getJsonObject(\"config\").getString(\"name\");\r\n        this.srcPhoneNo = correctAtiehPhoneNo(config().getJsonObject(\"data\").getJsonObject(\"config\").getString(\"phoneNo\"));\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject smsInfo = body.getJsonObject(\"smsInfo\");\r\n        String msgBody = smsInfo.getString(\"msg\");\r\n        String[] parts;\r\n        int dcs;\r\n        if (IsFullLatinText(msgBody)) {\r\n            parts = msgBody.length() > 160 ? msgBody.split(\"(?<=\\\\G.{153})\") : new String[]{msgBody};\r\n            dcs = 0;\r\n        } else {\r\n            parts = msgBody.length() > 70 ? msgBody.split(\"(?<=\\\\G.{67})\") : new String[]{msgBody};\r\n            dcs = 8;\r\n        }\r\n        StringBuilder sqlStringBuilder = new StringBuilder();\r\n        byte[] randByte = new byte[1];\r\n        rd.nextBytes(randByte);\r\n        for (int i = 0; i < parts.length; i++) {\r\n            String udh = parts.length == 1 ? \"\" : String.format(\"050003%02x%02d%02d\", randByte[0], parts.length, i + 1);\r\n            sqlStringBuilder.append(String.format(\r\n                    \"INSERT INTO outbound_messages (creation_date, from_mobile_number, dest_mobile_number, message_body, due_date, DCS, UDH, Info,Info2,Info3,TXDateTime, Reported,ReportedSla, SendRefNo2,BankId)\" +\r\n                            \" VALUES ('%s','%s','%s','%s','%s',%d,'%s','%s','%s','%s','%s',%d,%d,%d,'%s');\\n\",\r\n                    new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\").format(new Date()),\r\n                    srcPhoneNo,\r\n                    correctAtiehPhoneNo(msg.headers().get(\"phoneNo\")),\r\n                    parts[i].replace(\"^\", \"\\n\"),\r\n                    new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\").format(new Date()),\r\n                    dcs,\r\n                    udh,\r\n                    smsInfo.getString(\"accountNo\"),\r\n                    smsInfo.getString(\"transId\"),\r\n                    smsInfo.getString(\"transGroup\"),\r\n                    new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\").format(Date.from(body.getInstant(\"txDT\"))),\r\n                    0,\r\n                    0,\r\n                    Long.parseLong(msg.headers().get(\"sendRefNo2\")),\r\n                    smsInfo.getString(\"bankId\")\r\n            ));\r\n        }\r\n        eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg)\r\n                .addHeader(\"MsgPart\", parts.length + \"\")\r\n                .addHeader(\"providerName\", providerName));\r\n        this.errorOutboundCount++;\r\n        eb.publish(addressBook.getResult(), body.put(\"sql\",\r\n                sqlStringBuilder.toString()),\r\n                addressBook.getDeliveryOptions(msg).addHeader(\"providerName\", providerName));\r\n    }\r\n\r\n    private static boolean IsFullLatinText(String txt) {\r\n        for (int i = 0; i < txt.length(); i++) {\r\n            if (txt.codePointAt(i) > 255) {\r\n                return false;\r\n            }\r\n        }\r\n        return true;\r\n    }\r\n\r\n    private static String correctAtiehPhoneNo(String in) {\r\n        in = in.trim();\r\n        if (in.startsWith(\"+\")) {\r\n            in = in.substring(1);\r\n        }\r\n        while (in.startsWith(\"0\")) {\r\n            in = in.substring(1);\r\n        }\r\n        if (!in.startsWith(\"98\")) {\r\n            in = \"98\" + in;\r\n        }\r\n        return in;\r\n    }\r\n}",
+    "fName" : "AtiehSqlBuilder",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "name" : "atieh",
+      "phoneNo" : 9830009419,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.30.output" ],
+  "Error" : [ "process.223.input" ],
+  "Result" : [ "process.45.input" ]
+}, {
+  "id" : "17",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class MagfaProvider extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.getJsonObject(\"dataset\").put(\"data\", rand.nextInt(101));\r\n        try {\r\n            super.process(body.encode());\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "MagfaProvider",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.33.output" ],
+  "Error" : [ ],
+  "Result" : [ "process.50.input" ]
+}, {
+  "id" : "7",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport com.vx6.tools.PatternsArrayList;\r\n//import io.vertx.core.Future;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\n//import io.vertx.core.impl.future.PromiseImpl;\r\nimport io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\n\r\npublic class SmsProviderDispatcher extends MasterVerticle {\r\n    public ArrayList<PatternsArrayList> filters = new ArrayList<>();\r\n    private long curSendRefNo2 = 0;\r\n    //private Future<Void> future;\r\n    //private Promise<Long> promise = Promise.promise();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        setting.getJsonArray(\"filters\").forEach(f -> {\r\n            JsonObject filter = (JsonObject) f;\r\n            filters.add(new PatternsArrayList(filter.getJsonArray(\"allow\"), filter.getJsonArray(\"deny\")));\r\n        });\r\n        /*Future future = promise.future();\r\n        future.onComplete(res-> {\r\n            System.out.println(((PromiseImpl) res).result());\r\n        });\r\n        future.onFailure(res->{\r\n            eb.publish(addressBook.getError(), \"Failed to get \\\"MaxSendRefNo2\\\"\");\r\n            errorOutboundCount++;\r\n        });*/\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject smsInfo = body.getJsonObject(\"smsInfo\");\r\n        JsonArray phoneNos = new JsonArray(List.of(smsInfo.getString(\"phoneNos\")));\r\n        phoneNos.forEach(phoneNo -> {\r\n            for (int i = 0; i < filters.size(); i++) {\r\n                if (filters.get(i).allow((String) phoneNo)) {\r\n                    publishOut(i, body.copy(), addressBook.getDeliveryOptions(msg)\r\n                            .addHeader(\"phoneNo\", (String) phoneNo)\r\n                            .addHeader(\"sendRefNo2\", ++curSendRefNo2 + \"\"));\r\n                    break;//If there is more provider to send then \"comment out\" the break!\r\n                }\r\n            }\r\n        });\r\n    }\r\n\r\n    @Override\r\n    public <T> void unknownCmd(Message<T> tMessage, String cmd) {\r\n        if (cmd.equalsIgnoreCase(\"MaxSendRefNo2\")) {\r\n            this.curSendRefNo2 = Long.parseLong(((JsonObject) tMessage.body()).getString(\"MaxSendRefNo2\"));\r\n            System.out.println(\"curSendRefNo2 = \" + curSendRefNo2);\r\n            //promise.complete(curSendRefNo2);\r\n        }\r\n    }\r\n}",
+    "fName" : "SmsProviderDispatcher",
+    "theme" : "monokai",
+    "outNumber" : 3,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : {
+      "filters" : [ {
+        "allow" : [ ],
+        "deny" : [ "^9[19]\\d*" ]
+      }, {
+        "allow" : [ "^9991\\d*", "^998\\d*" ],
+        "deny" : [ ]
+      }, {
+        "allow" : [ "^9[19]\\d*" ],
+        "deny" : [ "^9991\\d*", "^998\\d*" ]
+      } ]
+    }
+  },
+  "Trigger" : [ "process.74.result" ],
+  "Input" : [ "process.154.result" ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Out0" : [ "switch.30.input" ],
+  "Out1" : [ "switch.33.input", "switch.30.input" ],
+  "Out2" : [ "switch.36.input", "switch.30.input" ]
+}, {
+  "id" : "348",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "push",
+      "switchName" : "RoundCssBrownPushButton"
+    },
+    "setting" : {
+      "topic" : "metrics"
+    }
+  },
+  "Output" : [ "process.256.trigger" ]
+}, {
+  "id" : "22",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class MciProvider extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.getJsonObject(\"dataset\").put(\"data\", rand.nextInt(101));\r\n        try {\r\n            super.process(body.encode());\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "MciProvider",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.36.output" ],
+  "Error" : [ ],
+  "Result" : [ "process.55.input" ]
+}, {
+  "id" : "351",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "topic" : "metrics",
+      "_" : {
+        "state" : true,
+        "period" : 5000,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.256.trigger" ]
+}, {
+  "id" : "30",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "SkewedGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true
+      }
+    }
+  },
+  "Output" : [ "process.12.input" ],
+  "Input" : [ "process.7.out0", "process.7.out1", "process.7.out2" ]
+}, {
+  "id" : "33",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "SkewedGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false
+      }
+    }
+  },
+  "Output" : [ "process.17.input" ],
+  "Input" : [ "process.7.out1" ]
+}, {
+  "id" : "36",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "SkewedGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false
+      }
+    }
+  },
+  "Output" : [ "process.22.input" ],
+  "Input" : [ "process.7.out2" ]
+}, {
+  "id" : "363",
+  "type" : "group",
+  "data" : null,
+  "" : [ ]
+}, {
+  "id" : "404",
+  "type" : "group",
+  "data" : null,
+  "" : [ ]
+}, {
+  "id" : "45",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\npublic class AtiehSqlAggregation extends MasterVerticle {\r\n    private StringBuilder sqlAggregation = new StringBuilder();\r\n    private int sqlLoadSize = 1, counter = 0;\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        this.counter++;\r\n        sqlAggregation.append(body.getString(\"sql\"));\r\n        this.resultOutboundCount--;\r\n        if(counter >= sqlLoadSize)\r\n            sendSqlLoad2Db();\r\n    }\r\n\r\n    @Override\r\n    public <T> void noCmd(Message<T> tMessage, String cmd) {\r\n        this.sqlLoadSize = ((JsonObject) tMessage.body()).getInteger(\"sqlLoadSize\", 1);\r\n        sendSqlLoad2Db();\r\n    }\r\n\r\n    private void sendSqlLoad2Db() {\r\n        String sqlLoad = this.sqlAggregation.toString();\r\n        this.sqlAggregation.setLength(0);\r\n        if (!sqlLoad.isEmpty()) {\r\n            eb.publish(addressBook.getResult(), new JsonObject().put(\"query\", sqlLoad)\r\n                    .put(\"cmd\", \"executeupdate\"), addressBook.getDeliveryOptions()\r\n                    .addHeader(\"name\", \"atieh\").addHeader(\"count\", this.counter + \"\"));\r\n            resultOutboundCount++;\r\n        }\r\n        this.counter = 0;\r\n    }\r\n\r\n}",
+    "fName" : "AtiehSqlAggregation",
+    "theme" : "gruvbox",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ "switch.93.output" ],
+  "Input" : [ "process.12.result" ],
+  "Error" : [ ],
+  "Result" : [ "database.81.trigger" ]
+}, {
+  "id" : "413",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "\r\nimport com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\nimport org.apache.commons.lang3.time.StopWatch;\r\n\r\nimport java.io.IOException;\r\nimport java.io.Reader;\r\n//import java.io.IOException;\r\n//import java.io.Reader;\r\nimport java.sql.Connection;\r\nimport java.sql.DriverManager;\r\n//import java.sql.PreparedStatement;\r\nimport java.sql.ResultSet;\r\nimport java.sql.SQLException;\r\nimport java.sql.Statement;\r\n\r\nimport static org.apache.commons.lang3.StringUtils.isNotBlank;\r\n\r\n//import com.microsoft.sqlserver.jdbc.SQLServerStatement;\r\n\r\n\r\npublic class LoadAccountDB extends MasterVerticle {\r\n    private final Logger LOGGER = LoggerFactory.getLogger(getClass());\r\n    private SharedData sharedData;\r\n    private LocalMap<String, String> accounts;\r\n    private LocalMap<String, String> customers;\r\n    private long accountCount = 0L;\r\n    private long customerCount = 0L;\r\n    private static final String EB_ADDRESS = \"/freeboard/sse/sapta/registery\";\r\n    private int retry = 500000;\r\n\r\n    @Override\r\n    public void start(Promise<Void> startPromise) throws Exception {\r\n        start();\r\n        startPromise.complete();\r\n        initialize();\r\n        //startFuture.complete();\r\n    }\r\n\r\n    public void initialize() throws Exception {\r\n        LOGGER.info(\"initialize verticle {\" + this + \"}\");\r\n        sharedData = vertx.sharedData();\r\n        accounts = sharedData.getLocalMap(\"AYN_SAPTA_ACCOUNTS_3\");\r\n        customers = sharedData.getLocalMap(\"AYN_SAPTA_CUSTOMERS\");\r\n        accounts.clear();\r\n        customers.clear();\r\n        long timerID = vertx.setPeriodic(5000, id -> {\r\n            metrics();\r\n        });\r\n        String some_val = \"my_val\";\r\n        LOGGER.info(\"this is how you inject {} into your statement.\", some_val);\r\n    }\r\n\r\n    private boolean extracted(String accountInfo) {\r\n        accountCount++;\r\n        var split = accountInfo.split(\"\\\\|\");\r\n        //var accountNo = accountInfo.substring(0, 13);\r\n        if (split.length < 15) {\r\n            System.out.println(\"Defective: \" + accountInfo);\r\n            return true;\r\n        }\r\n        var accountNo = split[0];\r\n        accounts.put(accountNo, accountInfo);\r\n        var customerId = split[2];\r\n        if (isNotBlank(customerId)) {\r\n            var accountNos = customers.getOrDefault(customerId, \"\");\r\n            if (!accountNos.contains(accountNo)) {\r\n                accountNos += \"|\" + accountNo;\r\n                customers.put(customerId, accountNos);\r\n            }\r\n        }\r\n        return false;\r\n    }\r\n\r\n    @Override\r\n    public <T> void noCmd(Message<T> tMessage, String cmd) {\r\n        String SQL = \"select \\n\" +\r\n                \"\\t--convert(varchar(9),UniqId) + '|' +   \\n\" +\r\n                \"\\tconvert(varchar(13),isnull(AccountNo,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(10),isnull(Enable,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(10),isnull(CustomerId,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(100),isnull(TransGroupsStr,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(110),isnull(Phones,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(10),isnull(AutoRenewRegister,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(60),isnull(RemainAmount,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(50),isnull(RemainDays,'null')) + '|' +\\n\" +\r\n                \"\\tisnull(convert(varchar(10),DueDate, 102),'null') + '|' +\\n\" +\r\n                \"\\tconvert(varchar(10),isnull(LowLimitCredit,'null')) + '|' +\\n\" +\r\n                \"\\tconvert(varchar(10),isnull(LowLimitDebit,'null')) + '|' +\\n\" +\r\n                \"\\tisnull(convert(varchar(10),ExpireDate, 102) , 'null')+ '|' +\\n\" +\r\n                \"\\tisnull(convert(varchar(10),NearExpireNotifyDate, 102),'null')+ '|' +\\n\" +\r\n                \"\\tisnull(convert(varchar(10),ExpiredNotifyDate, 102) , 'null') + '|' +\\n\" +\r\n                \"\\t--convert(varchar(23),isnull(EditDT,'null')) + '|' +\\n\" +\r\n                \"\\tisnull(convert(varchar(10),AutoRenewRegCancelNotifyDate, 102) , 'null') +'\\\\n'\\n\" +\r\n                \"\\t--convert(varchar(10),isnull(Flag,'null'))\\n\" +\r\n                \"\\tfrom [TblAccounts3-barf] for XML PATH('')\";\r\n        //SQL = \"select 'behnam'\";\r\n        // Create a variable for the connection string.\r\n        String connectionUrl = \"jdbc:sqlserver://192.168.166.11:1433;responseBuffering=adaptive;DatabaseName=BXX_SAPTA11;user=sa;password=suny$123\";\r\n\r\n        try (Connection con = DriverManager.getConnection(connectionUrl);\r\n             Statement stmt = con.createStatement();) {\r\n\r\n            // In adaptive mode, the application does not have to use a server cursor\r\n            // to avoid OutOfMemoryError when the SELECT statement produces very large\r\n            // results.\r\n\r\n            // Display the response buffering mode.\r\n           /* SQLServerStatement SQLstmt = (SQLServerStatement) stmt;\r\n            System.out.println(\"Response buffering mode is: \" + SQLstmt.getResponseBuffering());*/\r\n            //SQLstmt.close();\r\n            //System.out.println(\"SQL: \" + SQL);\r\n            // Get the updated data from the database and display it.\r\n            StopWatch watch = new StopWatch();\r\n            System.out.println(\"Loading DB started!\");\r\n            watch.start();\r\n            ResultSet rs = stmt.executeQuery(SQL);\r\n            StringBuilder remainder = new StringBuilder();\r\n            while (rs.next()) {\r\n                //extracted();\r\n                //System.out.println(\"rs.next()\");\r\n                Reader reader = rs.getCharacterStream(1);\r\n                if (reader != null) {\r\n                    char[] ac3 = new char[2048];\r\n                    while (reader.read(ac3) != -1) {\r\n                        //System.out.println(accounts.size());\r\n                        remainder.append(String.valueOf(ac3));\r\n                        //System.out.println(remainder.toString());\r\n                        String[] rows = remainder.toString().split(\"\\\\\\\\n\");\r\n                        int len = rows.length - 1;\r\n                        if (len > 0) {\r\n                            for (int i = 0; i < len; i++) {\r\n                                //System.out.println(\"Account: \" + rows[i]);\r\n\r\n                                // System.out.println(row.toString());\r\n                                // LOGGER.debug( row.toString());\r\n                                var accountInfo = rows[i];\r\n                                extracted(accountInfo);\r\n                            }\r\n                            //output = new char[2048];\r\n                        }\r\n                        remainder.setLength(0);\r\n                        remainder.append(rows[len].trim());\r\n                    }\r\n                    //System.out.println(rs.getString(1) + \" has been accessed for the summary column.\");\r\n                    // Close the stream.\r\n                    reader.close();\r\n                }\r\n            }\r\n            if (remainder.toString().trim().length() > 0) {\r\n                System.out.println(\"Remainder: \" + remainder.toString());\r\n                extracted(remainder.toString());\r\n            }\r\n            con.close();\r\n            watch.stop();\r\n            long millis = watch.getTime();  // obtained from StopWatch\r\n            long minutes = (millis / 1000) / 60;\r\n            int seconds = (int) ((millis / 1000) % 60);\r\n            System.out.println(\"Time Elapsed: \" + minutes + \":\" + seconds); // Prints: Time Elapsed: 2501\r\n            eb.publish(addressBook.getResult(), new JsonObject().put(\"msg\", \"result-set-end\"));\r\n            resultOutboundCount++;\r\n        } // Handle any errors that may have occurred.\r\n        catch (SQLException | IOException e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n\r\n    private void metrics() {\r\n        eb.publish(EB_ADDRESS,\r\n                new JsonObject()\r\n                        .put(\"accountCount\", accountCount)\r\n                        .put(\"customerCount\", customers.size())\r\n                        .put(\"accountSize\", accounts.size())\r\n                , addressBook.getDeliveryOptions().addHeader(\"event\", \"initialize\")\r\n                        .addHeader(\"retry\", this.retry + \"\"));\r\n    }\r\n}",
+    "fName" : "LoadAccountDB",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : true,
+      "instances" : 1
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ "switch.418.output" ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.191.input" ]
+}, {
+  "id" : "50",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class MagfaSender extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.getJsonObject(\"dataset\").put(\"data\", rand.nextInt(101));\r\n        try {\r\n            super.process(body.encode());\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "MagfaSender",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.17.result" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "418",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.413.trigger" ]
+}, {
+  "id" : "55",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class MciSender extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.getJsonObject(\"dataset\").put(\"data\", rand.nextInt(101));\r\n        try {\r\n            super.process(body.encode());\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "MciSender",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.22.result" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "382",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "FlatGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true
+      }
+    }
+  },
+  "Output" : [ "database.298.trigger" ],
+  "Input" : [ "process.290.result" ]
+}, {
+  "id" : "387",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "E:\\ceramic\\data",
+      "fileNameMask" : "updRegisterydate(yyMMdd).sql",
+      "fileNameDoneExt" : "done",
+      "fileNameLockExt" : "$"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.392.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "422",
+  "type" : "group",
+  "data" : null,
+  "" : [ ]
+}, {
+  "id" : "66",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "dbType" : "SqlServer",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "BXX_SAPTA11",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 1
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : "SELECT isnull(SendRefNo2,0) MaxSendRefNo2 FROM tblTransactions WHERE UniqId = (SELECT isnull(max(UniqId),0) FROM tblTransactions)"
+    }
+  },
+  "Trigger" : [ "switch.71.output" ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.74.input" ]
+}, {
+  "id" : "392",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "FlatGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false
+      }
+    }
+  },
+  "Output" : [ "file.387.input" ],
+  "Input" : [ "process.290.out0" ]
+}, {
+  "id" : "397",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "cmd" : "executeQuery",
+      "_" : {
+        "state" : true,
+        "period" : 1000,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.290.trigger" ]
+}, {
+  "id" : "71",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "cmd" : "executequery",
+      "_" : {
+        "state" : true,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "database.66.trigger" ]
+}, {
+  "id" : "74",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\n\r\npublic class MaxSendRefNo2 extends MasterVerticle {\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg).addHeader(\"cmd\", \"MaxSendRefNo2\"));//.addHeader(\"buffer_size\", buffer.getBuffSize() + \"\"));\r\n    }\r\n}",
+    "fName" : "MaxSendRefNo2",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "database.66.result" ],
+  "Error" : [ ],
+  "Result" : [ "process.7.trigger" ]
+}, {
+  "id" : "81",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "dbType" : "SqlServer",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "Atieh_BSI-BMI-AYN-BSM-BTS",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 5
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : ""
+    }
+  },
+  "Trigger" : [ "process.45.result" ],
+  "Input" : [ ],
+  "Error" : [ "file.87.input" ],
+  "Result" : [ ]
+}, {
+  "id" : "87",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "E:\\ceramic\\registery\\out",
+      "fileNameMask" : "providers.err",
+      "fileNameDoneExt" : "done",
+      "fileNameLockExt" : "$"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "database.81.error" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "93",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "BlueSubscribeButtons"
+    },
+    "setting" : {
+      "sqlLoadSize" : 300,
+      "_" : {
+        "state" : true,
+        "period" : 2000,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.45.trigger" ]
+}, {
+  "id" : "101",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport com.vx6.utils.PersianCalendarBean;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.SharedData;\r\n\r\nimport java.util.Date;\r\nimport java.util.List;\r\n\r\npublic class CompleteSmsInfo extends MasterVerticle {\r\n    private SharedData sharedData;\r\n    private JsonObject constants = new JsonObject();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sharedData = vertx.sharedData();\r\n        constants = (JsonObject) sharedData.getLocalMap(\"SAPTA_CONSTANTS\").get(\"AYN\");\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject smsInfo = body.getJsonObject(\"smsInfo\");\r\n        Date date = new Date();\r\n        String txnPDate = PersianCalendarBean.getPersianDateSimple(date).substring(0, 8);\r\n        String txnTime = PersianCalendarBean.getPersianDateSimple(date).substring(8, 14);\r\n        smsInfo.put(\"txnPDate\", txnPDate);\r\n        smsInfo.put(\"txnTime\", txnTime);\r\n        smsInfo.put(\"transGroup\", constants.getString(\"transGroup\"));\r\n        smsInfo.put(\"bankId\", constants.getString(\"bankId\"));\r\n        //body.mergeIn(this.constants);\r\n        //body.put(\"constants\", this.constants);\r\n        //this.setting.mergeIn(body);\r\n        /*if (body.containsKey(\"PHONENO\"))\r\n            body.put(\"phoneNos\", new JsonArray(List.of(body.getString(\"PHONENO\"))));\r\n        else\r\n            body.put(\"phoneNos\", new JsonArray());*/\r\n\r\n        body.put(\"txDT\", date.toInstant());\r\n        body.put(\"processDT\", date.toInstant());\r\n        eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg));\r\n    }\r\n}",
+    "fName" : "CompleteSmsInfo",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.279.out0", "process.274.out0" ],
+  "Error" : [ ],
+  "Result" : [ "process.154.input" ]
+}, {
+  "id" : "108",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "body" : { },
+      "header" : {
+        "cmd" : "code"
+      },
+      "_" : {
+        "state" : true,
+        "period" : 0,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "parquet.110.trigger" ]
+}, {
+  "id" : "110",
+  "type" : "parquet",
+  "data" : {
+    "type" : "parquet",
+    "xml" : "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"xml_element\" id=\"Xs`ti}FZ]h/wc_v1d~6Z\" x=\"287\" y=\"87\"><field name=\"trans\">Active</field><field name=\"tag\">Patterns</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"K_as$:_FM[A~Y*8/{96I\"><field name=\"attr\">group</field><field name=\"val\">registery</field></block></value><statement name=\"childs\"><block type=\"xml_element\" id=\"2[nfuQse3^Z^.vos`,i]\" collapsed=\"true\" disabled=\"true\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"LR}5S=Bu$g[mQPvk(Ya`\"><field name=\"attr\">TransId</field><field name=\"val\">Register</field></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"==17/Co#6Z)kKDF7N@A/\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"~aL65yPj|udOF^;R,E-8\"><field name=\"text\">بانک آینده</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"@?O^S?V.DVoC~l~_vIBi\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"vXp7AabkjYNo0}S!f*MD\"><field name=\"text\">مشتری گرامی</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"k`C(V,v_MwMXWO!9[?Ey\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"jx^Xs_|8R6kN+YhV3hj/\"><field name=\"FIELD\">AccountNoRight</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"TQ9BDm9!}7?^G`@!riON\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"uKv@tv@J}a@15NN~xqIr\"><field name=\"text\">خدمت پیام رسانی حساب</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"l^}g[h*:*G?+4lZOGDus\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"5pJb{#L4(@HKJas%L/En\"><field name=\"FIELD\">SubjectPhoneNo</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"{2ciq-)BZieke{TE7f,]\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"eGH@UwRoCe?[Qeov}@x=\"><field name=\"text\">برای شماره تلفن همراه</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"CGqz~/99xh,Mjl@ApfE7\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"w9_MNb896oAH3UmH6Bga\"><field name=\"text\">فعال گردید</field></block></value></block></next></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\"(OD/#MSy|2Q!H~JX^g_t\" collapsed=\"true\" disabled=\"true\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"q8/LD^vL[dsVTDagx!(y\"><field name=\"attr\">TransId</field><field name=\"val\">UnRegister</field></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"Lx*heq}l:IBcJ0pKnhZV\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"A`nqJ8a_V!s+x1OLOf:-\"><field name=\"text\">بانک آینده</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"nHe.nWj@Q07mZa53K0rF\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\";pV~E-TLL#{W:FNgul-_\"><field name=\"text\">مشتری گرامی</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"|RXvua8}=+x`F+/Zj!mu\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"wxmKCn|qG,R,+4xZD)cp\"><field name=\"FIELD\">AccountNoRight</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"_dni3,O.(UXoQ=!0#^kM\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"AmXMb;G=)a(}q1]c=G5`\"><field name=\"text\">خدمت پیام رسانی حساب</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"qiznz9K[{1-fMpBs^vW+\"><value name=\"NAME\"><block type=\"pattern_freemarker_if_exists\" id=\"W6K^g|$-jpRQML,M`XG`\"><field name=\"text\">SubjectPhoneNo</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"y5[gGq;s_`PPM]G$#H}*\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"nEo!4Y,L$7Zkxx~|x}SG\"><field name=\"FIELD\">SubjectPhoneNo</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"b?l?G_zx)VWjGWKZpY{!\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"yhVbMUlHU9{0dt)d3rAY\"><field name=\"text\">برای شماره تلفن همراه</field></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"n$^^3{-)VymBy+e+I%b5\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\";?f{!7UVW|IdD}Gp(]^)\"><field name=\"text\">غیرفعال گردید</field></block></value></block></next></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\"WVg(H}#/Z:aG1fYW+O4.\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"IQT@r/b|+0M6t;e_f@?X\"><field name=\"attr\">TransId</field><field name=\"val\">ADDACCOUNT</field></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"5wMx;.x2{me#A18r`:M7\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"2k-m?GpMA;/,hI/hcCx0\"><field name=\"text\">بانک آینده</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"J@)5j)^2@Lo~;T3qDq|8\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"v.NMNL:,1AbEbD_Y|h)D\"><field name=\"text\">مشتری گرامی</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"nX}/l6B@~aCmh2i*{Av|\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"aCne^3rf*{o?hTPE?rBO\"><field name=\"FIELD\">ACCOUNTNO</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"6b0{Q]BNv:DJX7TwemMf\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"}X:]P?T7ijx8:jGgDJPW\"><field name=\"text\">خدمت پیام رسانی حساب</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"Gld`O/kY?OZ@x9o-mxMl\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"Ky2ymdlS!vlyUS+9eiiw\"><field name=\"FIELD\">PHONENO</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"Zc~*3,@;GDrE@q%W-EkA\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"V59B;9cV;E]R?S+BiA~X\"><field name=\"text\">برای شماره تلفن همراه</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"ht5,~h3(O}n,IwP=jaC3\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"/{HU]!r.8Ej~x_M_#?MU\"><field name=\"text\">فعال گردید</field></block></value></block></next></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\"[hCLehfBX-bWQ:oSkO;e\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"jE)OWyMQyij?Ys^yv{5R\"><field name=\"attr\">TransId</field><field name=\"val\">ADDCREDITITEM</field></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"GJkZTOR=qS+i1bbn4wku\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"3:(F[4.DIwpk]jzyv6NM\"><field name=\"text\">بانک آینده</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"*3++)45BJr]o8)Tvdm#I\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"0qat,4ykR.aI,LCBq-!k\"><field name=\"text\">مشتری گرامی</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"4M~KN,au|mQd].]sJyq(\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"O6I/7qAuI(T3soqtFB*J\"><field name=\"FIELD\">ACCOUNTNO</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"^z;~@zg51/@}iEbJz,lk\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"}ed2sZ%sKN3-(7Hg!ZGL\"><field name=\"text\">خدمت پیام رسانی حساب</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"Yo8!tO}a:W8VgrSGXq}p\"><value name=\"NAME\"><block type=\"pattern_freemarker_if_exists\" id=\"i*XJD4Aep^@VTdoqV`Jz\"><field name=\"text\">CUSTOMERID</field><value name=\"NAME\"><block type=\"pattern_freemarker_enter\" id=\"$gw`]x(eOG8,AJ/NJW}}\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"(IP.]n*9o-E*hGxcIo`w\"><field name=\"FIELD\">CUSTOMERID</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"S~~T(%9J$`CfLQVl3z9|\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"y-Lw3I5w.i}Td!/[C/M4\"><field name=\"text\">برای شماره تلفن همراه</field></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"?2J{CCy8tLtE[QYU3Yt.\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"hJgid$=0y#w1X3}VFIF+\"><field name=\"text\">غیرفعال گردید</field></block></value></block></next></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\"1WBza#rkRAEN9OIqw$q(\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"2]{/4I3kb9($B[}.^NyO\"><field name=\"attr\">TransId</field><field name=\"val\">KeepPhones</field></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"Y|@.Si2$qVOehlB}z?z-\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"PHYdk@kS|X/~r,$VKUUW\"><field name=\"text\">بانک آینده</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"T[h|Tz5RsmWOa+uI.o=Y\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"@A,ANy%OaBr[p!=g|3xb\"><field name=\"text\">مشتری گرامی</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"NEx|/.~{fLtbS:h%%iG.\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"c4pD^T74*}Sw[}8_8IM|\"><field name=\"text\">تغییر یافت</field><value name=\"NAME\"><block type=\"pattern_freemarker_space\" id=\"N6J{@Z$nxQL5Y1yy9PqS\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"|G+$uqzsRw{1U/T-Wwb#\"><field name=\"text\">بنا به درخواست</field><value name=\"NAME\"><block type=\"pattern_freemarker_space\" id=\"$Z,3$#HpC5HEEfaJ6+b}\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"eeuG70Z}Lo(/b)%x^Eb0\"><field name=\"FIELD\">ACCOUNTNO</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"HgP~OL8J(n:}mQ]mx6A+\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"(9wwrR+)kce,ERq*|P4J\"><field name=\"text\">خدمت پیام رسانی حساب</field></block></value></block></value></block></value></block></value></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\".MCQV-}?:F!+_v$D?fHc\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"_ElzNVL@G/`)JA+pdBkK\"><field name=\"FIELD\">txnPDate</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"O{tCKATq~4af!l82Sl,U\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\",^dN$Qu]=];;,YXgvt!d\"><field name=\"text\">-</field><value name=\"NAME\"><block type=\"pattern_freemarker_space\" id=\"Tq.ily`XF2~Or=qNJ$P9\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"sJLH7M:OYUI43YrP_%9z\"><field name=\"FIELD\">txnTime</field></block></value></block></value></block></value></block></value></block></value></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\",tk7A[c9:lJoGYo4?F|1\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"#eX/?++pP6hy]HuhzuOt\"><field name=\"attr\">TransId</field><field name=\"val\">NewPhones</field></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"tcUF$Pq7O})PkwA1oq?]\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"Xp/63_}kdSCIL6~hE^zb\"><field name=\"text\">بانک آینده</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"}.40UeEpTz%7%R)$JxYm\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"2y0y@Rx}01xY8YLw[b/3\"><field name=\"text\">مشتری گرامی</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"N~a%E=fgSu,Bz1~ZU{}g\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"[VzU8a1r;t##,[/HQy@g\"><field name=\"FIELD\">accountNo</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"$6qVZ0ov{_=ZuJhohx@n\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"h$^o53zM(T[bhK9QlGQU\"><field name=\"text\">خدمت پیام رسانی حساب</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"5)G-$PwPh(:0`?}jS=SU\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"3V*=^{ZP25zaRoTRuk8x\"><field name=\"text\">فعال گردید</field><value name=\"NAME\"><block type=\"pattern_freemarker_space\" id=\"L84RHqT[|3O%+XHUeIYP\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"lxQaqj$x29iqfdcV_,8a\"><field name=\"text\">برای شماره تلفن همراه شما</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"^63^@085zq0la9SEk?R8\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"!hg#Kg?]QHjP4Hw`!S_%\"><field name=\"FIELD\">txnPDate</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"0:2lF]5*=g:#`cTxJ2(:\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"i|$8{~(vtWN`+91]@O;{\"><field name=\"text\">-</field><value name=\"NAME\"><block type=\"pattern_freemarker_space\" id=\"[ypYu/3fD.;2@*Z|s?86\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"x#6/n;}Xxt}BE!myKO_(\"><field name=\"FIELD\">txnTime</field></block></value></block></value></block></value></block></value></block></value></block></next></block></next></block></next></block></next></block></statement><next><block type=\"xml_element\" id=\"1JThX:,v6R(HJZ7(-0un\"><field name=\"trans\">Active</field><field name=\"tag\">Pattern</field><value name=\"attr\"><block type=\"xml_attribute_string\" id=\"3vUlYoFV#o3B9]Pm1mNN\"><field name=\"attr\">TransId</field><field name=\"val\">DeletePhones</field></block></value><statement name=\"childs\"><block type=\"pattern_freemarker_linefeed\" id=\"F?XR~p3dGqf10^efKbK,\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"@.|m-a58b#)P`-$/+ruX\"><field name=\"text\">بانک آینده</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"Xma[1pTb+/|_yi.*(qZU\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"$^XeL=?V0z08w`ZlJ0D0\"><field name=\"text\">مشتری گرامی</field></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"w(66r!}JROSapq=#OL3Q\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"[1(r-v8B#RWE6R*K7g~o\"><field name=\"FIELD\">accountNo</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"vc^+P[f1tr@nvz50-HPF\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"3nrtTAu!]DgdduaYU8OI\"><field name=\"text\">خدمت پیام رسانی حساب</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_linefeed\" id=\"In|d)KWzGbj(.]nUQ$7A\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"DMyiM/3D~lfuLD/.i:c|\"><field name=\"text\">غیرفعال گردید</field><value name=\"NAME\"><block type=\"pattern_freemarker_space\" id=\"b_Kv$dRW{c$WuhxuZ_2K\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"6k?JPmz@9aH2.j2{YC/V\"><field name=\"text\">برای شماره تلفن همراه شما</field></block></value></block></value></block></value><next><block type=\"pattern_freemarker_concat\" id=\"9S:d=dAP5PETvH#mIFd7\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"+qBcPS~bnDif7W1Z3,P-\"><field name=\"FIELD\">txnPDate</field><value name=\"INPUT\"><block type=\"pattern_freemarker_space\" id=\"%0!4a:E#wvPLTm(F]H_K\"><value name=\"NAME\"><block type=\"pattern_freemarker_text\" id=\"d1yYEu^Q;umn*U{8E+Gy\"><field name=\"text\">-</field><value name=\"NAME\"><block type=\"pattern_freemarker_space\" id=\"}my^q!]g{P#Jv}[B~4Q~\"><value name=\"NAME\"><block type=\"pattern_freemarker_interpolate\" id=\"eBV,DqXZ,i/8cI;$Xj6+\"><field name=\"FIELD\">txnTime</field></block></value></block></value></block></value></block></value></block></value></block></next></block></next></block></next></block></next></block></statement></block></next></block></next></block></next></block></next></block></next></block></next></block></statement></block></xml>",
+    "code" : "<Patterns group = \"registery\" >  <Pattern TransId = \"ADDACCOUNT\" >  بانک آینده^مشتری گرامی^خدمت پیام رسانی حساب ${ACCOUNTNO}^برای شماره تلفن همراه ${PHONENO}^فعال گردید</Pattern><Pattern TransId = \"ADDCREDITITEM\" >  بانک آینده^مشتری گرامی^خدمت پیام رسانی حساب ${ACCOUNTNO}^&lt;#if CUSTOMERID??&gt;برای شماره تلفن همراه ${CUSTOMERID}^&lt;/#if&gt;غیرفعال گردید</Pattern><Pattern TransId = \"KeepPhones\" >  بانک آینده^مشتری گرامی^خدمت پیام رسانی حساب ${ACCOUNTNO} بنا به درخواست تغییر یافت^${txnTime} - ${txnPDate}</Pattern><Pattern TransId = \"NewPhones\" >  بانک آینده^مشتری گرامی^خدمت پیام رسانی حساب ${accountNo}^برای شماره تلفن همراه شما فعال گردید^${txnTime} - ${txnPDate}</Pattern><Pattern TransId = \"DeletePhones\" >  بانک آینده^مشتری گرامی^خدمت پیام رسانی حساب ${accountNo}^برای شماره تلفن همراه شما غیرفعال گردید^${txnTime} - ${txnPDate}</Pattern></Patterns>",
+    "lang" : "freemarker",
+    "config" : { },
+    "setting" : { }
+  },
+  "Trigger" : [ "switch.108.output" ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.116.input" ]
+}, {
+  "id" : "116",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport org.w3c.dom.*;\r\nimport org.xml.sax.InputSource;\r\nimport org.xml.sax.SAXException;\r\nimport java.io.StringReader;\r\nimport javax.xml.parsers.*;\r\nimport java.io.*;\r\n\r\npublic class ReadXmlPattern extends MasterVerticle {\r\n    private DocumentBuilder builder;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) {\r\n        try {\r\n            //Parser that produces DOM object trees from XML content\r\n            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();\r\n\r\n            //API to obtain DOM Document instance\r\n            //DocumentBuilder builder = null;\r\n\r\n            //Create DocumentBuilder with default configuration\r\n            builder = factory.newDocumentBuilder();\r\n\r\n            initPromise.complete();\r\n        } catch (Exception e) {\r\n            initPromise.fail(\"xml builder not initialized!\");\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        //System.out.println(\"msg: \" + msg.body().toString());\r\n        //Use method to convert XML string content to XML Document object\r\n        Document doc = convertStringToXMLDocument(msg.body().toString());\r\n        doc.getDocumentElement().normalize();\r\n        Element root = doc.getDocumentElement();\r\n        JsonObject joRoot = new JsonObject();\r\n        joRoot.put(\"root_tag_name\", root.getTagName());\r\n        NamedNodeMap attrs = root.getAttributes();\r\n        for (int i = 0; i < attrs.getLength(); ++i) {\r\n            Node attr = attrs.item(i);\r\n            joRoot.put(attr.getNodeName(), attr.getNodeValue());\r\n        }\r\n        //System.out.println(\"joRoot: \" + joRoot.toString());\r\n        NodeList pattern = root.getElementsByTagName(\"Pattern\");\r\n        for (int i = 0; i < pattern.getLength(); i++) {\r\n            JsonObject joPattern = new JsonObject();\r\n            Node patElement = pattern.item(i);\r\n            joPattern.put(\"pattern_tag_name\", patElement.getNodeName());\r\n            NamedNodeMap atts = patElement.getAttributes();\r\n            for (int j = 0; j < atts.getLength(); j++) {\r\n                Node att = atts.item(j);\r\n                joPattern.put(att.getNodeName(), att.getNodeValue());\r\n            }\r\n            joPattern.put(\"text\", patElement.getTextContent());\r\n            joPattern.mergeIn(joRoot.copy());\r\n            eb.publish(addressBook.getResult(), joPattern, addressBook.getDeliveryOptions(msg));\r\n            //System.out.println(\"Pattern#\" + i + \": \" + joPattern.toString());\r\n        }\r\n    }\r\n\r\n    private void sendError(Message msg, Exception e) {\r\n        eb.publish(addressBook.getError(), msg.body(), addressBook.getDeliveryOptions(msg).addHeader(\"error\", e.getMessage()));\r\n    }\r\n\r\n    private Document convertStringToXMLDocument(String xmlString) {\r\n\r\n        try {\r\n            //Parse the content to Document object\r\n            Document doc = builder.parse(new InputSource(new StringReader(xmlString)));\r\n            return doc;\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n        return null;\r\n    }\r\n}",
+    "fName" : "ReadXmlPattern",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "parquet.110.result" ],
+  "Error" : [ ],
+  "Result" : [ "process.122.input" ]
+}, {
+  "id" : "122",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\n\r\npublic class Pattern2LocalMap extends MasterVerticle {\r\n    private SharedData sharedData;\r\n    private LocalMap<String, JsonObject> patterns;\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sharedData = vertx.sharedData();\r\n        patterns = sharedData.getLocalMap(\"json_patterns\");\r\n        super.initialize(initPromise);\r\n    }\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject pattern = (JsonObject) msg.body();\r\n        patterns.put(pattern.getString(\"TransId\"), pattern);\r\n        eb.publish(addressBook.getResult(), pattern, addressBook.getDeliveryOptions(msg));\r\n    }\r\n}",
+    "fName" : "Pattern2LocalMap",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.116.result" ],
+  "Error" : [ ],
+  "Result" : [ "process.128.input" ]
+}, {
+  "id" : "128",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\nimport freemarker.cache.NullCacheStorage;\r\nimport freemarker.template.Configuration;\r\nimport freemarker.template.Template;\r\nimport freemarker.template.TemplateExceptionHandler;\r\nimport freemarker.template.Version;\r\nimport io.vertx.ext.web.common.template.impl.TemplateHolder;\r\n\r\nimport java.io.IOException;\r\nimport java.io.StringReader;\r\n\r\npublic class Template2LocalMap extends MasterVerticle {\r\n    private Configuration config;\r\n    private LocalMap<String, TemplateHolder<Template>> cache;\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        SharedData sharedData = vertx.sharedData();\r\n        cache = sharedData.getLocalMap(\"template_patterns\");\r\n        /* ------------------------------------------------------------------------ */\r\n        /* You should do this ONLY ONCE in the whole application life-cycle:        */\r\n\r\n        /* Create and adjust the configuration singleton */\r\n        this.config = new Configuration(Configuration.VERSION_2_3_29);\r\n        //this.config.setDirectoryForTemplateLoading(new File(\"/templates\"));\r\n        // Recommended settings for new projects:\r\n        this.config.setDefaultEncoding(\"UTF-8\");\r\n        this.config.setIncompatibleImprovements(new Version(2, 3, 20));\r\n        this.config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);\r\n        this.config.setLogTemplateExceptions(false);\r\n        this.config.setWrapUncheckedExceptions(true);\r\n        this.config.setFallbackOnNullLoopVariable(false);\r\n        /* ------------------------------------------------------------------------ */\r\n        this.config.setCacheStorage(new NullCacheStorage());\r\n\r\n        super.initialize(initPromise);\r\n    }\r\n    @Override\r\n    public void process(Message msg) {\r\n        TemplateHolder<Template> template;\r\n        JsonObject pat = (JsonObject) msg.body();\r\n        String transId = pat.getString(\"TransId\");\r\n        String text = pat.getString(\"text\");\r\n        try {\r\n            template = new TemplateHolder(new Template(transId, new StringReader(text), this.config));\r\n            this.cache.put(transId, template);\r\n            eb.publish(addressBook.getResult(), pat, addressBook.getDeliveryOptions(msg));\r\n        } catch (IOException e) {\r\n            eb.publish(addressBook.getError(), e.getMessage(), addressBook.getDeliveryOptions(msg));\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "Template2LocalMap",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.122.result" ],
+  "Error" : [ ],
+  "Result" : [ "process.134.input" ]
+}, {
+  "id" : "134",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class OutTest1 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        //JsonObject body = (JsonObject) msg.body();\r\n        System.out.println(\"out1#\" + \": \" + msg.body().toString());\r\n        try {\r\n            super.process(msg);\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "OutTest1",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.128.result" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "140",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "RedGreenToggleSwitch"
+    },
+    "setting" : {
+      "autoNext" : true,
+      "no" : 0,
+      "rate" : 1000,
+      "_" : {
+        "state" : true,
+        "period" : 1000,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.191.trigger" ]
+}, {
+  "id" : "142",
+  "type" : "file",
+  "data" : {
+    "type" : "file",
+    "config" : { },
+    "setting" : {
+      "mode" : "watch",
+      "filePath" : "E:\\ceramic\\data",
+      "fileNameMask" : "*Add*.txt",
+      "fileNameDoneExt" : "done",
+      "fileNameLockExt" : "$"
+    }
+  },
+  "Trigger" : [ "process.191.out0" ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ "process.148.input" ]
+}, {
+  "id" : "148",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport org.jdom2.Document;\r\nimport org.jdom2.Element;\r\nimport org.jdom2.JDOMException;\r\nimport org.jdom2.input.SAXBuilder;\r\n\r\nimport java.io.IOException;\r\nimport java.io.StringReader;\r\nimport java.util.List;\r\n\r\npublic class Xml2Dom extends MasterVerticle {\r\n    SAXBuilder saxBuilder = new SAXBuilder();\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject joTran = new JsonObject();\r\n        String transRaw = msg.body().toString();\r\n        if (transRaw.trim().length() == 0)\r\n            return;\r\n        Document document = null;\r\n        try {\r\n            document = saxBuilder.build(new StringReader(transRaw));\r\n            Element commandXMLConfigElement = document.getRootElement();\r\n            String command = commandXMLConfigElement.getName().toUpperCase();\r\n            joTran.put(\"Command\".toUpperCase(), command);\r\n            List<org.jdom2.Attribute> attributes = commandXMLConfigElement.getAttributes();\r\n            for (org.jdom2.Attribute attribute : attributes) {\r\n                joTran.put(attribute.getName().toUpperCase(), attribute.getValue());\r\n            }\r\n        } catch (JDOMException e) {\r\n            sendException(e);\r\n        } catch (IOException e) {\r\n            sendException(e);\r\n        }\r\n        \r\n        eb.publish(addressBook.getResult(), new JsonObject().put(\"tran\", joTran)\r\n            .put(\"rawTran\", transRaw), addressBook.getDeliveryOptions(msg));\r\n    }\r\n}",
+    "fName" : "Xml2Dom",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "file.142.result" ],
+  "Error" : [ ],
+  "Result" : [ "process.183.input" ]
+}, {
+  "id" : "154",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "\r\nimport com.vx6.master.MasterVerticle;\r\nimport freemarker.template.Template;\r\nimport freemarker.template.TemplateException;\r\nimport io.vertx.core.AsyncResult;\r\nimport io.vertx.core.Future;\r\nimport io.vertx.core.Handler;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.buffer.Buffer;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\nimport io.vertx.ext.web.common.template.impl.TemplateHolder;\r\n\r\nimport java.io.ByteArrayOutputStream;\r\nimport java.io.IOException;\r\nimport java.io.OutputStreamWriter;\r\nimport java.io.StringWriter;\r\n\r\npublic class TransRender extends MasterVerticle {\r\n    private LocalMap<String, TemplateHolder<Template>> cache;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        SharedData sharedData = vertx.sharedData();\r\n        cache = sharedData.getLocalMap(\"template_patterns\");\r\n        super.initialize(initPromise);\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject smsInfo = body.getJsonObject(\"smsInfo\");\r\n        TemplateHolder<Template> th = cache.get(smsInfo.getString(\"transId\"));\r\n        if (th != null) {\r\n            StringWriter stringWriter = new StringWriter();\r\n            try {\r\n                (th.template()).process(smsInfo.getMap(), stringWriter);\r\n                smsInfo.put(\"msg\",stringWriter.toString());\r\n                eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg));\r\n            } catch (TemplateException | IOException e) {\r\n                eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"cause\", e.getMessage()));\r\n                //e.printStackTrace();\r\n            }\r\n        } else {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"cause\", \"template_not_found\"));\r\n        }\r\n    }\r\n}",
+    "fName" : "TransRender",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.101.result" ],
+  "Error" : [ ],
+  "Result" : [ "process.7.input" ]
+}, {
+  "id" : "166",
+  "type" : "group",
+  "data" : null,
+  "" : [ ]
+}, {
+  "id" : "175",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.stevesoft.pat.FileRegex;\r\nimport com.vx6.master.MasterVerticle;\r\nimport com.vx6.utils.Library;\r\nimport com.vx6.utils.PersianCalendarBean;\r\nimport com.vx6.utils.UnicodeReader;\r\nimport com.vx6.tools.Item;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.io.*;\r\nimport java.util.Date;\r\nimport java.util.TreeMap;\r\nimport java.util.TreeSet;\r\n\r\npublic class CheckUniqKey extends MasterVerticle {\r\n    private int keyLen = 12;\r\n    private String keyPath = \".\\\\_Keys\\\\\";\r\n    private String keyFilePrefix = \"Unq\";\r\n    private String keyFileExt = \".keys\";\r\n    private int deleteOldFilesDay = 2;\r\n    private int maxCacheCount = 3;\r\n    private TreeMap<String, Item> keys;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        JsonObject config = config().getJsonObject(\"data\").getJsonObject(\"config\");\r\n        this.keyLen = config.getInteger(\"keyLen\");\r\n        this.keyPath = config.getString(\"keyPath\");\r\n        this.keyFilePrefix = config.getString(\"keyFilePrefix\");\r\n        this.keyFileExt = config.getString(\"keyFileExt\");\r\n        this.deleteOldFilesDay = config.getInteger(\"deleteOldFilesDay\");\r\n        this.maxCacheCount = config.getInteger(\"maxCacheCount\");\r\n        if (!Library.pathExist(this.keyPath))\r\n            initPromise.fail(\"UniqKey Path Not Found =\" + this.keyPath);\r\n        else {\r\n            keys = new TreeMap<String, Item>();\r\n            initPromise.complete();\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public <T> void process(Message<T> tMessage) {\r\n        if (this.setting.getBoolean(\"enable\") && tMessage.headers().contains(\"key\")) {\r\n            try {\r\n                if (checkKey(tMessage.headers().get(\"key\"))) {\r\n                    publishOut(1, tMessage.body(), addressBook.getDeliveryOptions(tMessage));//The key was unique.\r\n                } else {\r\n                    publishOut(0, tMessage.body(), addressBook.getDeliveryOptions(tMessage));//The key wasn't unique.\r\n                }\r\n            } catch (Exception e) {\r\n                sendException(e);\r\n            }\r\n        } else {\r\n            publishOut(1, tMessage.body(), addressBook.getDeliveryOptions(tMessage));//The unique is not care.\r\n        }\r\n    }\r\n\r\n    private String makeKeyFileName(String akeyId) {\r\n        return keyFilePrefix + akeyId + keyFileExt;\r\n    }\r\n\r\n    private void saveKeys(String keyId, TreeSet<String> saveKeys) {\r\n        String keysFileName = keyPath + makeKeyFileName(keyId);\r\n\r\n        /*if (UserConfiguration.userConfig.isLogDetail())\r\n            Log.log.addLog(\"Unique save File = \" + keysFileName + \" Size = \" + saveKeys.size());*/\r\n        BufferedWriter out = null;\r\n        String key;\r\n        try {\r\n            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(keysFileName), \"cp1256\"));\r\n\r\n            while ((key = saveKeys.pollFirst()) != null) {\r\n                out.write(key + System.getProperty(\"line.separator\"));\r\n            }\r\n        } catch (IOException e) {\r\n            //Log.log.addExceptLog(e, true);\r\n        } finally {\r\n            try {\r\n                if (out != null)\r\n                    out.close();\r\n            } catch (Exception e) {\r\n                //Log.log.addExceptLog(e, true);\r\n            }\r\n        }\r\n    }\r\n\r\n    private TreeSet<String> loadKeys(String keyId) {\r\n        TreeSet<String> newKeys = new TreeSet<String>();\r\n        String keysFileName = keyPath + makeKeyFileName(keyId);\r\n        if (new File(keysFileName).exists()) {\r\n            BufferedReader in = null;\r\n            String key;\r\n            try {\r\n                in = new BufferedReader(new UnicodeReader(new FileInputStream(keysFileName), \"cp1256\"));\r\n                while ((key = in.readLine()) != null) {\r\n                    if (key.isEmpty())\r\n                        continue;\r\n                    newKeys.add(key);\r\n                }\r\n            } catch (Exception e) {\r\n                // Log.log.addExceptLog(e, true);\r\n            } finally {\r\n                try {\r\n                    if (in != null)\r\n                        in.close();\r\n                } catch (Exception e) {\r\n                    // Log.log.addExceptLog(e, true);\r\n                }\r\n            }\r\n            /*if (UserConfiguration.userConfig.isLogDetail())\r\n                Log.log.addLog(\"Unique Load File = \" + keysFileName + \" Size = \" + newKeys.size());*/\r\n        }\r\n        return newKeys;\r\n    }\r\n\r\n    public void shutdown() {\r\n        // if already contains data then save it\r\n        for (String keyId : keys.keySet()) {\r\n            if (keys.get(keyId).modified)\r\n                saveKeys(keyId, keys.get(keyId).data);\r\n        }\r\n    }\r\n\r\n    public boolean checkKey(String aKey) throws Exception {\r\n        try {\r\n            if (aKey.isEmpty())  // used for forced \"SendSMS\" messages without key\r\n                return true;\r\n            String aKeyId = aKey.substring(0, keyLen);\r\n            if (!keys.containsKey(aKeyId)) {\r\n                // not already have a keyId\r\n                if (keys.size() >= maxCacheCount) {\r\n                    // extract first item\r\n                    String firstKey = keys.firstKey();\r\n                    if (keys.get(firstKey).modified)\r\n                        saveKeys(firstKey, keys.get(firstKey).data);\r\n                    keys.remove(firstKey);\r\n                }\r\n                //create new packet\r\n                keys.put(aKeyId, new Item(loadKeys(aKeyId)));\r\n            }\r\n            return (keys.get(aKeyId).add(aKey));\r\n        } catch (Exception e) {\r\n            throw e;\r\n        }\r\n    }\r\n\r\n    private String[] listMaskFile(String path, String masks) {\r\n        TreeSet<String> all = new TreeSet<String>();\r\n        StringBuilder masksStr = new StringBuilder(masks);\r\n        while (masksStr.length() > 0) {\r\n            String mask = Library.getToken(masksStr, \",\");\r\n\r\n            String[] files = new File(path).list(new FileRegex(mask));\r\n            if (files == null) {\r\n                continue;\r\n            }\r\n            for (String file : files) {\r\n                if (file.contains(\".$\"))\r\n                    continue;\r\n                all.add(file);\r\n            }\r\n        }\r\n\r\n        return all.toArray(new String[all.size()]);\r\n    }\r\n\r\n    public void clearFiles() {\r\n        final long MILLIS_IN_A_DAY = 1000 * 60 * 60 * 24;\r\n        long dt = new Date().getTime() - (deleteOldFilesDay * MILLIS_IN_A_DAY);\r\n        String ss = PersianCalendarBean.getPersianDateSimple(new Date(dt)).substring(0, keyLen);\r\n        String boundaryFileName = makeKeyFileName(ss);\r\n\r\n        String[] files = listMaskFile(keyPath, keyFilePrefix + \"*\" + keyFileExt);\r\n        for (String file : files) {\r\n            if (file.compareToIgnoreCase(boundaryFileName) < 0) {\r\n                new File(keyPath + file).delete();\r\n//                System.out.println(\"delete file \" + file);\r\n            }\r\n        }\r\n    }\r\n}",
+    "fName" : "CheckUniqKey",
+    "theme" : "monokai",
+    "outNumber" : 2,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "keyLen" : 12,
+      "keyPath" : "E:\\ceramic\\app\\_Keys\\",
+      "keyFilePrefix" : "Unq",
+      "keyFileExt" : ".keys",
+      "deleteOldFilesDay" : 2,
+      "maxCacheCount" : 60,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : {
+      "enable" : false
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.183.result" ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Out0" : [ ],
+  "Out1" : [ "process.248.input" ]
+}, {
+  "id" : "183",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\npublic class SetUniqueKey extends MasterVerticle {\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject tran = body.getJsonObject(\"tran\");\r\n        var key = tran.getString(\"CMDDATE\") +\r\n                tran.getString(\"CMDTIME\") +\r\n                tran.getString(\"ACCOUNTNO\") +\r\n                tran.getString(\"PHONENO\") +\r\n                tran.getString(\"BRANCH\") +\r\n                tran.getString(\"TERMINALID\") +\r\n                tran.getString(\"USER\") +\r\n                tran.getString(\"COMMAND\");\r\n        eb.publish(addressBook.getResult(), msg.body(), addressBook.getDeliveryOptions(msg).addHeader(\"key\", key).addHeader(\"channel\", \"File|\" + tran.getString(\"COMMAND\").toLowerCase()));\r\n    }\r\n}",
+    "fName" : "SetUniqueKey",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.148.result" ],
+  "Error" : [ ],
+  "Result" : [ "process.175.input" ]
+}, {
+  "id" : "223",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.text.SimpleDateFormat;\r\nimport java.util.Date;\r\n\r\npublic class TblTransaction extends MasterVerticle {\r\n    private StringBuilder query = new StringBuilder();\r\n    private int queryLineCount = 0;\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject smsInfo = body.getJsonObject(\"smsInfo\");\r\n        String sqlCmd = String.format(\r\n                \"INSERT INTO tblTransactions (SendRefNo2,MsgPart,ProviderName,PhoneNo,TxnPDate,TxnTime,TransId,TransType,AccountNo,StmtCode,CardNo,TxnKey,Amount,FinalBalance,Msg,UniqKey, Channel,TxnDT,ProcessDT) \" +\r\n                        \"VALUES (%d,%d,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s');\" + \"\\n\",\r\n                Long.parseLong(msg.headers().get(\"sendRefNo2\")),\r\n                Integer.parseInt(msg.headers().get(\"msgPart\")),\r\n                msg.headers().get(\"providerName\"),\r\n                msg.headers().get(\"phoneNo\"),\r\n                smsInfo.getString(\"txnPDate\"),\r\n                smsInfo.getString(\"txnTime\"),\r\n                smsInfo.getString(\"transId\"),\r\n                smsInfo.getString(\"transType\"),\r\n                smsInfo.getString(\"accountNo\"),\r\n                smsInfo.getString(\"stmtCode\"),\r\n                smsInfo.getString(\"cardNo\"),\r\n                smsInfo.getString(\"txnKey\"),\r\n                smsInfo.getString(\"amount\"),\r\n                smsInfo.getString(\"finalBalance\"),\r\n                smsInfo.getString(\"msg\"),\r\n                msg.headers().get(\"key\"),\r\n                msg.headers().get(\"channel\"),\r\n                new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\").format(Date.from(body.getInstant(\"txDT\"))),\r\n                new SimpleDateFormat(\"yyyy-MM-dd HH:mm:ss\").format(Date.from(body.getInstant(\"processDT\")))\r\n        );\r\n        query.append(sqlCmd);\r\n        queryLineCount++;\r\n        if (queryLineCount >= this.setting.getInteger(\"dbCacheSize\")) {\r\n            sendQuery();\r\n        }\r\n\r\n    }\r\n\r\n    @Override\r\n    public <T> void unknownCmd(Message<T> tMessage, String cmd) {\r\n        if (cmd.equalsIgnoreCase(\"executeupdate\") && queryLineCount > 0) {\r\n            sendQuery();\r\n            this.resultOutboundCount++;\r\n        }\r\n    }\r\n\r\n    private void sendQuery() {\r\n        eb.publish(addressBook.getResult(), new JsonObject().put(\"query\", this.query.toString())\r\n                .put(\"cmd\", \"executeUpdate\"), addressBook.getDeliveryOptions()\r\n                .addHeader(\"cmd\", \"executeUpdate\").addHeader(\"queryLineCount\", this.queryLineCount + \"\"));\r\n\r\n        queryLineCount = 0;\r\n        query.setLength(0);\r\n    }\r\n}",
+    "fName" : "TblTransaction",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : {
+      "dbCacheSize" : 1
+    }
+  },
+  "Trigger" : [ "switch.237.output" ],
+  "Input" : [ "process.12.error" ],
+  "Error" : [ ],
+  "Result" : [ "database.228.trigger" ]
+}, {
+  "id" : "228",
+  "type" : "database",
+  "data" : {
+    "type" : "database",
+    "dbType" : "SqlServer",
+    "theme" : "sqlserver",
+    "config" : {
+      "ip" : "192.168.166.11",
+      "port" : 1433,
+      "dbName" : "BXX_SAPTA11",
+      "user" : "sa",
+      "pass" : "suny$123",
+      "buffer" : 1,
+      "instance" : 5
+    },
+    "setting" : {
+      "count" : 1,
+      "query" : ""
+    }
+  },
+  "Trigger" : [ "process.223.result" ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "191",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.MultiMap;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\n\r\nimport java.util.HashMap;\r\n\r\n\r\npublic class Initialization extends MasterVerticle {\r\n    private boolean initiated = false;\r\n    private HashMap<Integer, JsonObject> bodies = new HashMap<>();\r\n    private HashMap<Integer, MultiMap> headers = new HashMap();\r\n    private SharedData sharedData;\r\n    private LocalMap<String, JsonObject> constants;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sharedData = vertx.sharedData();\r\n        constants = sharedData.getLocalMap(\"SAPTA_CONSTANTS\");\r\n        constants.put(\"AYN\", config);\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        try {\r\n            JsonObject body = (JsonObject) msg.body();\r\n            if (body.getString(\"msg\").equalsIgnoreCase(\"result-set-end\")) {\r\n                initiated = true;\r\n                //Ready to turn on inputs\r\n                for (Integer i : bodies.keySet()) {\r\n                    if (bodies.get(i) != null)\r\n                        publishOut(i, bodies.get(i), addressBook.getDeliveryOptions().setHeaders(headers.get(i)));\r\n                }\r\n                bodies.clear();\r\n                headers.clear();\r\n            }\r\n        } catch (Exception ignored) {\r\n        }\r\n        System.out.println(msg.body());\r\n    }\r\n\r\n    @Override\r\n    public <T> void trigger(Message<T> msg) {\r\n        try {\r\n            JsonObject body = (JsonObject) msg.body();\r\n            if (initiated) {\r\n                publishOut(body.getInteger(\"no\"), msg.body(), addressBook.getDeliveryOptions(msg));\r\n                this.resultOutboundCount++;\r\n            } else {\r\n                bodies.put(body.getInteger(\"no\"), body);\r\n                headers.put(body.getInteger(\"no\"), msg.headers());\r\n            }\r\n        } catch (Exception ignored) {\r\n        }\r\n    }\r\n}",
+    "fName" : "Initialization",
+    "theme" : "monokai",
+    "outNumber" : 4,
+    "config" : {
+      "bankId" : "AYN",
+      "bankCode" : 64,
+      "transGroup" : "tg99",
+      "defaultLowLimitDebit" : 0,
+      "defaultLowLimitCredit" : 0,
+      "startupCreditItem" : "C01",
+      "customerBase" : true,
+      "creditItem" : {
+        "C00" : {
+          "description" : "اعتبار یکماهه رایگان",
+          "comment" : "One month Free",
+          "amount" : 0,
+          "days" : 31,
+          "price" : 0
+        },
+        "C01" : {
+          "description" : "اعتبار شش ماهه",
+          "comment" : "6 Months",
+          "amount" : 0,
+          "days" : 186,
+          "price" : 50000
+        },
+        "C02" : {
+          "description" : "اعتبار یکساله",
+          "comment" : "Yearly",
+          "amount" : 0,
+          "days" : 366,
+          "price" : 100000
+        }
+      }
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ "switch.140.output" ],
+  "Input" : [ "process.413.result" ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Out0" : [ "file.142.trigger" ],
+  "Out1" : [ ],
+  "Out2" : [ ],
+  "Out3" : [ ]
+}, {
+  "id" : "236",
+  "type" : "group",
+  "data" : null,
+  "" : [ ]
+}, {
+  "id" : "237",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "BlueSubscribeButtons"
+    },
+    "setting" : {
+      "cmd" : "executeUpdate",
+      "_" : {
+        "state" : true,
+        "period" : 5000,
+        "delay" : 5000
+      }
+    }
+  },
+  "Output" : [ "process.223.trigger" ]
+}, {
+  "id" : "248",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.ceramic.tools.Account;\r\nimport com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\n//import io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\nimport org.apache.commons.lang3.StringUtils;\r\n\r\npublic class FindAccountInfo extends MasterVerticle {\r\n    private SharedData sharedData;\r\n    private LocalMap<String, String> accounts;\r\n    private LocalMap<String, String> customers;\r\n    private static final Account acc = new Account();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sharedData = vertx.sharedData();\r\n        accounts = sharedData.getLocalMap(\"AYN_SAPTA_ACCOUNTS_3\");\r\n        customers = sharedData.getLocalMap(\"AYN_SAPTA_CUSTOMERS\");\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject tran = body.getJsonObject(\"tran\");\r\n        var accountNo = tran.getString(\"ACCOUNTNO\");\r\n        if (StringUtils.isNotBlank(accountNo) && accounts.containsKey(accountNo)) {\r\n            String accountInfo = accounts.get(accountNo);\r\n            body.put(\"accountInfo\", acc.csv2json(accountInfo));\r\n            eb.publish(addressBook.getResult(), body, addressBook.getDeliveryOptions(msg));\r\n        } else {\r\n            resultOutboundCount--;\r\n            publishOut(0, body, addressBook.getDeliveryOptions(msg));\r\n        }\r\n    }\r\n\r\n    /*private static JsonObject getJson(String acc) {\r\n        var split = acc.split(\"//|\");\r\n        JsonObject accountInfo = new JsonObject();\r\n        accountInfo.put(\"AccountNo\", split[0].trim());\r\n        accountInfo.put(\"Enable\", \"1\".equals(split[1]));\r\n        accountInfo.put(\"CustomerId\", split[2]);\r\n        accountInfo.put(\"TransGroupsStr\", split[3]);\r\n        accountInfo.put(\"Phones\", split[4]);\r\n        accountInfo.put(\"AutoRenewRegister\", \"1\".equals(split[5]));\r\n        accountInfo.put(\"RemainAmount\", Long.parseLong(split[6]));\r\n        accountInfo.put(\"RemainDays\", Long.parseLong(split[7]));\r\n        accountInfo.put(\"DueDate\", split[8].equals(\"null\") ? \"\" : split[8]);\r\n        accountInfo.put(\"LowLimitCredit\", Long.parseLong(split[9]));\r\n        accountInfo.put(\"LowLimitDebit\", Long.parseLong(split[10]));\r\n        accountInfo.put(\"ExpireDate\", split[11]);\r\n        accountInfo.put(\"NearExpireNotifyDate\", split[12]);\r\n        accountInfo.put(\"ExpiredNotifyDate\", split[13]);\r\n        //accountInfo.put(\"EditDT\", split[13]);\r\n        accountInfo.put(\"AutoRenewRegCancelNotifyDate\", split[14]);\r\n        //accountInfo.put(\"Flag\", split[15].equals(\"null\") ? null : Integer.parseInt(split[15]));\r\n        return accountInfo;\r\n    }*/\r\n}",
+    "fName" : "FindAccountInfo",
+    "theme" : "monokai",
+    "outNumber" : 1,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.175.out1" ],
+  "Error" : [ ],
+  "Result" : [ "process.265.input" ],
+  "Out0" : [ "process.265.input" ]
+}, {
+  "id" : "256",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.ext.dropwizard.MetricsService;\r\n\r\n\r\npublic class HeaderAndBodyProbe extends MasterVerticle {\r\n    private String className = this.getClass().getName();\r\n    private static MetricsService metricsService;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        metricsService = MetricsService.create(vertx);\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        System.out.println(className + \".Input.body: \" + msg.body());\r\n        System.out.println(className + \".Input.header: \" + msg.headers());\r\n    }\r\n\r\n    @Override\r\n    public void trigger(Message msg) {\r\n       /* System.out.println(className + \".Trigger.body: \" + msg.body());\r\n        System.out.println(className + \".Trigger.header: \" + msg.headers());*/\r\n        JsonObject metrics = metricsService.getMetricsSnapshot(\"vertx.eventbus.messages.published\");\r\n        health.put(\"metrics\", metrics);\r\n        //System.out.println(metrics);\r\n    }\r\n}",
+    "fName" : "HeaderAndBodyProbe",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ "switch.348.output", "switch.351.output" ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "265",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\n\r\npublic class CommandDispatch extends MasterVerticle {\r\n\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        this.resultOutboundCount--;\r\n        //eb.publish(addressBook.getResult(), msg.body(), addressBook.getDeliveryOptions(msg));\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject tran = body.getJsonObject(\"tran\");\r\n        var command = tran.getString(\"COMMAND\");\r\n        switch (command) {\r\n            case \"ADDACCOUNT\":\r\n                publishOut(0, body, addressBook.getDeliveryOptions(msg));\r\n                health.put(\"ADDACCOUNT\", health.containsKey(\"ADDACCOUNT\") ? health.getInteger(\"ADDACCOUNT\") + 1 : 1);\r\n                break;\r\n            case \"ADDCREDITITEM\":\r\n                publishOut(1, body, addressBook.getDeliveryOptions(msg));\r\n                health.put(\"ADDCREDITITEM\", health.containsKey(\"ADDCREDITITEM\") ? health.getInteger(\"ADDCREDITITEM\") + 1 : 1);\r\n                break;\r\n            default:\r\n                System.out.println(\"Command not defined.\");\r\n                break;\r\n        }\r\n    }\r\n}",
+    "fName" : "CommandDispatch",
+    "theme" : "monokai",
+    "outNumber" : 2,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.248.out0", "process.248.result" ],
+  "Error" : [ ],
+  "Result" : [ ],
+  "Out0" : [ "switch.315.input" ],
+  "Out1" : [ "switch.308.input" ]
+}, {
+  "id" : "304",
+  "type" : "group",
+  "data" : null,
+  "" : [ ]
+}, {
+  "id" : "308",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false
+      }
+    }
+  },
+  "Output" : [ "process.274.input" ],
+  "Input" : [ "process.265.out1" ]
+}, {
+  "id" : "274",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "//import com.ghasemkiani.util.icu.PersianCalendar;\r\n\r\nimport com.ceramic.tools.Account;\r\nimport com.vx6.master.MasterVerticle;\r\n//import com.vx6.utils.Library;\r\nimport com.vx6.utils.PersianCalendarBean;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\n//import io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\n//import org.apache.commons.lang3.StringUtils;\r\n\r\nimport java.text.SimpleDateFormat;\r\nimport java.util.*;\r\n//import java.util.concurrent.ConcurrentHashMap;\r\n\r\n//import static com.vx6.utils.Library.correctPhoneNos;\r\nimport static org.apache.commons.lang3.StringUtils.isBlank;\r\nimport static org.apache.commons.lang3.StringUtils.isNotBlank;\r\n\r\n\r\npublic class AddCreditItemBusiness extends MasterVerticle {\r\n    private SharedData sharedData;\r\n    private LocalMap<String, String> accounts;\r\n    private LocalMap<String, String> customers;\r\n    private LocalMap<String, JsonObject> constants;\r\n    private static final SimpleDateFormat sdf = new SimpleDateFormat(\"yyyy-MM-dd\");\r\n    private static final Account acc = new Account();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sharedData = vertx.sharedData();\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        this.resultOutboundCount--;//Here we may send multiple messages so default assumption of just one output message must be draw-back\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject tran = body.getJsonObject(\"tran\");\r\n\r\n        String accountNo = tran.getString(\"ACCOUNTNO\");\r\n        if (isBlank(accountNo)) {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"ERROR\", \"AccountNo is blank\"));\r\n            this.errorOutboundCount++;\r\n            return;\r\n        }\r\n\r\n        String creditName = tran.getString(\"CREDITITEMNAME\");\r\n        if (isBlank(creditName)) {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"ERROR\", \"creditName is blank\"));\r\n            this.errorOutboundCount++;\r\n            return;\r\n        }\r\n\r\n        String customerId = tran.getString(\"CUSTOMERID\") == null ? \"\" : tran.getString(\"CUSTOMERID\").trim();\r\n        if (isBlank(customerId)) {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"ERROR\", \"CustomerId is blank\"));\r\n            this.errorOutboundCount++;\r\n            return;\r\n        }\r\n        /*String expireDate = tran.getString(\"EXPIREDATE\") == null ? \"\" : tran.getString(\"EXPIREDATE\").trim();\r\n        if (expireDate.startsWith(\"00000000\"))\r\n            expireDate = \"\";\r\n        else if (expireDate.startsWith(\"14000000\"))\r\n            expireDate = \"\";\r\n        else {\r\n            if (expireDate.startsWith(\"00\")) {\r\n                int i = Integer.parseInt(expireDate.substring(2, 4));\r\n                if (i >= 90) {\r\n                    expireDate = \"13\" + expireDate.substring(2);\r\n                } else {\r\n                    expireDate = \"14\" + expireDate.substring(2);\r\n                }\r\n            }\r\n        }\r\n*/\r\n        String branchNo = tran.getString(\"BRANCH\");\r\n\r\n        //List<String> beforePhones = new ArrayList<>();\r\n        JsonObject accountInfo = new JsonObject();\r\n        //JsonObject constants = body.getJsonObject(\"constants\");\r\n        if (body.containsKey(\"accountInfo\")) {\r\n            accountInfo = body.getJsonObject(\"accountInfo\").copy();\r\n            /*beforePhones.addAll(Arrays.asList(accountInfo.getString(\"Phones\")\r\n                    .replace(\",\", \";\").split(\";\")));*/\r\n        } else {\r\n            accountInfo.put(\"AccountNo\", accountNo);\r\n            accountInfo.put(\"CustomerId\", customerId);\r\n            accountInfo.put(\"Phones\", \"\");\r\n            accountInfo.put(\"RemainAmount\", 0);\r\n            accountInfo.put(\"RemainDays\", 0);\r\n            accountInfo.put(\"DueDate\", null);\r\n            accountInfo.put(\"LowLimitDebit\", constants.get(\"AYN\").getInteger(\"defaultLowLimitDebit\") + \"\");\r\n            accountInfo.put(\"LowLimitCredit\", constants.get(\"AYN\").getInteger(\"defaultLowLimitCredit\") + \"\");\r\n            accountInfo.put(\"CreditItem\", constants.get(\"AYN\").getString(\"startupCreditItem\"));\r\n            accountInfo.put(\"NearExpireNotifyDate\", null);\r\n            accountInfo.put(\"ExpiredNotifyDate\", null);\r\n            accountInfo.put(\"EditDT\", new Date().toInstant());\r\n            accountInfo.put(\"AutoRenewRegCancelNotifyDate\", null);\r\n            accountInfo.put(\"ExpireDate\", \"\");\r\n            accountInfo.put(\"AutoRenewRegister\", true);\r\n            accountInfo.put(\"TransGroupsStr\", constants.get(\"AYN\").getString(\"transGroup\"));\r\n        }\r\n        //accountInfo.put(\"Phones\", phoneNo);\r\n        if (isNotBlank(accountInfo.getString(\"Phones\"))) {\r\n            accountInfo.put(\"Enable\", true);\r\n        }\r\n        var accountNos = customers.getOrDefault(customerId, \"\");\r\n\r\n        if (constants.get(\"AYN\").getBoolean(\"customerBase\") && isNotBlank(customerId)) {\r\n            if (constants.get(\"AYN\").getString(\"bankId\").equalsIgnoreCase(\"AYN\")) {\r\n                //Set all accounts (with respect to this customer id) to the biggest dueDate.\r\n                //First of first specify biggest dueDate\r\n                var dueDate = \"\";\r\n                String[] accNos = Arrays.stream(accountNos.split(\"\\\\|\")).filter(acc -> acc.trim().length() > 9).toArray(String[]::new);\r\n                for (String accNo : accNos) {\r\n                    JsonObject account = acc.csv2json(accounts.getOrDefault(accNo, null));\r\n                    if (account != null && account.getString(\"DueDate\", \"\").compareTo(dueDate) > 0) {\r\n                        dueDate = account.getString(\"DueDate\");\r\n                    }\r\n                }\r\n\r\n                //Now we have biggest dueDate, and it's time to set all accounts dueDate to that.\r\n                try {\r\n                    Date date;\r\n                    if (isBlank(dueDate) || (new Date().getTime() > sdf.parse(dueDate).getTime())) {\r\n                        date = new Date(new Date().getTime() + (long) (1000 * 60 * 60 * 24)\r\n                                * constants.get(\"AYN\").getJsonObject(\"creditItem\").getJsonObject(creditName).getInteger(\"days\"));\r\n                    } else {\r\n                        date = new Date(sdf.parse(dueDate).getTime() + (long) (1000 * 60 * 60 * 24)\r\n                                * constants.get(\"AYN\").getJsonObject(\"creditItem\").getJsonObject(creditName).getInteger(\"days\"));\r\n                    }\r\n                    dueDate = PersianCalendarBean.getLastDayOfMonthOfPersianDate(date);\r\n                    dueDate = sdf.format(PersianCalendarBean.getJulianDate(dueDate, \"000000\"));\r\n                    for (String accNo : accNos) {\r\n                        JsonObject account = acc.csv2json(accounts.getOrDefault(accNo, null));\r\n                        if (!(account == null || dueDate.equalsIgnoreCase(account.getString(\"DueDate\"))\r\n                                || accountNo.equalsIgnoreCase(account.getString(\"AccountNo\")))) {\r\n                            JsonObject oldAccount = account.copy();\r\n                            account.put(\"DueDate\", dueDate);\r\n                            account.put(\"EditDT\", new Date().toInstant());\r\n                            accounts.put(accNo, acc.json2csv(account));\r\n                            //Save updated account on DB\r\n                            eb.publish(addressBook.getResult(),\r\n                                    new JsonObject().put(\"accountInfo\", oldAccount).put(\"newAccountInfo\", account),\r\n                                    addressBook.getDeliveryOptions(msg));\r\n                            resultOutboundCount++;\r\n                            //TODO: This the right place to send sms to account owner if we want to.\r\n                        }\r\n                    }\r\n                    accountInfo.put(\"DueDate\", dueDate);\r\n                } catch (Exception e) {\r\n                    sendException(e);\r\n                }\r\n            }\r\n        }\r\n\r\n        if (!accountNos.contains(accountNo)) {\r\n            accountNos += \"|\" + accountNo;\r\n            customers.put(customerId, accountNos);\r\n        }\r\n        accountInfo.put(\"EditDT\", new Date().toInstant());\r\n        accounts.put(accountNo, acc.json2csv(accountInfo));\r\n        //Save on DB\r\n        eb.publish(addressBook.getResult(), body.put(\"newAccountInfo\", accountInfo), addressBook.getDeliveryOptions(msg));\r\n        resultOutboundCount++;\r\n    }\r\n\r\n    @Override\r\n    public <T> void ready(Message<T> tMessage) {\r\n        super.ready(tMessage);\r\n        accounts = sharedData.getLocalMap(\"AYN_SAPTA_ACCOUNTS_3\");\r\n        customers = sharedData.getLocalMap(\"AYN_SAPTA_CUSTOMERS\");\r\n        constants = sharedData.getLocalMap(\"SAPTA_CONSTANTS\");\r\n    }\r\n}",
+    "fName" : "AddCreditItemBusiness",
+    "theme" : "monokai",
+    "outNumber" : 1,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.308.output" ],
+  "Error" : [ ],
+  "Result" : [ "process.290.input" ],
+  "Out0" : [ "process.101.input" ]
+}, {
+  "id" : "279",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "//import com.ghasemkiani.util.icu.PersianCalendar;\r\n\r\nimport com.ceramic.tools.Account;\r\nimport com.vx6.master.MasterVerticle;\r\nimport com.vx6.utils.Library;\r\nimport com.vx6.utils.PersianCalendarBean;\r\nimport io.vertx.core.Promise;\r\n//import io.vertx.core.eventbus.DeliveryOptions;\r\nimport io.vertx.core.eventbus.Message;\r\n//import io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.core.shareddata.LocalMap;\r\nimport io.vertx.core.shareddata.SharedData;\r\n//import org.apache.commons.lang3.StringUtils;\r\n\r\nimport java.text.SimpleDateFormat;\r\nimport java.util.*;\r\n//import java.util.concurrent.ConcurrentHashMap;\r\n\r\nimport static com.vx6.utils.Library.correctPhoneNos;\r\nimport static org.apache.commons.lang3.StringUtils.isBlank;\r\nimport static org.apache.commons.lang3.StringUtils.isNotBlank;\r\n\r\n\r\npublic class AddAccountBusiness extends MasterVerticle {\r\n    private SharedData sharedData;\r\n    private LocalMap<String, String> accounts;\r\n    private LocalMap<String, String> customers;\r\n    private LocalMap<String, JsonObject> constants;\r\n    private static final Account acc = new Account();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sharedData = vertx.sharedData();\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        this.resultOutboundCount--;\r\n        JsonObject body = (JsonObject) msg.body();\r\n        JsonObject tran = body.getJsonObject(\"tran\");\r\n        String accountNo = tran.getString(\"ACCOUNTNO\");\r\n        if (isBlank(accountNo)) {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"ERROR\", \"AccountNo is blank\"));\r\n            this.errorOutboundCount++;\r\n            return;\r\n        }\r\n        String phoneNo = correctPhoneNos(tran.getString(\"PHONENO\"));\r\n        if (isBlank(phoneNo)) {\r\n            eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"ERROR\", \"PhoneNo is blank\"));\r\n            this.errorOutboundCount++;\r\n            return;\r\n        }\r\n\r\n        String customerId = tran.getString(\"CUSTOMERID\") == null ? \"\" : tran.getString(\"CUSTOMERID\").trim();\r\n        String expireDate = tran.getString(\"EXPIREDATE\") == null ? \"\" : tran.getString(\"EXPIREDATE\").trim();\r\n        if (expireDate.startsWith(\"00000000\"))\r\n            expireDate = \"\";\r\n        else if (expireDate.startsWith(\"14000000\"))\r\n            expireDate = \"\";\r\n        else {\r\n            if (expireDate.startsWith(\"00\")) {\r\n                int i = Integer.parseInt(expireDate.substring(2, 4));\r\n                if (i >= 90) {\r\n                    expireDate = \"13\" + expireDate.substring(2);\r\n                } else {\r\n                    expireDate = \"14\" + expireDate.substring(2);\r\n                }\r\n            }\r\n        }\r\n\r\n        String branchNo = tran.getString(\"BRANCH\");\r\n\r\n        List<String> beforePhones = new ArrayList<>();\r\n        JsonObject accountInfo = new JsonObject();\r\n        //JsonObject constants = body.getJsonObject(\"constants\");\r\n        if (body.containsKey(\"accountInfo\")) {\r\n            accountInfo = body.getJsonObject(\"accountInfo\").copy();\r\n            beforePhones.addAll(Arrays.asList(accountInfo.getString(\"Phones\")\r\n                    .replace(\",\", \";\").split(\";\")));\r\n        } else {\r\n            accountInfo.put(\"AccountNo\", accountNo);\r\n            accountInfo.put(\"CustomerId\", customerId);\r\n            accountInfo.put(\"Phones\", phoneNo);\r\n            accountInfo.put(\"RemainAmount\", 0);\r\n            accountInfo.put(\"RemainDays\", 0);\r\n            accountInfo.put(\"DueDate\", null);\r\n            accountInfo.put(\"LowLimitDebit\", constants.get(\"AYN\").getInteger(\"defaultLowLimitDebit\") + \"\");\r\n            accountInfo.put(\"LowLimitCredit\", constants.get(\"AYN\").getInteger(\"defaultLowLimitCredit\") + \"\");\r\n            accountInfo.put(\"CreditItem\", constants.get(\"AYN\").getString(\"startupCreditItem\"));\r\n            accountInfo.put(\"NearExpireNotifyDate\", null);\r\n            accountInfo.put(\"ExpiredNotifyDate\", null);\r\n            accountInfo.put(\"EditDT\", new Date().toInstant());\r\n            accountInfo.put(\"AutoRenewRegCancelNotifyDate\", null);\r\n        }\r\n        accountInfo.put(\"AutoRenewRegister\", true);\r\n        accountInfo.put(\"TransGroupsStr\", constants.get(\"AYN\").getString(\"transGroup\"));\r\n        accountInfo.put(\"Phones\", phoneNo);\r\n        accountInfo.put(\"ExpireDate\", expireDate);\r\n        accountInfo.put(\"Enable\", true);\r\n\r\n        var accountNos = customers.getOrDefault(customerId, \"\");\r\n\r\n        if (constants.get(\"AYN\").getBoolean(\"customerBase\") && isNotBlank(customerId)) {\r\n            if (constants.get(\"AYN\").getString(\"bankId\").equalsIgnoreCase(\"AYN\")) {\r\n                //Set all accounts (with respect to this customer id) to the biggest dueDate.\r\n                //First of first specify biggest dueDate\r\n                var dueDate = \"\";\r\n                String[] accNos = Arrays.stream(accountNos.split(\"\\\\\\\\|\")).filter(acc -> acc.trim().length() > 9).toArray(String[]::new);\r\n                //var accs = accountNos.split(\"\\\\\\\\|\");\r\n                for (String accNo : accNos) {\r\n                    String account = accounts.getOrDefault(accNo.trim(), null);\r\n                    if (account != null && account.split(\"\\\\\\\\|\")[8].compareTo(dueDate) > 0) {\r\n                        dueDate = account.split(\"\\\\\\\\|\")[8];\r\n                    }\r\n                }\r\n                //Now we have biggest dueDate, and It's time to set all accounts dueDate to that.\r\n                if (isNotBlank(dueDate)) {\r\n                    try {\r\n                        SimpleDateFormat sdf = new SimpleDateFormat(\"yyyy-MM-dd\");\r\n                        Date date = sdf.parse(dueDate);\r\n                        dueDate = PersianCalendarBean.getLastDayOfMonthOfPersianDate(date);\r\n                        dueDate = sdf.format(PersianCalendarBean.getJulianDate(dueDate, \"000000\"));\r\n                        for (String accNo : accNos) {\r\n                            JsonObject account = acc.csv2json(accounts.getOrDefault(accNo.trim(), null));\r\n                            if (!(account == null || dueDate.equalsIgnoreCase(account.getString(\"dueDate\"))\r\n                                    || accountNo.equalsIgnoreCase(account.getString(\"AccountNo\")))) {\r\n                                JsonObject oldAccount = account;\r\n                                account.put(\"dueDate\", dueDate);\r\n                                account.put(\"EditDT\", new Date().toInstant());\r\n                                accounts.put(accNo, acc.json2csv(account));\r\n                                //Save updated account on DB\r\n                                eb.publish(addressBook.getResult(),\r\n                                        new JsonObject().put(\"accountInfo\", oldAccount).put(\"newAccountInfo\", account),\r\n                                        addressBook.getDeliveryOptions(msg));\r\n                                resultOutboundCount++;\r\n                                //TODO: This the right place to send sms to account owner if we want to.\r\n                            }\r\n                        }\r\n                        accountInfo.put(\"DueDate\", dueDate);\r\n                    } catch (Exception e) {\r\n                        sendException(e);\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        if (!accountNos.contains(accountNo)) {\r\n            accountNos += \"|\" + accountNo;\r\n            customers.put(customerId, accountNos);\r\n        }\r\n        accountInfo.put(\"EditDT\", new Date().toInstant());\r\n        accounts.put(accountNo, acc.json2csv(accountInfo));\r\n        //Save on DB\r\n        eb.publish(addressBook.getResult(), body.put(\"newAccountInfo\", accountInfo), addressBook.getDeliveryOptions(msg));\r\n        resultOutboundCount++;\r\n        //Now its time to make some sms.\r\n        List<String> afterPhones = new ArrayList<String>();\r\n        afterPhones.addAll(Arrays.asList(accountInfo.getString(\"Phones\")\r\n                .replace(\",\", \";\").split(\";\")));\r\n\r\n        String newPhones = Library.myJoin(Library.moreItemsStringArrayList(afterPhones, beforePhones), \";\");\r\n        String deletedPhones = Library.myJoin(Library.moreItemsStringArrayList(beforePhones, afterPhones), \";\");\r\n        String keepPhones = Library.myJoin(Library.commonItemsStringArrayList(beforePhones, afterPhones), \";\");\r\n\r\n        if (!newPhones.isEmpty()) {\r\n            JsonObject smsInfo = new JsonObject();\r\n            smsInfo.put(\"channel\", msg.headers().get(\"channel\"));\r\n            smsInfo.put(\"uniqKey\", msg.headers().get(\"key\"));\r\n            smsInfo.put(\"transId\", \"NewPhones\");\r\n            smsInfo.put(\"transIndicator\", \"N\");\r\n            smsInfo.put(\"accountNo\", accountNo);\r\n            smsInfo.put(\"phoneNos\", newPhones);\r\n            smsInfo.put(\"freeMassage\", true);\r\n            smsInfo.put(\"branchNo\", branchNo);\r\n            smsInfo.put(\"userNo\", tran.getString(\"USER\"));\r\n            smsInfo.put(\"terminalId\", tran.getString(\"TERMINALID\"));\r\n            publishOut(0, new JsonObject().put(\"smsInfo\", tran.copy().mergeIn(smsInfo)));\r\n        }\r\n\r\n        if (!deletedPhones.isEmpty()) {\r\n            JsonObject smsInfo = new JsonObject();\r\n            smsInfo.put(\"channel\", msg.headers().get(\"channel\"));\r\n            smsInfo.put(\"uniqKey\", msg.headers().get(\"key\"));\r\n            smsInfo.put(\"transId\", \"DeletePhones\");\r\n            smsInfo.put(\"transIndicator\", \"N\");\r\n            smsInfo.put(\"accountNo\", accountNo);\r\n            smsInfo.put(\"phoneNos\", deletedPhones);\r\n            smsInfo.put(\"freeMassage\", true);\r\n            smsInfo.put(\"branchNo\", branchNo);\r\n            smsInfo.put(\"userNo\", tran.getString(\"USER\"));\r\n            smsInfo.put(\"terminalId\", tran.getString(\"TERMINALID\"));\r\n            publishOut(0, new JsonObject().put(\"smsInfo\", tran.copy().mergeIn(smsInfo)));\r\n        }\r\n\r\n        if (!keepPhones.isEmpty()) {\r\n            JsonObject smsInfo = new JsonObject();\r\n            smsInfo.put(\"channel\", msg.headers().get(\"channel\"));\r\n            smsInfo.put(\"uniqKey\", msg.headers().get(\"key\"));\r\n            smsInfo.put(\"transId\", \"KeepPhones\");\r\n            smsInfo.put(\"transIndicator\", \"N\");\r\n            smsInfo.put(\"accountNo\", accountNo);\r\n            smsInfo.put(\"phoneNos\", keepPhones);\r\n            smsInfo.put(\"freeMassage\", true);\r\n            smsInfo.put(\"branchNo\", branchNo);\r\n            smsInfo.put(\"userNo\", tran.getString(\"USER\"));\r\n            smsInfo.put(\"terminalId\", tran.getString(\"TERMINALID\"));\r\n            publishOut(0, new JsonObject().put(\"smsInfo\", tran.copy().mergeIn(smsInfo)));\r\n        }\r\n    }\r\n\r\n    @Override\r\n    public <T> void ready(Message<T> tMessage) {\r\n        super.ready(tMessage);\r\n        accounts = sharedData.getLocalMap(\"AYN_SAPTA_ACCOUNTS_3\");\r\n        customers = sharedData.getLocalMap(\"AYN_SAPTA_CUSTOMERS\");\r\n        constants = sharedData.getLocalMap(\"SAPTA_CONSTANTS\");\r\n    }\r\n}\r\n",
+    "fName" : "AddAccountBusiness",
+    "theme" : "monokai",
+    "outNumber" : 1,
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "BUFFER_SIZE" : 10
+    },
+    "setting" : { }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.315.output" ],
+  "Error" : [ ],
+  "Result" : [ "process.290.input" ],
+  "Out0" : [ "process.101.input" ]
+}, {
+  "id" : "315",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "relay",
+      "switchName" : "LightGreenToggle"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false
+      }
+    }
+  },
+  "Output" : [ "process.279.input" ],
+  "Input" : [ "process.265.out0" ]
+} ]

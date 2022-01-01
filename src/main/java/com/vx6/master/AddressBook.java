@@ -51,7 +51,7 @@ public class AddressBook {
                 inputIns.add(String.join(".", graph_id, adrs.toString()).toLowerCase());
             });
         }
-        inputIns.forEach(port -> this.pushBackAddresses.add(String.join(".", port.substring(0, port.lastIndexOf(".")), "trigger").toLowerCase()));
+        inputIns.forEach(port -> this.pushBackAddresses.add( port.substring(0, port.lastIndexOf(".")).toLowerCase()));
     }
 
     public final DeliveryOptions getDeliveryOptions() {
@@ -160,7 +160,7 @@ public class AddressBook {
         return inputIns;
     }
 
-    public List<String> getpushBackAddresses() {
+    public List<String> getPushBackAddresses() {
         return pushBackAddresses;
     }
 

@@ -113,7 +113,6 @@ public class GraphProfile extends JsonObject {
     }
 
     public MultiMap toMultiMap() {
-        new DeliveryOptions();
         MultiMap mm = MultiMap.caseInsensitiveMultiMap();
         for (String key : this.getMap().keySet()) {
             mm.add(key, this.getMap().get(key) != null ? this.getMap().get(key).toString() : "THERE_IS_NO_DEPLOY_ID");
@@ -121,6 +120,15 @@ public class GraphProfile extends JsonObject {
         List mods = new ArrayList();
         mods = this.getModifications().getList();
         mm.set("modifications", (Iterable<String>) mods);
+        return mm;
+    }
+
+    public MultiMap toSimpleMultiMap() {
+        MultiMap mm = MultiMap.caseInsensitiveMultiMap();
+        mm.add("graph_id", this.getGraph_id())
+                .add("graph_name", this.getGraph_name())
+                .add("revision", this.getRevision() + "")
+                .add("active", this.isActive() + "");
         return mm;
     }
 }

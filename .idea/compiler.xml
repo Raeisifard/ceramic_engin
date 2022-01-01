@@ -6,7 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="ceramic" />
+        <module name="tools" />
       </profile>
     </annotationProcessing>
   </component>
@@ -14,6 +14,7 @@
     <option name="ADDITIONAL_OPTIONS_STRING" value="-Xlint:unchecked" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ceramic" options="" />
+      <module name="tools" options="" />
     </option>
   </component>
 </project>

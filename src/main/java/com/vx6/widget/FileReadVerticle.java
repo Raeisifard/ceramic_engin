@@ -1,12 +1,15 @@
 package com.vx6.widget;
 
+import com.ceramic.shared.ShareableHealthCheckHandler;
 import com.stevesoft.pat.FileRegex;
 import com.vx6.master.MasterVerticle;
 import com.vx6.utils.Library;
 import com.vx6.utils.UnicodeReader;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.healthchecks.Status;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -58,7 +61,12 @@ public class FileReadVerticle extends MasterVerticle {
                 this.rate--;
             String msg = getNextLineFromFile();
             if (msg != null) {
-                eb.publish(addressBook.getResult(), msg, addressBook.getDeliveryOptions().addHeader("count", count.toString()));
+                DeliveryOptions dOpt = addressBook.getDeliveryOptions();
+                dOpt.addHeader("count", count.toString());
+                if (this.rate != null) {
+                    dOpt.addHeader("rate", this.rate + "");
+                }
+                eb.publish(addressBook.getResult(), msg, dOpt);
                 this.resultOutboundCount++;
                 if (autoNext) {
                     eb.publish(addressBook.getTrigger(), "Next message", addressBook.getDeliveryOptions().addHeader("cmd", "next"));
@@ -68,6 +76,37 @@ public class FileReadVerticle extends MasterVerticle {
             eb.publish(addressBook.getError(), "Get next line from file was unsuccessful", addressBook.getDeliveryOptions());
             this.errorOutboundCount++;
         }
+    }
+
+    @Override
+    public void healthCheck() {
+        this.ports
+                .put("trigger", this.triggerInboundCount)
+                //.put("input", this.inputInboundCount)
+                .put("error", this.errorOutboundCount)
+                .put("result", this.resultOutboundCount);
+        this.health.put("type", addressBook.getType());
+        this.health.put("ports", this.ports);
+        this.healthCheckHandler = ShareableHealthCheckHandler.create(vertx);
+        this.healthCheckHandler.register(
+                "status/" + config().getString("graph_id") + "/" + config().getString("id"),
+                1000,
+                promise -> {
+                    promise.complete(Status.OK(getHealth()));
+                });
+    }
+
+    @Override
+    protected JsonObject getHealth() {
+        if (!this.inputConnected && buffer == null) {
+            this.health.put("holdOn", (this.holdOn ? "1" : "0"));
+        }
+        return this.health
+                .put("ports", this.ports
+                        .put("trigger", this.triggerInboundCount)
+                        //.put("input", this.inputInboundCount)
+                        .put("error", this.errorOutboundCount)
+                        .put("result", this.resultOutboundCount));
     }
 
     private boolean validatefileOrFolder() {

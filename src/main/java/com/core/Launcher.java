@@ -8,9 +8,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.util.Objects;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Launcher extends io.vertx.core.Launcher {
     private Vertx vertx = null;
@@ -29,6 +30,13 @@ public class Launcher extends io.vertx.core.Launcher {
     @Override
     public void beforeStartingVertx(VertxOptions options) {
         //System.out.println("vertx options: " + options.toJson().encodePrettily());
+        System.out.println("\n");
+        System.out.println(new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/banner.txt"))))
+                .lines().parallel().collect(Collectors.joining("\n")));
+        System.out.println("");
+        System.out.println(new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/version.txt"))))
+                .lines().parallel().collect(Collectors.joining("\n")));
+        System.out.println("\n");
     }
 
     @Override

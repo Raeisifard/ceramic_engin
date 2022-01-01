@@ -17,7 +17,7 @@ import java.io.*;
 import java.util.Locale;
 import java.util.Map;
 
-public class FreeMarkerTemplateEngine extends CachingTemplateEngine<Template> {
+public abstract class FreeMarkerTemplateEngine extends CachingTemplateEngine<Template> {
     private final Configuration config;
 
     public FreeMarkerTemplateEngine(Vertx vertx) throws IOException {

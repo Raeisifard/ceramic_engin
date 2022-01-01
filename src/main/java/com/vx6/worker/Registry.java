@@ -6,8 +6,8 @@ import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.util.mxXmlUtils;
 import com.vx6.tools.DataRoot;
 import com.vx6.tools.GraphProfile;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
+import com.vx6.tools.MultipartStringMessage;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -21,9 +21,11 @@ public class Registry extends AbstractVerticle {
     private EmbeddedStorageManager storageManager;
     private static final String data_dir = "data";
     private static final String backup_dir = "data_backup";
+    private MultipartStringMessage msm;
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
+        msm = new MultipartStringMessage(vertx, config().getJsonObject("multiChunksMessage"));
         vertx.eventBus().consumer("registry", this::processMessage);
         // configuring the database via .ini file instead of API. Here the directory and the thread count.
         final Configuration configuration = Configuration.LoadIni(
@@ -46,21 +48,24 @@ public class Registry extends AbstractVerticle {
             root.getGraphProfiles().forEach((graph_id, graphProfile) -> {
                 if (graphProfile.isActive()) {
                     graphProfile.setActive(false);
-                    vertx.eventBus().request("mx.vx", "", new DeliveryOptions().addHeader("cmd", "deploy").addHeader("name", graphProfile.getGraph_name()).addHeader("uid", graphProfile.getGraph_id()), ar -> {
-                        if (ar.succeeded()) {
-                            //System.out.printf("Graph Deployed! Name:\"%s\" id:\"%s\" Deploy_id: \"%s\"%n", graphProfile.getGraph_name(), graphProfile.getGraph_id(), ar.result());
-                        } else {
-                            System.out.println(String.format("Deployment failed! graph_name: %s graph_id %s%n", graphProfile.getGraph_name(), graphProfile.getGraph_id()) + ar.cause());
-                            ar.cause().printStackTrace();
-                        }
-                    });
+                    vertx.eventBus().request("registry.vx", graphProfile.toSimpleJsonObject(), new DeliveryOptions()
+                                    .setHeaders(graphProfile.toSimpleMultiMap()).addHeader("cmd", "load")
+                            , ar -> {
+                                if (ar.succeeded()) {
+                                    msm.send(ar.result(), graphProfile.getGraph_xml(), graphProfile);
+                                    //System.out.printf("Graph Deployed! Name:\"%s\" id:\"%s\" Deploy_id: \"%s\"%n", graphProfile.getGraph_name(), graphProfile.getGraph_id(), ar.result());
+                                } else {
+                                    System.out.println(String.format("Deployment failed! graph_name: %s graph_id %s%n", graphProfile.getGraph_name(), graphProfile.getGraph_id()) + ar.cause());
+                                    ar.cause().printStackTrace();
+                                }
+                            });
                 }
             });
         }
         startPromise.complete();
     }
 
-    private <T> void processMessage(Message<T> tMessage) {
+    private void processMessage(Message<Object> tMessage) {
         String cmd = tMessage.headers().get("cmd");
         GraphProfile gp;
         switch (cmd.toLowerCase()) {
@@ -72,15 +77,30 @@ public class Registry extends AbstractVerticle {
                     tMessage.fail(5, String.format("Graph id: \"%s\" not exist!", tMessage.body().toString()));
                 break;
             case "add_or_update":
+                Promise<String> p = Promise.promise();
+                Future<String> f = p.future();
                 gp = new GraphProfile((JsonObject) tMessage.body());
-                if (gp.getGraph_xml() == null)
+                if (gp.getGraph_xml() == null) {
                     gp.addModification();
-                else
+                    tMessage.reply(root.getProfile(gp.getGraph_id()).toSimpleJsonObject());
+                    p.complete("Without graph xml");
+                } else {//We have graph_xml to receive in multipart
+                    Future<String> fut = msm.get(tMessage);
+                    fut.onComplete(res -> {
+                        gp.put("graph_xml", res.result());
+                        p.complete("With graph xml");
+                    });
+                    fut.onFailure(res -> {
+                        res.getCause().printStackTrace();
+                        p.fail(res.getCause());
+                    });
                     gp.addRevision();
-                root.addOrReplace(gp);
-                storageManager.store(root.getGraphProfiles());
-                storageManager.store(root.graphModels);
-                tMessage.reply(root.getProfile(gp.getGraph_id()).toSimpleJsonObject());
+                }
+                f.onComplete(res -> {
+                    root.addOrReplace(gp);
+                    storageManager.store(root.getGraphProfiles());
+                    storageManager.store(root.graphModels);
+                });
                 break;
             case "register":
             case "add_profile":
@@ -99,11 +119,11 @@ public class Registry extends AbstractVerticle {
                 gp = new GraphProfile((JsonObject) tMessage.body());
                 gp.addRevision();
                 JsonObject queryJo = query(graph_id);
-                if (queryJo != null){
+                if (queryJo != null) {
                     gp.setDeploy_id(queryJo.getString("deploy_id", "THERE_IS_NO_DEPLOY_ID"));
                     gp.setActive(queryJo.getBoolean("active"));
                     gp.addModification();
-                }else{
+                } else {
                     gp.setDeploy_id("NEVER_BEEN_DEPLOYED_YET");
                     gp.setActive(false);
                 }
@@ -113,8 +133,6 @@ public class Registry extends AbstractVerticle {
                 tMessage.reply(root.getProfile(gp.getGraph_id()).toSimpleJsonObject());
                 break;
             case "set":
-                set2MxGraphModel(tMessage);
-                break;
             case "update":
                 set2MxGraphModel(tMessage);
                 break;
@@ -125,8 +143,6 @@ public class Registry extends AbstractVerticle {
                 setGraphName(tMessage);
                 break;
             case "graph_detail":
-                tMessage.reply(getGraphDetail(tMessage));
-                break;
             case "graphs_detail":
                 tMessage.reply(getGraphDetail(tMessage));
                 break;
@@ -256,7 +272,7 @@ public class Registry extends AbstractVerticle {
         return jo;
     }
 
-    private void getGraph(Message<?> tMessage) {
+    private void getGraph(Message tMessage) {
         String id = tMessage.headers().get("uid").toLowerCase();
         GraphProfile gp = root.getProfile(id);
         if (gp == null)
@@ -265,8 +281,16 @@ public class Registry extends AbstractVerticle {
             mxGraphModel gm = root.getGraphModel(id);
             mxCodec codec = new mxCodec();
             JsonObject jo = gp.toSimpleJsonObject();
-            jo.put("graph_xml", mxXmlUtils.getXml(codec.encode(gm)));
-            tMessage.reply(jo);
+            tMessage.replyAndRequest(jo, (Handler<AsyncResult<Message>>) ar -> {
+                if (ar.succeeded()) {
+                    Future fut2 = msm.send(ar.result(), mxXmlUtils.getXml(codec.encode(gm)));
+                    fut2.onFailure(res3 -> {
+                        System.out.println(res3.toString());
+                    });
+                } else {
+                    ar.cause().printStackTrace();
+                }
+            });
         }
     }
 

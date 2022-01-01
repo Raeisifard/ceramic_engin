@@ -9,12 +9,27 @@
     <remote-repository>
       <option name="id" value="Maven repository" />
       <option name="name" value="Maven repository" />
+      <option name="url" value="http://192.168.164.138:82/repository/maven-group/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="Maven repository" />
+      <option name="name" value="Maven repository" />
       <option name="url" value="http://central.maven.org/maven2/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="mulesoft-public" />
       <option name="name" value="MuleSoft Public Repository" />
       <option name="url" value="https://repository.mulesoft.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="microstream-releases" />
+      <option name="name" value="microstream-releases" />
+      <option name="url" value="http://192.168.164.138:82/repository/maven-group/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="http://192.168.164.138:82/repository/maven-group/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />

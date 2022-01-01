@@ -14,6 +14,7 @@ public class DbVerticle extends MasterVerticle {
     long count = 0;
     private LocalMap<String, Long> healthMap;
     private Integer instance = 1;
+    //private Integer rate = null;
 
     @Override
     public void initialize(Promise<Void> initPromise) throws Exception {
@@ -81,6 +82,8 @@ public class DbVerticle extends MasterVerticle {
                     }
                 });
             }
+            /*if (jo.containsKey("rate"))
+                this.rate = jo.getInteger("rate");*/
         }
     }
 

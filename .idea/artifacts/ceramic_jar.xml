@@ -9,9 +9,7 @@
         <element id="directory" name="jdbc">
           <element id="library" level="project" name="Maven: com.microsoft.sqlserver:mssql-jdbc:6.1.0.jre8" />
         </element>
-        <element id="directory" name="MQ75">
-          <element id="library" level="project" name="MQ75" />
-        </element>
+        <element id="directory" name="MQ75" />
         <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.11.3" />
         <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.11.3" />
         <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.10.2" />
@@ -52,7 +50,6 @@
         <element id="library" level="project" name="Maven: io.vertx:vertx-health-check:4.0.0" />
         <element id="library" level="project" name="Maven: io.vertx:vertx-jdbc-client:4.0.0" />
         <element id="library" level="project" name="Maven: io.vertx:vertx-sql-client:4.0.0" />
-        <element id="library" level="project" name="Maven: io.vertx:vertx-sse:4.0.0" />
         <element id="library" level="project" name="Maven: io.vertx:vertx-web-common:4.0.0" />
         <element id="library" level="project" name="Maven: io.vertx:vertx-web-templ-freemarker:4.0.0" />
         <element id="library" level="project" name="Maven: io.vertx:vertx-web:4.0.0" />
