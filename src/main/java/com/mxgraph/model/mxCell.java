@@ -60,6 +60,7 @@ public class mxCell implements mxICell, Cloneable, Serializable
   String version;
   String direction;
   VueComponent vueComponent;
+  Object mxTransient;
 	public Object getData() {
 		return data;
 	}
@@ -676,6 +677,14 @@ public class mxCell implements mxICell, Cloneable, Serializable
   public void setVueComponent(VueComponent vueComponent) {
     this.vueComponent = vueComponent;
   }
+
+	public Object getMxTransient() {
+		return mxTransient;
+	}
+
+	public void setMxTransient(Object mxTransient) {
+		this.mxTransient = mxTransient;
+	}
 
   public String getVersion() {
     return version;

@@ -1,5 +1,6 @@
 package com.vx6.widget;
 
+import com.ceramic.shared.ShareableHealthCheckHandler;
 import com.ibm.mq.MQException;
 import com.ibm.mq.MQQueue;
 import com.ibm.mq.MQQueueManager;
@@ -11,29 +12,55 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.healthchecks.Status;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Scanner;
 
 public class IbmMqVerticle extends MasterVerticle {
-    String qm, qName;
-    MQQueueManager qMgr = null;
-    MQQueue queue = null;
-    long count = 0;
+    private String qm, qName;
+    private MQQueueManager qMgr = null;
+    private MQQueue queue = null;
+    private long count = 0;
+    private int depth = -1;
 
     @Override
     public void initialize(Promise<Void> initPromise) throws Exception {
-        DeploymentOptions options = new DeploymentOptions().setWorker(false);
-        if (config().getJsonObject("data").getJsonObject("config").containsKey("instance")) {
-            options.setInstances(config().getJsonObject("data").getJsonObject("config").getInteger("instance"));
+        JsonObject config = config().getJsonObject("data").getJsonObject("config");
+        if (config.getString("ip") == null) {
+            initPromise.fail("MQ ip must be something not null");
+        } else if (config.getString("ip").trim().charAt(0) == '#') {
+            String dataSourceName = config.getString("ip").trim().substring(1);
+            if (config().containsKey("dataSource")) {
+                if (config().getJsonObject("dataSource").containsKey(dataSourceName)) {
+                    JsonObject dataSource = config().getJsonObject("dataSource").getJsonObject(dataSourceName).copy();
+                    config.put("ip", dataSource.getString("ip"));
+                    if (config.getInteger("port") == null || config.getInteger("port") <= 0)
+                        config.put("port", dataSource.getInteger("port"));
+                    if (StringUtils.isBlank(config.getString("qm")))
+                        config.put("qm", dataSource.getString("qm"));
+                    if (StringUtils.isBlank(config.getString("qName")))
+                        config.put("qName", dataSource.getString("qName"));
+                    if (StringUtils.isBlank(config.getString("channelName")))
+                        config.put("channelName", dataSource.getString("channelName"));
+                    if (StringUtils.isBlank(config.getString("user")))
+                        config.put("user", dataSource.getString("user"));
+                    if (StringUtils.isBlank(config.getString("pass")))
+                        config.put("pass", dataSource.getString("pass"));
+                    config = dataSource.copy().mergeIn(config).put("ip", dataSource.getString("ip"));
+                } else {
+                    initPromise.fail("Could not find \"" + dataSourceName + "\" in Data Sources.");
+                }
+            }else{
+                initPromise.fail("Data Sources are not defined but you named one: "+dataSourceName);
+            }
         }
-        config().put("ibmmqverticleid", deploymentID());
-        options.setConfig(config());
+        qm = config.getString("qm");
+        qName = config.getString("qName");
         if (!inputConnected) {
             final Hashtable<String, Object> mqProperties = new Hashtable<String, Object>();
-            JsonObject config = config().getJsonObject("data").getJsonObject("config");
-            qm = config.getString("qm");
-            qName = config.getString("qName");
             mqProperties.put(MQConstants.HOST_NAME_PROPERTY, config.getString("ip"));
             mqProperties.put(MQConstants.PORT_PROPERTY, config.getInteger("port"));
             mqProperties.put(MQConstants.USER_ID_PROPERTY, config.getString("user"));
@@ -43,7 +70,14 @@ public class IbmMqVerticle extends MasterVerticle {
             qMgr = new MQQueueManager(qm, mqProperties);
             queue = qMgr.accessQueue(qName, CMQC.MQOO_INPUT_SHARED | CMQC.MQOO_INQUIRE | CMQC.MQOO_NO_READ_AHEAD);
         }
-        vertx.deployVerticle(inputConnected ? "com.vx6.widget.ibm.websphere.IbmMqWriteVerticle" : "com.vx6.widget.ibm.websphere.IbmMqReadVerticle", options, result -> {
+        DeploymentOptions options = new DeploymentOptions().setWorker(false);
+        if (config.containsKey("instance")) {
+            options.setInstances(config.getInteger("instance"));
+        }
+        config.put("ibmmqverticleid", deploymentID());
+        options.setConfig(config);
+        vertx.deployVerticle(inputConnected ? "com.vx6.widget.ibm.websphere.IbmMqWriteVerticle" :
+                "com.vx6.widget.ibm.websphere.IbmMqReadVerticle", options, result -> {
             if (result.succeeded()) {
                 initPromise.complete();
             } else {
@@ -58,6 +92,7 @@ public class IbmMqVerticle extends MasterVerticle {
         eb.request(deploymentID(), tMessage.body(), ar -> {
             if (ar.succeeded()) {
                 if (outputConnected)
+                    this.resultOutboundCount++;
                     super.process(tMessage);
             } else {
                 eb.publish(addressBook.getError(), tMessage.body(), addressBook.getDeliveryOptions(tMessage)
@@ -74,7 +109,7 @@ public class IbmMqVerticle extends MasterVerticle {
             JsonObject jo = (JsonObject) tMessage.body();
             int number = jo.getInteger("number", 1);
             try {
-                int depth = queue.getCurrentDepth();
+                depth = queue.getCurrentDepth();
                 eb.publish(addressBook.getError(), new JsonObject().put("depth", depth).put("number", number)
                         .put("count", count).put("queueManagerName", qm).put("queueName", qName), addressBook.getDeliveryOptions());
                 this.errorOutboundCount++;
@@ -114,4 +149,30 @@ public class IbmMqVerticle extends MasterVerticle {
         }
         super.stop();
     }
+
+    @Override
+    public void healthCheck() {
+        this.healthCheckHandler = ShareableHealthCheckHandler.create(vertx);
+        JsonObject jo = new JsonObject()
+                .put("type", addressBook.getType())
+                .put("state", inputConnected ? "write" : "read")
+                .put("qMgr", qm)
+                .put("qName", qName);
+        JsonObject ports = new JsonObject();
+        this.healthCheckHandler.register(
+                "status/" + config().getString("graph_id") + "/" + config().getString("id"),
+                1000,
+                promise -> {
+                    if (triggerConnected) {
+                        ports.put("trigger", this.triggerInboundCount);
+                        jo.put("depth", depth);
+                    }
+                    if (inputConnected)
+                        ports.put("input", this.inputInboundCount);
+                    ports.put("error", this.errorOutboundCount)
+                            .put("result", this.resultOutboundCount);
+                    promise.complete(Status.OK(jo.put("ports", ports)));
+                });
+    }
+
 }

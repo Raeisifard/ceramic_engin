@@ -16,158 +16,162 @@ import io.vertx.ext.sql.SQLRowStream;
 import java.util.List;
 
 public class SqlServerClient extends AbstractVerticle {
-  private EventBus eb;
-  private JsonObject setting = new JsonObject();
-  private boolean inputConnected = false, outputConnected = false, errorConnected = false, triggerConnected = false;
-  private int bufferSize = 0;
-  private Buffer buffer = null;
-  private JsonObject clientConfig;
-  private SQLClient client = null;
-  private SQLConnection connection = null;
-  private AddressBook addressBook;
-  private String ibmmqverticleid;
-  private String queryName = "query", paramsName = "params", cmdName = "cmd", resultName = "result";
-  private String query, cmd;
-  private JsonArray params;
-  private Boolean autoNext = false;
-  private SQLRowStream sqlRowStream;
-  private int rowCount = 0;
+    private EventBus eb;
+    private JsonObject setting = new JsonObject();
+    private boolean inputConnected = false, outputConnected = false, errorConnected = false, triggerConnected = false;
+    private int bufferSize = 0;
+    private Buffer buffer = null;
+    private JsonObject clientConfig;
+    private SQLClient client = null;
+    private SQLConnection connection = null;
+    private AddressBook addressBook;
+    private String ibmmqverticleid;
+    private String queryName = "query", paramsName = "params", cmdName = "cmd", resultName = "result";
+    private String query, cmd;
+    private JsonArray params;
+    private Boolean autoNext = false;
+    private SQLRowStream sqlRowStream;
+    private int rowCount = 0;
 
-  @Override
-  public void start(Promise<Void> startPromise) throws Exception {
-    this.eb = vertx.eventBus();
-    setting = config().getJsonObject("data").getJsonObject("setting");
-    this.ibmmqverticleid = config().getString("ibmmqverticleid");
-    addressBook = new AddressBook(config());
-    if (config().containsKey("Result")) {
-      outputConnected = !config().getJsonArray("Result").isEmpty();
-    }
-    if (config().containsKey("Input")) {
-      inputConnected = !config().getJsonArray("Input").isEmpty();
-    }
-    if (config().containsKey("Error")) {
-      errorConnected = !config().getJsonArray("Error").isEmpty();
-    }
-    if (config().containsKey("Trigger")) {
-      triggerConnected = !config().getJsonArray("Trigger").isEmpty();
-    }
-    if (inputConnected) {
-      bufferSize = config().getJsonObject("data").getJsonObject("config").getInteger("BUFFER_SIZE", 0);
-      if (bufferSize > 0)
-        buffer = new Buffer(eb, addressBook.getTrigger(), bufferSize);
-    }
-    if (!triggerConnected)
-      autoNext = true;
-    JsonObject data = config().getJsonObject("data");
-    JsonObject config = data.getJsonObject("config");
-    JsonObject setting = data.getJsonObject("setting");
-    this.query = setting.getString("query");
-    String ip = config.getString("ip");
-    Integer port = config.getInteger("port");
-    String userName = config.getString("user");
-    String password = config.getString("pass");
-    String dbName = config.getString("dbName");
-    String url = "jdbc:sqlserver://" + ip + ":" + port + ";SelectMethod=cursor;DatabaseName=" + dbName;
-    clientConfig = new JsonObject()
-      .put("url", url)
-      .put("driver_class", "com.microsoft.sqlserver.jdbc.SQLServerDriver")
-      .put("user", userName)
-      .put("password", password)
-      .put("max_pool_size", 30);
-    client = JDBCClient.createShared(vertx, clientConfig);
-    client.getConnection(res -> {
-      if (res.succeeded()) {
-        connection = res.result();
-        this.eb.consumer(this.ibmmqverticleid + ".trigger", this::trigger);
-        this.eb.consumer(this.ibmmqverticleid + ".input", this::input);
-        startPromise.complete();
-      } else {
-        startPromise.fail(res.cause());
-      }
-    });
-  }
-
-  private <T> void input(Message<T> tMessage) {
-  }
-
-  private <T> void trigger(Message<T> tMessage) {
-    this.cmdName = tMessage.headers().get("cmdName") == null ? this.cmdName : tMessage.headers().get("cmdName");
-    this.queryName = tMessage.headers().get("queryName") == null ? this.queryName : tMessage.headers().get("queryName");
-    this.resultName = tMessage.headers().get("resultName") == null ? this.resultName : tMessage.headers().get("resultName");
-    this.paramsName = tMessage.headers().get("paramsName") == null ? this.paramsName : tMessage.headers().get("paramsName");
-    JsonObject body;
-    try {
-      body = new JsonObject(tMessage.body().toString());
-    } catch (Exception e) {
-      eb.publish(addressBook.getTrigger(), tMessage.body().toString(), addressBook.getDeliveryOptions(tMessage));
-      return;
-    }
-    this.cmd = body.getString(this.cmdName, this.cmd);
-    this.query = body.getString(this.queryName, this.query);
-    this.params = body.getJsonArray(this.paramsName, this.params);
-    this.autoNext = body.getBoolean("autoNext", this.autoNext);
-    switch (cmd) {
-      case "query":
-        rowCount = 0;
-        connection.queryStream(query, stream -> {
-          if (stream.succeeded()) {
-            sqlRowStream = stream.result();
-            List<String> columns = sqlRowStream.columns();
-            sqlRowStream
-              .resultSetClosedHandler(v -> {
-                // will ask to restart the stream with the new result set if any
-                if (sqlRowStream != null)
-                  sqlRowStream.moreResults();
-              })
-              .handler(row -> {
-                sqlRowStream.pause();//Until cmd=next
-                rowCount++;
-                JsonObject result = new JsonObject();
-                result.put("columns", columns).put("row", row).put("rowCount", rowCount);
-                this.eb.publish(addressBook.getResult(), result);
-                if (autoNext)
-                  this.eb.publish(this.ibmmqverticleid + ".trigger", new JsonObject().put("cmd", "next"));
-              })
-              .endHandler(v -> {
-                // no more data available...
-                // send info to Trigger port
-                sqlRowStream.close();
-                sqlRowStream = null;
-                this.eb.publish(addressBook.getError(), new JsonObject().put("msg", "result-set-end").put("rowCount", rowCount));
-              });
-          }
-        });
-        break;
-      case "queryWithParams":
-        rowCount = 0;
-        break;
-      case "querySingle":
-        rowCount = 0;
-        break;
-      case "querySingleWithParams":
-        rowCount = 0;
-        break;
-      case "update":
-        break;
-      case "updateWithParams":
-        break;
-      case "call":
-        break;
-      case "callWithParams":
-        break;
-      case "next":
-        if (sqlRowStream != null) {
-          sqlRowStream.resume();
+    @Override
+    public void start(Promise<Void> startPromise) throws Exception {
+        this.eb = vertx.eventBus();
+        setting = config().getJsonObject("data").getJsonObject("setting");
+        this.ibmmqverticleid = config().getString("ibmmqverticleid");
+        addressBook = new AddressBook(config());
+        if (config().containsKey("Result")) {
+            outputConnected = !config().getJsonArray("Result").isEmpty();
         }
-        break;
-      default:
-        //Unknown cmd!
-        break;
+        if (config().containsKey("Input")) {
+            inputConnected = !config().getJsonArray("Input").isEmpty();
+        }
+        if (config().containsKey("Error")) {
+            errorConnected = !config().getJsonArray("Error").isEmpty();
+        }
+        if (config().containsKey("Trigger")) {
+            triggerConnected = !config().getJsonArray("Trigger").isEmpty();
+        }
+        if (inputConnected) {
+            bufferSize = config().getJsonObject("data").getJsonObject("config").getInteger("BUFFER_SIZE", 0);
+            if (bufferSize > 0)
+                buffer = new Buffer(eb, addressBook.getTrigger(), bufferSize);
+        }
+        if (!triggerConnected)
+            autoNext = true;
+        JsonObject data = config().getJsonObject("data");
+        JsonObject config = data.getJsonObject("config");
+        JsonObject setting = data.getJsonObject("setting");
+        this.query = setting.getString("query");
+        String ip = config.getString("ip");
+        Integer port = config.getInteger("port");
+        String userName = config.getString("user");
+        String password = config.getString("pass");
+        String dbName = config.getString("dbName");
+        String url = "";
+        if (ip.contains("\\"))
+            url = "jdbc:sqlserver://" + ip + ";SelectMethod=cursor;DatabaseName=" + dbName;
+        else
+            url = "jdbc:sqlserver://" + ip + ":" + port + ";SelectMethod=cursor;DatabaseName=" + dbName;
+        clientConfig = new JsonObject()
+                .put("url", url)
+                .put("driver_class", "com.microsoft.sqlserver.jdbc.SQLServerDriver")
+                .put("user", userName)
+                .put("password", password)
+                .put("max_pool_size", 30);
+        client = JDBCClient.createShared(vertx, clientConfig);
+        client.getConnection(res -> {
+            if (res.succeeded()) {
+                connection = res.result();
+                this.eb.consumer(this.ibmmqverticleid + ".trigger", this::trigger);
+                this.eb.consumer(this.ibmmqverticleid + ".input", this::input);
+                startPromise.complete();
+            } else {
+                startPromise.fail(res.cause());
+            }
+        });
     }
-  }
 
-  @Override
-  public void stop(Promise<Void> stopPromise) throws Exception {
+    private <T> void input(Message<T> tMessage) {
+    }
 
-  }
+    private <T> void trigger(Message<T> tMessage) {
+        this.cmdName = tMessage.headers().get("cmdName") == null ? this.cmdName : tMessage.headers().get("cmdName");
+        this.queryName = tMessage.headers().get("queryName") == null ? this.queryName : tMessage.headers().get("queryName");
+        this.resultName = tMessage.headers().get("resultName") == null ? this.resultName : tMessage.headers().get("resultName");
+        this.paramsName = tMessage.headers().get("paramsName") == null ? this.paramsName : tMessage.headers().get("paramsName");
+        JsonObject body;
+        try {
+            body = new JsonObject(tMessage.body().toString());
+        } catch (Exception e) {
+            eb.publish(addressBook.getTrigger(), tMessage.body().toString(), addressBook.getDeliveryOptions(tMessage));
+            return;
+        }
+        this.cmd = body.getString(this.cmdName, this.cmd);
+        this.query = body.getString(this.queryName, this.query);
+        this.params = body.getJsonArray(this.paramsName, this.params);
+        this.autoNext = body.getBoolean("autoNext", this.autoNext);
+        switch (cmd) {
+            case "query":
+                rowCount = 0;
+                connection.queryStream(query, stream -> {
+                    if (stream.succeeded()) {
+                        sqlRowStream = stream.result();
+                        List<String> columns = sqlRowStream.columns();
+                        sqlRowStream
+                                .resultSetClosedHandler(v -> {
+                                    // will ask to restart the stream with the new result set if any
+                                    if (sqlRowStream != null)
+                                        sqlRowStream.moreResults();
+                                })
+                                .handler(row -> {
+                                    sqlRowStream.pause();//Until cmd=next
+                                    rowCount++;
+                                    JsonObject result = new JsonObject();
+                                    result.put("columns", columns).put("row", row).put("rowCount", rowCount);
+                                    this.eb.publish(addressBook.getResult(), result);
+                                    if (autoNext)
+                                        this.eb.publish(this.ibmmqverticleid + ".trigger", new JsonObject().put("cmd", "next"));
+                                })
+                                .endHandler(v -> {
+                                    // no more data available...
+                                    // send info to Trigger port
+                                    sqlRowStream.close();
+                                    sqlRowStream = null;
+                                    this.eb.publish(addressBook.getError(), new JsonObject().put("msg", "result-set-end").put("rowCount", rowCount));
+                                });
+                    }
+                });
+                break;
+            case "queryWithParams":
+                rowCount = 0;
+                break;
+            case "querySingle":
+                rowCount = 0;
+                break;
+            case "querySingleWithParams":
+                rowCount = 0;
+                break;
+            case "update":
+                break;
+            case "updateWithParams":
+                break;
+            case "call":
+                break;
+            case "callWithParams":
+                break;
+            case "next":
+                if (sqlRowStream != null) {
+                    sqlRowStream.resume();
+                }
+                break;
+            default:
+                //Unknown cmd!
+                break;
+        }
+    }
+
+    @Override
+    public void stop(Promise<Void> stopPromise) throws Exception {
+
+    }
 }

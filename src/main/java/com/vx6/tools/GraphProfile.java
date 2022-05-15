@@ -1,10 +1,8 @@
 package com.vx6.tools;
 
 import io.vertx.core.MultiMap;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,7 +72,7 @@ public class GraphProfile extends JsonObject {
     }
 
     public boolean isActive() {
-        return this.getBoolean("active");
+        return this.containsKey("active") ? this.getBoolean("active") : false;
     }
 
     public void setActive(boolean active) {

@@ -181,7 +181,7 @@
       "name": "ChunkVerticle",
       "description": "Accomplish multi-chunk message",
       "main": "com.ceramic.api.ChunkVerticle",
-      "deploy": true,
+      "deploy": false,
       "options": {
         "config": {
           "multiChunksMessage": {
@@ -197,7 +197,7 @@
       "name": "TargetVerticle",
       "description": "Target for multi-chunk message",
       "main": "com.ceramic.api.TargetVerticle",
-      "deploy": true,
+      "deploy": false,
       "options": {
         "config": {
           "multiChunksMessage": {
@@ -207,6 +207,19 @@
         },
         "instances": 1,
         "worker": true
+      }
+    },
+    {
+      "name": "SyncVerticle",
+      "description": "Publish Sync signal to all web clients",
+      "main": "com.ceramic.api.SyncVerticle",
+      "deploy": true,
+      "options": {
+        "config": {
+          "interval": 5000
+        },
+        "instances": 1,
+        "worker": false
       }
     }
   ]

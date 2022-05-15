@@ -3,6 +3,7 @@ package com.vx6.master;
 //import com.sun.org.apache.bcel.internal.classfile.Unknown;
 
 import com.ceramic.shared.ShareableHealthCheckHandler;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -50,7 +51,7 @@ public class MasterVerticle extends AbstractVerticle {
     public void start(Promise<Void> startPromise) throws Exception {
         start();
         initialize(startPromise);
-        //startFuture.complete();
+        healthCheck();
     }
 
     public void initialize(Promise<Void> initPromise) throws Exception {
@@ -86,7 +87,7 @@ public class MasterVerticle extends AbstractVerticle {
             if (bufferSize >= 3)
                 buffer = new Buffer(eb, addressBook, bufferSize);
         }
-        healthCheck();
+        //healthCheck();
         initConsumers();
     }
 
@@ -123,7 +124,7 @@ public class MasterVerticle extends AbstractVerticle {
     protected JsonObject getHealth() {
         if (buffer != null) {
             this.health.put("buf", buffer.getSize() + "|" + buffer.getBuffSize() + "|" + (buffer.isPushedBack() ? "1" : "0"))
-            .put("holdOn", this.holdOn ? "1" : "0");
+                    .put("holdOn", this.holdOn ? "1" : "0");
         }
         return this.health
                 .put("ports", this.ports
@@ -405,5 +406,30 @@ public class MasterVerticle extends AbstractVerticle {
     protected void sendException(Exception e) {
         eb.publish(addressBook.getError(), ExceptionUtils.getStackTrace(e), addressBook.getDeliveryOptions().addHeader("type", "error"));
         this.errorOutboundCount++;
+    }
+
+    public void sendLabel(String label, String... fillColor) {
+        JsonObject body = new JsonObject().put("label", label);
+        DeliveryOptions dO = addressBook.getDeliveryOptions().addHeader("cmd", "label");
+        if (fillColor.length > 0) {
+            var fc = fillColor[0].charAt(0) == '#' ? fillColor[0] : "#" + fillColor[0];
+            dO.addHeader("fillColor", fc);
+        }
+        if (fillColor.length > 1) {
+            dO.addHeader("opacity", fillColor[1]);
+        }
+        if (fillColor.length > 2 && !fillColor[2].equals("#")) {
+            var gc = fillColor[2].charAt(0) == '#' ? fillColor[2] : "#" + fillColor[2];
+            dO.addHeader("gradientColor", gc);
+        }
+        eb.publish(String.join(".", addressBook.getGraph_id(), "*"), body, dO);
+    }
+
+    public void sendChart(JsonObject chart, String... mode) {
+        DeliveryOptions dO = addressBook.getDeliveryOptions().addHeader("cmd", "chart");
+        if (mode.length > 0) {
+            dO.addHeader("title", mode[0]);
+        }
+        eb.publish(String.join(".", addressBook.getGraph_id(), "*"), chart, dO);
     }
 }

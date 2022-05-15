@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
 import io.vertx.ext.healthchecks.Status;
+import org.apache.commons.lang3.StringUtils;
 
 public class DbVerticle extends MasterVerticle {
     long count = 0;
@@ -21,10 +22,38 @@ public class DbVerticle extends MasterVerticle {
         JsonObject data = config().getJsonObject("data");
         String dbType = data.getString("dbType", "SqlServer");
         JsonObject config = data.getJsonObject("config");
+
+        if (config.getString("ip") == null) {
+            initPromise.fail("Database ip must be something not null");
+        } else if (config.getString("ip").trim().charAt(0) == '#') {
+            String dataSourceName = config.getString("ip").trim().substring(1);
+            if (config().containsKey("dataSource")) {
+                if (config().getJsonObject("dataSource").containsKey(dataSourceName)) {
+                    JsonObject dataSource = config().getJsonObject("dataSource").getJsonObject(dataSourceName).copy();
+                    config.put("ip", dataSource.getString("ip"));
+                    if (config.getInteger("port") == null || config.getInteger("port") <= 0)
+                        config.put("port", dataSource.getInteger("port"));
+                    if (StringUtils.isBlank(config.getString("dbName")))
+                        config.put("dbName", dataSource.getString("dbName"));
+                    if (StringUtils.isBlank(config.getString("user")))
+                        config.put("user", dataSource.getString("user"));
+                    if (StringUtils.isBlank(config.getString("pass")))
+                        config.put("pass", dataSource.getString("pass"));
+                    config = dataSource.copy().mergeIn(config).put("ip", dataSource.getString("ip"));
+                } else {
+                    initPromise.fail("Could not find \"" + dataSourceName + "\" in Data Sources.");
+                }
+            } else {
+                initPromise.fail("Data Sources are not defined but you named one: " + dataSourceName);
+            }
+        }
+
         instance = config.getInteger("instance", 1);
-        config().put("dbverticleid", deploymentID());
+        config.put("instance", instance);
+        config.put("query", data.getJsonObject("setting").getString("query"));
+        config.put("dbverticleid", deploymentID());
         DeploymentOptions options = new DeploymentOptions().setWorker(false);
-        options.setConfig(config());
+        options.setConfig(config().put("config", config));
         vertx.deployVerticle("com.vx6.widget.db." + (inputConnected ? "write" : "read") + "." + dbType, options, result -> {
             if (result.succeeded()) {
                 initPromise.complete();
@@ -37,8 +66,8 @@ public class DbVerticle extends MasterVerticle {
 
     @Override
     public <T> void trigger(Message<T> tMessage) {
-        if (tMessage.body().toString().equalsIgnoreCase("ready"))
-            return;
+        /*if (tMessage.body().toString().equalsIgnoreCase("ready"))
+            return;*/
         if (this.instance == 1)
             eb.send(deploymentID() + ".trigger", tMessage.body(), addressBook.getDeliveryOptions(tMessage));
     }

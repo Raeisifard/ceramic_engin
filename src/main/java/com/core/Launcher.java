@@ -34,9 +34,9 @@ public class Launcher extends io.vertx.core.Launcher {
         System.out.println(new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/banner.txt"))))
                 .lines().parallel().collect(Collectors.joining("\n")));
         System.out.println("");
-        System.out.println(new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/version.txt"))))
+        /*System.out.println(new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/version.txt"))))
                 .lines().parallel().collect(Collectors.joining("\n")));
-        System.out.println("\n");
+        System.out.println("\n");*/
     }
 
     @Override

@@ -1,16 +1,11 @@
 package com.ceramic.api;
 
-import com.github.diogoduailibe.lzstring4j.LZString;
 import com.vx6.tools.MultipartStringMessage;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.zip.ZipEntry;
 
 public class TargetVerticle extends AbstractVerticle {
 

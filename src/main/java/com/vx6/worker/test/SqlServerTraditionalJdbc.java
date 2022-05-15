@@ -31,7 +31,11 @@ public class SqlServerTraditionalJdbc extends AbstractVerticle {
         String password = config.getString("pass");
         String dbName = config.getString("dbName");
         String driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-        String url = "jdbc:sqlserver://" + ip + ":" + port + ";SelectMethod=cursor;DatabaseName=" + dbName;
+        String url = "";
+        if (ip.contains("\\"))
+            url = "jdbc:sqlserver://" + ip + ";SelectMethod=cursor;DatabaseName=" + dbName;
+        else
+            url = "jdbc:sqlserver://" + ip + ":" + port + ";SelectMethod=cursor;DatabaseName=" + dbName;
         DeliveryOptions opt = new DeliveryOptions();
         try {
             Class.forName(driver);

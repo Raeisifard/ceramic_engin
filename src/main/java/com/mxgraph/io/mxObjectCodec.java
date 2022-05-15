@@ -7,13 +7,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +33,7 @@ public class mxObjectCodec
 	/**
 	 * Immutable empty set.
 	 */
-	private static Set<String> EMPTY_SET = new HashSet<String>();
+	private static Set<String> EMPTY_SET = new HashSet<String>(Arrays.asList("mxTransient"));
 
 	/**
 	 * Holds the template object associated with this codec.

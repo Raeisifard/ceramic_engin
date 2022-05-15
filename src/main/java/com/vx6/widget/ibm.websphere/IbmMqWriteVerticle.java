@@ -26,7 +26,7 @@ public class IbmMqWriteVerticle  extends AbstractVerticle {
   @Override
   public void start(Promise<Void> initPromise) throws Exception {
     this.eb = vertx.eventBus();
-    JsonObject config = config().getJsonObject("data").getJsonObject("config");
+    JsonObject config = config();
     String hostName = config.getString("ip");
     int port = config.getInteger("port");
     String userName = config.getString("user");
@@ -37,7 +37,7 @@ public class IbmMqWriteVerticle  extends AbstractVerticle {
     String codePage = config.getString("codePage", "1098");
 
     //define message Consumers
-    eb.consumer(config().getString("ibmmqverticleid"), this::process);
+    eb.consumer(config.getString("ibmmqverticleid"), this::process);
     mqProperties.put(MQConstants.HOST_NAME_PROPERTY, hostName);
     mqProperties.put(MQConstants.PORT_PROPERTY, port);
     mqProperties.put(MQConstants.USER_ID_PROPERTY, userName);
