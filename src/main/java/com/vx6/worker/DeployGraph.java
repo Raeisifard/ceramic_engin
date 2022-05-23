@@ -225,7 +225,11 @@ public class DeployGraph extends AbstractVerticle {
                 if (cell == null)
                     tMessage.reply("nok");
                 JsonObject jo = (JsonObject) cell.getData();
-                jo.put("setting", new JsonObject(tMessage.body().toString()));
+                if(cell.getType().equalsIgnoreCase("parquet")){
+                    jo.mergeIn(new JsonObject(tMessage.body().toString()));
+                }else {
+                    jo.put("setting", new JsonObject(tMessage.body().toString()));
+                }
                 tMessage.reply("ok");
                 break;
             case "READY":

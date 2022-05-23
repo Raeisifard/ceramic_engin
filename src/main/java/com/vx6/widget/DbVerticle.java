@@ -23,9 +23,10 @@ public class DbVerticle extends MasterVerticle {
         String dbType = data.getString("dbType", "SqlServer");
         JsonObject config = data.getJsonObject("config");
 
-        if (config.getString("ip") == null) {
+        /*if (config.getString("ip") == null) {
             initPromise.fail("Database ip must be something not null");
-        } else if (config.getString("ip").trim().charAt(0) == '#') {
+        } else*/
+        if (config.getString("ip") != null && config.getString("ip").trim().charAt(0) == '#') {
             String dataSourceName = config.getString("ip").trim().substring(1);
             if (config().containsKey("dataSource")) {
                 if (config().getJsonObject("dataSource").containsKey(dataSourceName)) {
@@ -46,6 +47,9 @@ public class DbVerticle extends MasterVerticle {
             } else {
                 initPromise.fail("Data Sources are not defined but you named one: " + dataSourceName);
             }
+        }
+        if (config.getString("ip") == null) {
+            config.put("ip", "172.0.0.1");
         }
 
         instance = config.getInteger("instance", 1);

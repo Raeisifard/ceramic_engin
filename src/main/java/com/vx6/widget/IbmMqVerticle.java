@@ -29,9 +29,10 @@ public class IbmMqVerticle extends MasterVerticle {
     @Override
     public void initialize(Promise<Void> initPromise) throws Exception {
         JsonObject config = config().getJsonObject("data").getJsonObject("config");
-        if (config.getString("ip") == null) {
+        /*if (config.getString("ip") == null) {
             initPromise.fail("MQ ip must be something not null");
-        } else if (config.getString("ip").trim().charAt(0) == '#') {
+        } else */
+        if (config.getString("ip") != null && config.getString("ip").trim().charAt(0) == '#') {
             String dataSourceName = config.getString("ip").trim().substring(1);
             if (config().containsKey("dataSource")) {
                 if (config().getJsonObject("dataSource").containsKey(dataSourceName)) {
@@ -53,10 +54,19 @@ public class IbmMqVerticle extends MasterVerticle {
                 } else {
                     initPromise.fail("Could not find \"" + dataSourceName + "\" in Data Sources.");
                 }
-            }else{
-                initPromise.fail("Data Sources are not defined but you named one: "+dataSourceName);
+            } else {
+                initPromise.fail("Data Sources are not defined but you named one: " + dataSourceName);
             }
         }
+        if (config.getString("ip") == null)
+            config.put("ip", "172.0.0.1");
+        if (config.getInteger("port") == null)
+            config.put("port", 1414);
+        if (config.getString("channelName") == null)
+            config.put("channelName", "SYSTEM.DEF.SVRCONN");
+        if (config.getString("codePage") == null)
+            config.put("codePage", "1098");
+
         qm = config.getString("qm");
         qName = config.getString("qName");
         if (!inputConnected) {
@@ -93,7 +103,7 @@ public class IbmMqVerticle extends MasterVerticle {
             if (ar.succeeded()) {
                 if (outputConnected)
                     this.resultOutboundCount++;
-                    super.process(tMessage);
+                super.process(tMessage);
             } else {
                 eb.publish(addressBook.getError(), tMessage.body(), addressBook.getDeliveryOptions(tMessage)
                         .addHeader("error", "MQ_WRITE_FAILED")

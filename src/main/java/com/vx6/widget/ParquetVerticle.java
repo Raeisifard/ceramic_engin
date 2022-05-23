@@ -20,6 +20,11 @@ private JsonObject data;
     }
 
     @Override
+    public <T> void set(Message<T> tMessage) {
+        data.mergeIn(new JsonObject(tMessage.body().toString()));
+    }
+
+    @Override
     public void stop(Promise<Void> stopPromise) throws Exception {
         stopPromise.complete();
     }
