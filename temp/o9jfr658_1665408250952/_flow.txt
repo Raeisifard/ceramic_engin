@@ -1,0 +1,21 @@
+[ {
+  "id" : "10",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport com.vx6.utils.Library;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\npublic class FileSuny2Json extends MasterVerticle {\r\n\r\n    @Override\r\n    public <T> void process(Message<T> msg) {\r\n        if (msg.body() instanceof String) {\r\n            String rawSuny = (String) msg.body();\r\n            String inLine = Library.replaceChar(rawSuny, 124, 146, '|', ';');\r\n            inLine = Library.replaceChar(inLine, 147, 178, '|', ';');\r\n            inLine = Library.replaceChar(inLine, 179, 299, '|', ';');\r\n            String[] lineSplit = inLine.split(\"\\\\|\", -1);\r\n            if (lineSplit.length < 21){}\r\n                //sendError(msg);\r\n            else {\r\n                JsonObject suny = new JsonObject();\r\n                suny.put(\"AccountNo\", lineSplit[0]);\r\n                suny.put(\"TxnKey\", lineSplit[1]);\r\n                suny.put(\"Date\", lineSplit[2]);\r\n                suny.put(\"Module\", lineSplit[3].toUpperCase());\r\n                suny.put(\"InputSource\", lineSplit[4]);\r\n                suny.put(\"Amount\", lineSplit[5]);\r\n                suny.put(\"BranchCode\", lineSplit[6]);\r\n                suny.put(\"StmtCode\", lineSplit[7]);\r\n                suny.put(\"UserID\", lineSplit[8]);\r\n                suny.put(\"TransIndicator\", lineSplit[9]);\r\n                suny.put(\"OverrideUserID\", lineSplit[10]);\r\n                suny.put(\"ModeFlag\", lineSplit[11]);\r\n                suny.put(\"BookIndicator\", lineSplit[12]);\r\n                suny.put(\"TxnPDate\", lineSplit[13].trim().length() == 6 ? lineSplit[13] : lineSplit[1].substring(0, 6));\r\n                suny.put(\"TxnTime\", lineSplit[14].trim().length() == 6 ? lineSplit[14] : lineSplit[1].substring(6, 12));\r\n                suny.put(\"TerminalID\", lineSplit[15]);\r\n                suny.put(\"SeqNo\", lineSplit[16]);\r\n                suny.put(\"VariableData\", lineSplit[17]);\r\n                suny.put(\"OptionalInfo\", lineSplit[18]);\r\n                suny.put(\"Comment3\", lineSplit[19]);\r\n                suny.put(\"Balance\", lineSplit[20]);\r\n                suny.put(\"rawSuny\", rawSuny);\r\n                eb.publish(addressBook.getResult(), new JsonObject().put(\"tran\", suny)\r\n                        .put(\"rawData\", rawSuny).put(\"channel\", \"File|Suny\").put(\"tranType\", \"FileSuny\"));\r\n            }\r\n        } else {\r\n            //sendError(msg);\r\n        }\r\n    }\r\n\r\n   /* private <T> void sendError(Message<T> msg){\r\n        resultOutboundCount--;\r\n        errorOutboundCount++;\r\n        eb.publish(addressBook.getError(), msg.body(), addressBook.getDeliveryOptions(msg)\r\n                .addHeader(\"status\", \"error\")\r\n                .addHeader(\"error\", \"Suny format is not compatible.\"));\r\n    }*/\r\n}",
+    "fName" : "FileSuny2Json",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ ]
+} ]

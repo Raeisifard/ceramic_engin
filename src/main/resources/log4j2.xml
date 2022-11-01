@@ -14,7 +14,23 @@
 				<SizeBasedTriggeringPolicy size="10 MB"/>
 			</Policies>
 		</RollingFile>
-
+		<SplunkHttp
+				name="httpconf"
+				url="http://192.168.166.7:8088"
+				token="8e514702-9572-4eb1-946b-cc00b93c74ef"
+				host=""
+				index=""
+				source="splunktest"
+				sourcetype="battlecat"
+				messageFormat="text"
+				batch_interval="0"
+				batch_size_bytes="0"
+				batch_size_count="0"
+				disableCertificateValidation="true"
+				middleware="HttpEventCollectorUnitTestMiddleware"
+		>
+			<PatternLayout pattern="%m"/>
+		</SplunkHttp>
 	</Appenders>
 	<Loggers>
 		<!-- avoid duplicated logs with additivity=false -->
@@ -24,5 +40,8 @@
 		<Root level="error">
 			<AppenderRef ref="LogToConsole"/>
 		</Root>
+		<Logger name="splunk.logger" level="info">
+			<AppenderRef ref="httpconf"/>
+		</Logger>
 	</Loggers>
 </Configuration>

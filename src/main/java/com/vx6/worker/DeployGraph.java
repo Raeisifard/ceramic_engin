@@ -111,7 +111,8 @@ public class DeployGraph extends AbstractVerticle {
                     JsonArray error = jo.getJsonArray("Error");
                     JsonArray input = jo.getJsonArray("Input");
                     jo.put("dataSource", dataSources);
-                    options.setWorker(false);
+                    options.setWorker(data.getJsonObject("config").getBoolean("worker", false));
+                    options.setInstances(data.getJsonObject("config").getInteger("instances", 1));
                     options.setConfig(jo);
                     FileSystem fs = vertx.fileSystem();
                     String absoluteFilePath;
@@ -217,7 +218,7 @@ public class DeployGraph extends AbstractVerticle {
             case "SET":
             case "UPDATE":
                 eb.publish(String.join(".", this.graph_id, tMessage.headers().get("type"),
-                        tMessage.headers().get("id"), "trigger"), tMessage.body(),
+                                tMessage.headers().get("id"), "trigger"), tMessage.body(),
                         new DeliveryOptions().setHeaders(tMessage.headers()));
                 /*eb.publish("registry", tMessage.body(), new DeliveryOptions().setHeaders(tMessage.headers()));
                 tMessage.reply(tMessage.headers().get("type") + "." + tMessage.headers().get("id") + " -> (SET)");*/
@@ -225,9 +226,9 @@ public class DeployGraph extends AbstractVerticle {
                 if (cell == null)
                     tMessage.reply("nok");
                 JsonObject jo = (JsonObject) cell.getData();
-                if(cell.getType().equalsIgnoreCase("parquet")){
+                if (cell.getType().equalsIgnoreCase("parquet")) {
                     jo.mergeIn(new JsonObject(tMessage.body().toString()));
-                }else {
+                } else {
                     jo.put("setting", new JsonObject(tMessage.body().toString()));
                 }
                 tMessage.reply("ok");
@@ -268,7 +269,7 @@ public class DeployGraph extends AbstractVerticle {
                 cell = (mxCell) objGraph.getCell(tMessage.headers().get("id"));
                 cell.setValue(tMessage.body());
                 this.eb.publish(String.join(".", "vx", "mx",
-                        tMessage.headers().contains("flowId") ? tMessage.headers().get("flowId") : tMessage.headers().get("graph_id")),
+                                tMessage.headers().contains("flowId") ? tMessage.headers().get("flowId") : tMessage.headers().get("graph_id")),
                         tMessage.body(), (new DeliveryOptions()).setHeaders(tMessage.headers()));
                 break;
             case "CHART":
@@ -280,7 +281,7 @@ public class DeployGraph extends AbstractVerticle {
                 ).put("title", tMessage.headers().get("title")));
                 cell.setMxTransient(merged);
                 this.eb.publish(String.join(".", "vx", "mx",
-                        tMessage.headers().contains("flowId") ? tMessage.headers().get("flowId") : tMessage.headers().get("graph_id")),
+                                tMessage.headers().contains("flowId") ? tMessage.headers().get("flowId") : tMessage.headers().get("graph_id")),
                         data.containsKey("type") ? merged : data,
                         (new DeliveryOptions()).setHeaders(tMessage.headers()));
                 break;
@@ -293,7 +294,7 @@ public class DeployGraph extends AbstractVerticle {
         //verticle to update its setting.
         if (msg.headers().get("cmd").equalsIgnoreCase("set")) {
             eb.send(String.join(".", this.graph_id, msg.headers().get("type"),
-                    msg.headers().get("id"), "trigger"), msg.body(),
+                            msg.headers().get("id"), "trigger"), msg.body(),
                     new DeliveryOptions().setHeaders(msg.headers()));
             eb.send("registry", msg.body(), new DeliveryOptions().setHeaders(msg.headers()));
             eb.publish(String.join(".", "vx", this.graph_id), msg.body(), new DeliveryOptions().setHeaders(msg.headers()));

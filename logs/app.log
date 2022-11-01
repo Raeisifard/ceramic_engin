@@ -1,0 +1,4 @@
+2022-10-22 18:43:43,257 INFO c.c.a.HttpVerticle [vert.x-eventloop-thread-4] Starting verticle {com.ceramic.api.HttpVerticle@291d2107}
+2022-10-22 18:43:43,322 INFO c.c.a.FreeboardApiVerticle [vert.x-eventloop-thread-5] Starting verticle {com.ceramic.api.FreeboardApiVerticle@279906ae}
+2022-10-22 18:43:43,344 INFO c.c.a.EventBusBridgeVerticle [vert.x-eventloop-thread-8] Starting verticle {com.ceramic.api.EventBusBridgeVerticle@677d5409}
+2022-10-22 18:43:43,344 INFO c.c.a.HealthCheckVerticle [vert.x-eventloop-thread-7] Starting verticle {com.ceramic.api.HealthCheckVerticle@6aa13d20}

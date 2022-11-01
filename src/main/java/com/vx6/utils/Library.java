@@ -241,7 +241,7 @@ public final class Library {
         // input : yymmdd yyyymmdd yy/mm/dd yyyy/mm/dd   returns  yyyymmdd
         if (inDate == null)
             return null;
-        inDate = inDate.trim().replace("/", "");
+        inDate = inDate.trim().replace("/", "").replace("-", "");
         if (inDate.isEmpty() || (inDate.length() != 8 && (inDate.length() != 6)))
             return "";
         if (inDate.length() == 6)  //yyyymmdd
@@ -256,7 +256,7 @@ public final class Library {
         inDate = purePDateStr(inDate);
         if (inDate == null || inDate.isEmpty())
             return inDate;
-        inDate = inDate.replaceAll("/", "");
+        //inDate = inDate.replaceAll("/", "");
         return new StringBuffer(inDate).insert(6, "/").insert(4, "/").toString();
     }
 

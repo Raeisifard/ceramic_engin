@@ -1,0 +1,671 @@
+[ {
+  "id" : "113",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe21 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe21",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "118",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe22 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe22",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "10",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "OrangeSubscribeButtons"
+    },
+    "setting" : {
+      "_" : {
+        "state" : false,
+        "period" : 500,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.2.input", "process.13.input", "process.18.input", "process.23.input", "process.28.input", "process.33.input", "process.38.input", "process.43.input", "process.48.input", "process.53.input", "process.58.input", "process.63.input", "process.68.input", "process.73.input", "process.78.input", "process.83.input", "process.88.input", "process.93.input", "process.98.input", "process.103.input", "process.108.input", "process.113.input", "process.118.input", "process.123.input", "process.128.input", "process.133.input", "process.138.input", "process.143.input", "process.148.input", "process.153.input", "process.158.input", "process.163.input" ]
+}, {
+  "id" : "13",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe1 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe1",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "18",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe2 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe2",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "123",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe23 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe23",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "2",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.7.output", "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "128",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe24 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe24",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "7",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "push",
+      "switchName" : "RoundCssBrownPushButton"
+    },
+    "setting" : { }
+  },
+  "Output" : [ "process.2.input" ]
+}, {
+  "id" : "23",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe3 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe3",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "28",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe4 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe4",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "133",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe25 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe25",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "138",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe26 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe26",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "33",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe5 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe5",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "38",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe6 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe6",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "143",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe27 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe27",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "148",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe28 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe28",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "43",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe7 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe7",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "48",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe8 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe8",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "153",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe29 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe29",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "158",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe30 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe30",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "53",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe9 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe9",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "58",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe10 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe10",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "163",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe31 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe31",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "63",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe11 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe11",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "68",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe12 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe12",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "73",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe13 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe13",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "78",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe14 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe14",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "83",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe15 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe15",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "88",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe16 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe16",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "93",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe17 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe17",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "98",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe18 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe18",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "103",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe19 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe19",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "108",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.logging.Logger;\r\nimport io.vertx.core.logging.LoggerFactory;\r\nimport com.splunk.logging.*;\r\n\r\nimport java.util.Random;\r\n\r\npublic class Probe20 extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n    //private static final Logger logger = org.apache.logging.log4j.core.LoggerContext.getContext().getLogger(\"splunk.logger\");\r\n    private static final Logger logger = LoggerFactory.getLogger(\"splunk.logger\");\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        int r = rand.nextInt(101);\r\n        for (int i = 0; i < r; i++) {\r\n            logger.info(\"This is a test event for Log4j test \" + rand.nextInt(201) + \" No. \" + i);\r\n            //logger.error(\"This is a test error for Log4j test \" + rand.nextInt(101));\r\n        }\r\n        //System.out.printf(\"Logged out for \" + r + \" iterations\");\r\n    }\r\n}",
+    "fName" : "Probe20",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.10.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+} ]

@@ -15,6 +15,9 @@ private JsonObject data;
 
     @Override
     public <T> void unknownCmd(Message<T> tMessage, String cmd) {
+        if (cmd.isEmpty())
+            cmd = tMessage.body().toString();
+        if (cmd.equalsIgnoreCase("code"))
         eb.publish(addressBook.getResult(), data.getString("code"), addressBook.getDeliveryOptions(tMessage).addHeader("type", "parquet"));
         this.resultOutboundCount++;
     }

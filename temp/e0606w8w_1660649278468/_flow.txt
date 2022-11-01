@@ -1,0 +1,376 @@
+[ {
+  "id" : "30",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "data" : {
+        "labels" : [ ],
+        "datasets" : [ {
+          "label" : "# of Votes",
+          "data" : [ ],
+          "backgroundColor" : "#5b69fb",
+          "borderColor" : "#5df9f9",
+          "borderWidth" : 3
+        } ]
+      },
+      "options" : {
+        "scales" : { },
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "resizeDelay" : 0
+      },
+      "type" : "line",
+      "limit" : 100
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class ChartLineVerticle extends MasterVerticle {\r\n    private int count = 0;\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public <T> void noCmd(Message<T> tMessage, String cmd) {\r\n        sendChart(this.setting);\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        resultOutboundCount--;\r\n        char randCh = (char) (rand.nextInt(26) + 'a');\r\n        JsonArray ja = new JsonArray();\r\n        int randInt = rand.nextInt(101);\r\n        ja.add(randInt);\r\n        JsonObject jo = new JsonObject().put(\"data\", ja);\r\n        ja = new JsonArray();\r\n        ja.add(jo);\r\n        JsonArray labels = new JsonArray().add(Character.toUpperCase(randCh) + (randInt + \"\"));\r\n        jo = new JsonObject();\r\n        jo.put(\"datasets\", ja);\r\n        jo.put(\"labels\", labels);\r\n        JsonObject data = new JsonObject().put(\"data\", jo);\r\n        //System.out.println(data.toString());\r\n        sendChart(data);\r\n    }\r\n}\r\n\r\n\r\n",
+    "fName" : "ChartLineVerticle",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ "switch.24.output" ],
+  "Input" : [ "switch.27.output", "switch.7.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "38",
+  "type" : "group",
+  "data" : null
+}, {
+  "id" : "10",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\n\r\nimport java.util.Random;\r\n\r\npublic class SampleVerticle extends MasterVerticle {\r\n    private int count = 0;\r\n    private static Random rand = new Random();\r\n    private static String label = \"<p>Random number</p>\" +\r\n            \"<h1 style=\\\"color: %s;font-size: 5em;\\\">%s</h1>\" +\r\n            \"<p>Count</p>\" +\r\n            \"<h2>%s</h2>\";\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        resultOutboundCount--;\r\n        int currentNumber = rand.nextInt(101);\r\n        sendLabel(String.format(label, currentNumber%2 > 0? \"red\" : \"#0043ff\", currentNumber,  count++), \"18ff96\", \"50\", \"efff18\");\r\n    }\r\n}",
+    "fName" : "SampleVerticle",
+    "theme" : "dracula",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.21.output", "switch.27.output" ],
+  "Error" : [ ],
+  "Result" : [ "process.15.input" ]
+}, {
+  "id" : "44",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "chart" : {
+        "data" : {
+          "labels" : [ "Red", "Blue", "Yellow", "Green", "Purple", "Orange" ],
+          "datasets" : [ {
+            "label" : "# of Votes",
+            "data" : [ 12, 19, 3, 5, 2, 3 ],
+            "backgroundColor" : "rgba(255, 99, 132, 1)",
+            "borderColor" : "rgba(255, 99, 132, .9)",
+            "borderWidth" : 1
+          } ]
+        },
+        "options" : {
+          "scales" : { },
+          "responsive" : true,
+          "maintainAspectRatio" : false,
+          "resizeDelay" : 0
+        },
+        "type" : "bar",
+        "limit" : 5
+      }
+    },
+    "setting" : {
+      "data" : {
+        "labels" : [ "Red", "Blue", "Yellow", "Green", "Purple", "Orange" ],
+        "datasets" : [ {
+          "label" : "# of Votes",
+          "data" : [ 12, 19, 3, 5, 2, 3 ],
+          "backgroundColor" : "#5b69fb",
+          "borderColor" : "#5df9f9",
+          "borderWidth" : 1
+        } ]
+      },
+      "options" : {
+        "scales" : { },
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "resizeDelay" : 0
+      },
+      "type" : "bar",
+      "limit" : 100
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class ChartSampleVerticle2 extends MasterVerticle {\r\n    private int count = 0;\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sendChart(this.setting, \"Throughput Statistic\");\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        resultOutboundCount--;\r\n        char randCh = (char) (rand.nextInt(26) + 'a');\r\n        JsonArray ja = new JsonArray();\r\n        int randInt = rand.nextInt(101);\r\n        ja.add(randInt);\r\n        JsonObject jo = new JsonObject().put(\"data\", ja);\r\n        ja = new JsonArray();\r\n        ja.add(jo);\r\n        JsonArray labels = new JsonArray().add(Character.toUpperCase(randCh) + (randInt + \"\"));\r\n        jo = new JsonObject();\r\n        jo.put(\"datasets\", ja);\r\n        jo.put(\"labels\", labels);\r\n        JsonObject data = new JsonObject().put(\"data\", jo);\r\n        //System.out.println(data.toString());\r\n        sendChart(data);\r\n    }\r\n}\r\n\r\n\r\n",
+    "fName" : "ChartSampleVerticle2",
+    "theme" : "gruvbox",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.54.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "2",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class ChartBarVerticle extends MasterVerticle {\r\n    private int count = 0;\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sendChart(this.setting);\r\n        initPromise.complete();\r\n    }\r\n\r\n    /*@Override\r\n    public <T> void noCmd(Message<T> tMessage, String cmd) {\r\n        sendChart(this.setting);\r\n    }*/\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        resultOutboundCount--;\r\n        char randCh = (char) (rand.nextInt(26) + 'a');\r\n        JsonArray ja = new JsonArray();\r\n        int randInt = rand.nextInt(101);\r\n        ja.add(randInt);\r\n        JsonObject jo = new JsonObject().put(\"data\", ja);\r\n        ja = new JsonArray();\r\n        ja.add(jo);\r\n        JsonArray labels = new JsonArray().add(Character.toUpperCase(randCh) + (randInt + \"\"));\r\n        jo = new JsonObject();\r\n        jo.put(\"datasets\", ja);\r\n        jo.put(\"labels\", labels);\r\n        JsonObject data = new JsonObject().put(\"data\", jo);\r\n        //System.out.println(data.toString());\r\n        sendChart(data);\r\n    }\r\n}\r\n\r\n\r\n",
+    "fName" : "ChartBarVerticle",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "data" : {
+        "labels" : [ "Red", "Blue", "Yellow", "Green", "Purple", "Orange" ],
+        "datasets" : [ {
+          "label" : "# of Votes",
+          "data" : [ 12, 19, 3, 5, 2, 3 ],
+          "backgroundColor" : "#2ef82a",
+          "borderColor" : "#2e880ce6",
+          "borderWidth" : 1
+        } ]
+      },
+      "options" : {
+        "scales" : { },
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "resizeDelay" : 0
+      },
+      "type" : "bar",
+      "limit" : 10
+    }
+  },
+  "Trigger" : [ "switch.24.output" ],
+  "Input" : [ "switch.7.output", "switch.27.output" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "15",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport io.vertx.ext.dropwizard.MetricsService;\r\n\r\n\r\npublic class HeaderAndBodyProbe extends MasterVerticle {\r\n    private String className = this.getClass().getName();\r\n    private static MetricsService metricsService;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        metricsService = MetricsService.create(vertx);\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        System.out.println(className + \".Input.body: \" + msg.body());\r\n        System.out.println(className + \".Input.header: \" + msg.headers());\r\n    }\r\n\r\n    @Override\r\n    public void trigger(Message msg) {\r\n        System.out.println(className + \".Trigger.body: \" + msg.body());\r\n        System.out.println(className + \".Trigger.header: \" + msg.headers());\r\n        //System.out.println(metrics);\r\n    }\r\n}",
+    "fName" : "HeaderAndBodyProbe",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ "process.10.result" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "49",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "chart" : {
+        "data" : {
+          "labels" : [ "Red", "Blue", "Yellow", "Green", "Purple", "Orange" ],
+          "datasets" : [ {
+            "label" : "# of Votes",
+            "data" : [ 12, 19, 3, 5, 2, 3 ],
+            "backgroundColor" : "rgba(255, 99, 132, 1)",
+            "borderColor" : "rgba(255, 99, 132, .9)",
+            "borderWidth" : 1
+          } ]
+        },
+        "options" : {
+          "scales" : { },
+          "responsive" : true,
+          "maintainAspectRatio" : false,
+          "resizeDelay" : 0
+        },
+        "type" : "bar",
+        "limit" : 5
+      }
+    },
+    "setting" : {
+      "data" : {
+        "labels" : [ "Red", "Blue", "Yellow", "Green", "Purple", "Orange" ],
+        "datasets" : [ {
+          "label" : "# of Votes",
+          "data" : [ 12, 19, 3, 5, 2, 3 ],
+          "backgroundColor" : "#5b69fb",
+          "borderColor" : "#5df9f9",
+          "borderWidth" : 1
+        } ]
+      },
+      "options" : {
+        "scales" : { },
+        "responsive" : true,
+        "maintainAspectRatio" : false,
+        "resizeDelay" : 0
+      },
+      "type" : "line",
+      "limit" : 10
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\n\r\npublic class ChartSampleVerticle3 extends MasterVerticle {\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        sendChart(this.setting, \"Throughput Statistic\");\r\n        initPromise.complete();\r\n    }\r\n}\r\n\r\n\r\n",
+    "fName" : "ChartSampleVerticle3",
+    "theme" : "gruvbox",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "7",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "push",
+      "switchName" : "RoundCssPurplePushButton"
+    },
+    "setting" : { }
+  },
+  "Output" : [ "process.30.input", "process.2.input" ]
+}, {
+  "id" : "21",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "push",
+      "switchName" : "RoundCssBrownPushButton"
+    },
+    "setting" : { }
+  },
+  "Output" : [ "process.10.input" ]
+}, {
+  "id" : "54",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "push",
+      "switchName" : "RoundCssGreenPushButton"
+    },
+    "setting" : { }
+  },
+  "Output" : [ "process.44.input" ]
+}, {
+  "id" : "24",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "push",
+      "switchName" : "RoundCssYellowPushButton"
+    },
+    "setting" : { }
+  },
+  "Output" : [ "process.30.trigger", "process.2.trigger" ]
+}, {
+  "id" : "57",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "chart" : {
+        "data" : {
+          "labels" : [ "Red", "Blue", "Yellow", "Green", "Purple", "Orange" ],
+          "datasets" : [ {
+            "label" : "# of Votes",
+            "data" : [ 12, 19, 3, 5, 2, 3 ],
+            "backgroundColor" : [ "Red", "Blue", "Yellow", "Green", "Purple", "Orange" ],
+            "borderColor" : "#ff63e1e6",
+            "borderWidth" : 1
+          } ]
+        },
+        "options" : {
+          "scales" : { },
+          "responsive" : true,
+          "maintainAspectRatio" : false
+        },
+        "type" : "pie",
+        "limit" : 5
+      }
+    },
+    "setting" : {
+      "Array" : [ 1, 2, 3 ],
+      "Boolean" : true,
+      "Null" : null,
+      "Number" : 123,
+      "Object" : {
+        "a" : "b",
+        "c" : "d"
+      },
+      "String" : "Hello World"
+    },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Random;\r\n\r\npublic class SampleVerticle extends MasterVerticle {\r\n    private static Random rand = new Random();\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        JsonObject body = (JsonObject) msg.body();\r\n        //body.getJsonObject(\"dataset\").put(\"data\", rand.nextInt(101));\r\n        try {\r\n            super.process(body.encode());\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n    }\r\n}",
+    "fName" : "SampleVerticle",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ ],
+  "Input" : [ ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "27",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "trigger",
+      "switchName" : "OrangeSubscribeButtons"
+    },
+    "setting" : {
+      "_" : {
+        "state" : true,
+        "period" : 5000,
+        "delay" : 0
+      }
+    }
+  },
+  "Output" : [ "process.30.input", "process.2.input", "process.10.input" ]
+} ]

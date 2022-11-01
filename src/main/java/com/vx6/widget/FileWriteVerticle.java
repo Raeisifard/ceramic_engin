@@ -29,7 +29,7 @@ public class FileWriteVerticle extends MasterVerticle {
         this.FileNameLockExt = Library.correctFileExt(setting.getString("fileNameLockExt"));
         this.autoName = this.FileNameMask.contains("date(");
         if (this.autoName) {
-            this.tStamp = this.FileNameMask.substring(this.FileNameMask.indexOf("(") + 1, this.FileNameMask.indexOf(")"));
+            this.tStamp = this.FileNameMask.substring(this.FileNameMask.indexOf("date(") + 5, this.FileNameMask.indexOf(")"));
             if (this.tStamp.trim().isEmpty())
                 this.tStamp = "yyyyMMdd_HHmm";
         }

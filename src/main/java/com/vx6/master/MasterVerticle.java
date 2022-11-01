@@ -3,7 +3,6 @@ package com.vx6.master;
 //import com.sun.org.apache.bcel.internal.classfile.Unknown;
 
 import com.ceramic.shared.ShareableHealthCheckHandler;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -26,6 +25,7 @@ enum Cmd {
     STOP,
     START,
     READY,
+    STATUS,
     BUFFER_DRAINED,
     BUFFER_FILLED
 }
@@ -150,7 +150,7 @@ public class MasterVerticle extends AbstractVerticle {
         }));
     }
 
-    private <T> void control(Message<T> tMessage) {
+    protected  <T> void control(Message<T> tMessage) {
         String cmd = tMessage.body().toString().toLowerCase();
         if (inputConnected && buffer == null)
             relayPushback(cmd);//I'm transparent just relay control message
@@ -173,8 +173,12 @@ public class MasterVerticle extends AbstractVerticle {
                     eb.publish(addressBook.getTrigger(), "Next message", new DeliveryOptions().addHeader("cmd", "next"));
                 break;
             default:
+                controlDefault(tMessage);
                 break;
         }
+    }
+
+    protected  <T> void controlDefault(Message<T> tMessage) {
     }
 
     private void relayPushback(String cmd) {
@@ -213,6 +217,11 @@ public class MasterVerticle extends AbstractVerticle {
             Cmd command;
             try {
                 command = Cmd.valueOf(cmd.toUpperCase());
+            } catch (Exception e) {
+                unknownCmd(tMessage, cmd);
+                return;
+            }
+            try {
                 switch (command) {
                     case NEXT:
                         if (!holdOn)
@@ -255,16 +264,26 @@ public class MasterVerticle extends AbstractVerticle {
                     case STOP:
                         stop(tMessage);
                         break;
+                    case STATUS:
+                        status(tMessage);
+                        break;
                     default:
                         defaultCmd(tMessage, cmd);
                         break;
                 }
-            } catch (Exception e) {
-                unknownCmd(tMessage, cmd);
+            }catch (Exception e){
+                commandException(e);
             }
         } else {
             noCmd(tMessage, cmd);
         }
+    }
+
+    private void commandException(Exception e) {
+        e.printStackTrace();
+    }
+
+    public  <T> void status(Message<T> tMessage) {
     }
 
     public <T> void open(Message<T> tMessage) {

@@ -477,6 +477,7 @@
 	java.lang.String             com.mxgraph.model.mxCell#version     ,
 	java.lang.String             com.mxgraph.model.mxCell#direction   ,
 	com.vx6.tools.VueComponent   com.mxgraph.model.mxCell#vueComponent,
+	java.lang.Object             com.mxgraph.model.mxCell#mxTransient ,
 	com.mxgraph.model.mxGeometry com.mxgraph.model.mxCell#geometry    ,
 	java.lang.String             com.mxgraph.model.mxCell#style       ,
 	com.mxgraph.model.mxICell    com.mxgraph.model.mxCell#parent      ,

@@ -1,0 +1,88 @@
+[ {
+  "id" : "10",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "config" : {
+      "worker" : false,
+      "instances" : 1,
+      "chart" : {
+        "data" : {
+          "labels" : [ ],
+          "datasets" : [ {
+            "label" : "input",
+            "data" : [ ],
+            "backgroundColor" : "#2ef82a",
+            "borderColor" : "#2e880ce6",
+            "borderWidth" : 1
+          }, {
+            "label" : "trigger",
+            "data" : [ ],
+            "backgroundColor" : "#2ab2f8",
+            "borderColor" : "#0c4488e6",
+            "borderWidth" : 1
+          } ]
+        },
+        "options" : {
+          "scales" : {
+            "x" : {
+              "stacked" : false
+            },
+            "y" : {
+              "stacked" : false
+            }
+          },
+          "responsive" : true,
+          "maintainAspectRatio" : false,
+          "resizeDelay" : 0
+        },
+        "type" : "line",
+        "limit" : 30
+      }
+    },
+    "setting" : { },
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport io.vertx.core.Promise;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonArray;\r\nimport io.vertx.core.json.JsonObject;\r\n\r\nimport java.util.Objects;\r\n\r\npublic class Probe extends MasterVerticle {\r\n    private final String className = this.getClass().getName();\r\n    private int process = 0, trigger = 0;\r\n\r\n    @Override\r\n    public void initialize(Promise<Void> initPromise) throws Exception {\r\n        eb.consumer(\"vx.mx\", msg -> {\r\n            try {\r\n                var body = (JsonObject) msg.body();\r\n                if (!Objects.equals(body.getString(\"type\"), \"sync\"))\r\n                    return;\r\n                var time = body.getString(\"time\").substring(14, 16) + \":\" + body.getString(\"time\").substring(17);\r\n                UpdateChart(time);\r\n            } catch (Exception e) {\r\n                //e.printStackTrace();\r\n            }\r\n        });\r\n        initPromise.complete();\r\n    }\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        process++;\r\n        System.out.println(className + \"(\" + config().getString(\"id\") + \").Input.body: \" + msg.body());\r\n        System.out.println(className + \"(\" + config().getString(\"id\") + \").Input.header: \" + msg.headers());\r\n    }\r\n\r\n    @Override\r\n    public void trigger(Message msg) {\r\n        trigger++;\r\n        System.out.println(className + \"(\" + config().getString(\"id\") + \").Trigger.body: \" + msg.body());\r\n        System.out.println(className + \"(\" + config().getString(\"id\") + \").Trigger.header: \" + msg.headers());\r\n    }\r\n\r\n    @Override\r\n    public <T> void ready(Message<T> tMessage) {\r\n        /*holdOn = false;\r\n        if (autoNext) {\r\n            eb.publish(addressBook.getTrigger(), \"Next message\", new DeliveryOptions().addHeader(\"cmd\", \"next\"));\r\n        }*/\r\n    }\r\n\r\n    private void UpdateChart(String time) {\r\n        JsonObject data = new JsonObject();\r\n        data.put(\"labels\", new JsonArray().add(time));\r\n        data.put(\"datasets\", new JsonArray()\r\n                .add(new JsonObject().put(\"data\", new JsonArray().add(process)))\r\n                .add(new JsonObject().put(\"data\", new JsonArray().add(trigger))));\r\n        sendChart(new JsonObject().put(\"data\", data));\r\n    }\r\n}",
+    "fName" : "Probe",
+    "theme" : "monokai",
+    "outNumber" : 0
+  },
+  "Trigger" : [ "process.4.error" ],
+  "Input" : [ "process.4.result" ],
+  "Error" : [ ],
+  "Result" : [ ]
+}, {
+  "id" : "2",
+  "type" : "switch",
+  "data" : {
+    "type" : "switch",
+    "config" : {
+      "kind" : "push",
+      "switchName" : "RoundCssBrownPushButton"
+    },
+    "setting" : { }
+  },
+  "Output" : [ "process.4.input" ]
+}, {
+  "id" : "4",
+  "type" : "process",
+  "data" : {
+    "type" : "process",
+    "lang" : "java",
+    "code" : "import com.vx6.master.MasterVerticle;\r\nimport com.vx6.tools.template.freemarker.TemplateHolder;\r\nimport io.vertx.core.eventbus.Message;\r\nimport io.vertx.core.json.JsonObject;\r\nimport freemarker.template.*;\r\nimport freemarker.cache.NullCacheStorage;\r\n\r\nimport java.io.IOException;\r\nimport java.io.StringReader;\r\nimport java.io.StringWriter;\r\n\r\n\r\npublic class SampleVerticle extends MasterVerticle {\r\n    private Configuration config;\r\n\r\n    @Override\r\n    public void process(Message msg) {\r\n        resultOutboundCount--;\r\n        JsonObject body = (JsonObject) msg.body();\r\n        /* Create and adjust the configuration singleton */\r\n        this.config = new Configuration(Configuration.VERSION_2_3_29);\r\n        //this.config.setDirectoryForTemplateLoading(new File(\"/templates\"));\r\n        // Recommended settings for new projects:\r\n        this.config.setDefaultEncoding(\"UTF-8\");\r\n        this.config.setIncompatibleImprovements(new Version(2, 3, 20));\r\n        this.config.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);\r\n        this.config.setLogTemplateExceptions(false);\r\n        this.config.setWrapUncheckedExceptions(true);\r\n        this.config.setFallbackOnNullLoopVariable(false);\r\n        try {\r\n            this.config.setSetting(\"boolean_format\", \"c\");\r\n            TemplateHolder<Template> template;\r\n            template = new TemplateHolder(new Template(\"due\", new StringReader(setting.getString(\"text\")), this.config));\r\n            StringWriter stringWriter = new StringWriter();\r\n            try {\r\n                template.template().process(body.getMap(), stringWriter);\r\n                String str = stringWriter.toString();\r\n                eb.publish(addressBook.getResult(), str);\r\n                resultOutboundCount++;\r\n            } catch (TemplateException | IOException e) {\r\n                eb.publish(addressBook.getError(), body, addressBook.getDeliveryOptions(msg).addHeader(\"cause\", e.getMessage()));\r\n                errorOutboundCount++;\r\n                //e.printStackTrace();\r\n            }\r\n        } catch (TemplateException | IOException e) {\r\n            e.printStackTrace();\r\n        }\r\n        /* ------------------------------------------------------------------------ */\r\n        this.config.setCacheStorage(new NullCacheStorage());\r\n    }\r\n}",
+    "fName" : "SampleVerticle",
+    "theme" : "monokai",
+    "outNumber" : 0,
+    "config" : {
+      "worker" : false,
+      "instances" : 1
+    },
+    "setting" : {
+      "text" : "<#if DueDate??> '${Due}'<#else>null</#if>"
+    }
+  },
+  "Trigger" : [ ],
+  "Input" : [ "switch.2.output" ],
+  "Error" : [ "process.10.trigger" ],
+  "Result" : [ "process.10.input" ]
+} ]
