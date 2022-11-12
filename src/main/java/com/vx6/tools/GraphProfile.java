@@ -95,7 +95,7 @@ public class GraphProfile extends JsonObject {
         this.put("modifications", modifications);
     }
 
-    private void setGraph_xml(String graph_xml) {
+    public void setGraph_xml(String graph_xml) {
         this.put("graph_xml", graph_xml);
     }
 

@@ -6,6 +6,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
@@ -34,7 +35,7 @@ public class BarVerticle extends AbstractVerticle {
                         promise.complete(Status.KO());
                       });*/
             });
-    HttpServer server = vertx.createHttpServer();
+    HttpServer server = vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true));
     /*vertx.eventBus().consumer("bar.verticle.health",
       message -> healthChecks.checkStatus()
         .onSuccess(res -> message.reply("OK"))

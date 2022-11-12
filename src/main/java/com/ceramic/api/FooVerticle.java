@@ -5,6 +5,7 @@ import com.stevesoft.pat.FileRegex;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.healthchecks.HealthChecks;
@@ -19,7 +20,7 @@ public class FooVerticle extends AbstractVerticle {
     new FileRegex("mq*.xml");
     log.info("Starting verticle {" + this + "}");
     HealthChecks healthChecks = HealthChecks.create(vertx);
-    HttpServer server = vertx.createHttpServer();
+    HttpServer server = vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true));
     vertx.eventBus().consumer("foo.verticle.health",
       message -> healthChecks.checkStatus()
         .onSuccess(res -> message.reply("OK"))

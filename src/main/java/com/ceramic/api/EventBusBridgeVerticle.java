@@ -4,6 +4,7 @@ import com.ceramic.shared.ShareableRouter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.bridge.PermittedOptions;
@@ -27,7 +28,7 @@ public class EventBusBridgeVerticle extends AbstractVerticle {
 
         String inboundAddress = config().getString("inboundAddress");
         String outboundAddress = config().getString("outboundAddress");
-        HttpServer server = vertx.createHttpServer();
+        HttpServer server = vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true));
         SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
         PermittedOptions inboundPermitted = new PermittedOptions().setAddress(inboundAddress);
         PermittedOptions outboundPermitted = new PermittedOptions().setAddress(outboundAddress);

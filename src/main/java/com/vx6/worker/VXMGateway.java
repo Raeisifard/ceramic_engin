@@ -1,42 +1,34 @@
 package com.vx6.worker;
 
-import com.mxgraph.util.mxXmlUtils;
-import com.vx6.master.AddressBook;
+import com.github.diogoduailibe.lzstring4j.LZString;
 import com.vx6.tools.GraphProfile;
-import com.vx6.tools.MultipartStringMessage;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-//import io.vertx.core.impl.future.PromiseImpl;
 import io.vertx.core.json.JsonObject;
-import org.w3c.dom.Document;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.SharedData;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
-//A media settled between MX and VX system and route message
-// to appropriate verticle in charge of related flow.
 public class VXMGateway extends AbstractVerticle {
-    private String id, parentID;
     private EventBus eb;
-    private static final String tempPath = "./temp/";
-    private static String subTempPath;
-    private Timestamp timestamp;
     private List<Future> futures = new ArrayList<>();
-    private boolean fixedTempPath = true;
-    private AddressBook addressBook;
-    private MultipartStringMessage msm;
+    private LocalMap<String, JsonObject> graphMap;
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
+        SharedData sharedData = vertx.sharedData();
+        graphMap = sharedData.getLocalMap("_FORM_GRAPH_MAP");
         this.eb = vertx.eventBus();
-        msm = new MultipartStringMessage(vertx, config().getJsonObject("multiChunksMessage"));
         this.eb.consumer("registry.vx", this::processRegistry);
         this.eb.consumer("mx.vx", this::processMessage);
         this.eb.consumer("vx", this::sendOutMessage);
@@ -45,7 +37,7 @@ public class VXMGateway extends AbstractVerticle {
 
     private <T> void sendOutMessage(Message<T> tMessage) {
         this.eb.publish(String.join(".", "vx", "mx",
-                tMessage.headers().contains("flowId") ? tMessage.headers().get("flowId") : tMessage.headers().get("graph_id")),
+                        tMessage.headers().contains("flowId") ? tMessage.headers().get("flowId") : tMessage.headers().get("graph_id")),
                 tMessage.body(), (new DeliveryOptions()).setHeaders(tMessage.headers()));
     }
 
@@ -54,27 +46,32 @@ public class VXMGateway extends AbstractVerticle {
     }
 
     private void processRegistry(Message msg) {
-
         if ("load".equals(msg.headers().get("cmd"))) {
-            GraphProfile graphProfile = new GraphProfile((JsonObject) msg.body());
-            Future<String> fut = msm.get(msg);
-            fut.onSuccess(res -> {
-                graphProfile.put("graph_xml", res);
-                deployVerticle(graphProfile, false);
-            });
-            fut.onFailure(res -> {
-                res.getCause().printStackTrace();
-            });
+            JsonObject body = (JsonObject) msg.body();
+            JsonObject graph = graphMap.get(body.getString("graph"));
+            String garphXml = (graph.containsKey("zip") && graph.getBoolean("zip")) ? LZString.decompressFromUTF16(graph.getString("graph")) : graph.getString("graph");
+            GraphProfile graphProfile = new GraphProfile(body);
+            graphProfile.put("graph_xml", garphXml);
+            deployVerticle(graphProfile, false);
         }
     }
 
     private void processMessage(Message msg) {
+        String cmd = "";
+        if (msg.headers().contains("cmd"))
+            cmd = msg.headers().get("cmd");
+        else if (msg.body() instanceof String)
+            cmd = msg.body().toString();
+        else if (msg.body() instanceof JsonObject)
+            cmd = ((JsonObject) msg.body()).getString("cmd");
+        JsonObject body = new JsonObject();
+        if (msg.body() instanceof JsonObject)
+            body = (JsonObject) msg.body();
         final String graph_name, graph_id;
-        //GraphProfile gp;
         futures.clear();
-        graph_id = msg.headers().get("uid").toLowerCase();
-        graph_name = msg.headers().get("name");
-        switch (msg.headers().get("cmd").toLowerCase()) {
+        graph_id = msg.headers().contains("uid") ? msg.headers().get("uid").toLowerCase() : body.getString("uid");
+        graph_name = msg.headers().contains("name") ? msg.headers().get("name") : body.getString("name");
+        switch (cmd.toLowerCase()) {
             case "chart":
                 eb.request(String.join(".", "vx", graph_id),
                         msg.body(),
@@ -92,9 +89,9 @@ public class VXMGateway extends AbstractVerticle {
                                 msg.reply(ar.result().body());
                             }
                         });
-                //eb.send(String.join(".", "vx", graph_id), msg);
                 break;
             case "deploy":
+                JsonObject finalBody = body;
                 eb.request("registry", graph_id, new DeliveryOptions().addHeader("cmd", "query"), ar -> {
                     GraphProfile graphProfile;
                     if (ar.succeeded()) {//There is already a graph with such id
@@ -106,49 +103,33 @@ public class VXMGateway extends AbstractVerticle {
                         } else {
                             //Remove old name and if there is new xml.
                             graphProfile.setGraph_name(graph_name);
-                            if (msg.body() != null && msg.body().toString().trim().length() > 0) {
-                                Future<String> fut = msm.get(msg);
-                                fut.onSuccess(res -> {
-                                    graphProfile.put("graph_xml", res);
-                                    deployVerticle(graphProfile, true);
-                                });
-                                fut.onFailure(res -> {
-                                    res.getCause().printStackTrace();
-                                });
+                            if (finalBody.containsKey("graph") && finalBody.getString("graph").length() == 36) {
+                                var graph = graphMap.get(finalBody.getString("graph"));
+                                graphProfile.put("graph_xml", (graph.containsKey("zip") && graph.getBoolean("zip")) ?
+                                        LZString.decompressFromUTF16(graph.getString("graph")) :
+                                        graph.getString("graph"));
+                                deployVerticle(graphProfile, true);
                             } else {
-                                eb.request("registry", graph_id, new DeliveryOptions().addHeader("cmd", "get_graph")
-                                        .addHeader("uid", graph_id), arr -> {
-                                    if (arr.succeeded()) {
-                                        Future<String> fut = msm.get(arr.result());
-                                        fut.onSuccess(res -> {
-                                            graphProfile.put("graph_xml", res);
-                                            deployVerticle(graphProfile, false);
-                                        });
-                                        fut.onFailure(res -> {
-                                            res.getCause().printStackTrace();
-                                        });
-                                    } else {
-                                        arr.cause().printStackTrace();
-                                    }
-                                });
+                                JsonObject graph = graphMap.get(graphProfile.getString("graph"));
+                                String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ? LZString.decompressFromUTF16(graph.getString("graph")) : graph.getString("graph");
+                                graphProfile.put("graph_xml", graph_xml);
+                                deployVerticle(graphProfile, false);
                             }
                         }
                     } else {
                         //register new one.
-                        Future<String> fut = msm.get(msg);
-                        fut.onSuccess(res -> {
-                            GraphProfile gpf = new GraphProfile();
-                            gpf.put("graph_name", graph_name).put("graph_id", graph_id).put("graph_xml", res);
-                            deployVerticle(gpf, true);
-                            //System.out.println(String.format("ERROR! Graph \"%s\" has no valid xml.", graph_name));
-                        });
-                        fut.onFailure(res -> {
-                            res.getCause().printStackTrace();
-                        });
+                        var graph = graphMap.get(finalBody.getString("graph"));
+                        String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ?
+                                LZString.decompressFromUTF16(graph.getString("graph")) :
+                                graph.getString("graph");
+                        GraphProfile gpf = new GraphProfile();
+                        gpf.put("graph_name", graph_name).put("graph_id", graph_id).put("graph_xml", graph_xml);
+                        deployVerticle(gpf, true);
                     }
                 });
                 break;
             case "redeploy":
+                JsonObject finalBody1 = body;
                 eb.request("registry", graph_id, new DeliveryOptions().addHeader("cmd", "query"), ar -> {
                     GraphProfile graphProfile;
                     if (ar.succeeded()) {//There is a graph with such id so check if it is active or not then undeploy it.
@@ -162,31 +143,20 @@ public class VXMGateway extends AbstractVerticle {
                                         .setHeaders(graphProfile.toSimpleMultiMap())
                                         .addHeader("cmd", "status")
                                         .addHeader("value", "Undeployed"));
-                                if (msg.body() != null && msg.body().toString().trim().length() > 0) {
-                                    Future<String> fut0 = msm.get(msg);
-                                    fut0.onSuccess(res0 -> {
-                                        graphProfile.put("graph_xml", res0);
-                                        deployVerticle(graphProfile, true);
-                                    });
-                                    fut0.onFailure(res0 -> {
-                                        res0.getCause().printStackTrace();
-                                    });
+                                if (finalBody1.containsKey("graph")) {
+                                    var graph = graphMap.get(finalBody1.getString("graph"));
+                                    String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ?
+                                            LZString.decompressFromUTF16(graph.getString("graph")) :
+                                            graph.getString("graph");
+                                    graphProfile.put("graph_xml", graph_xml);
+                                    deployVerticle(graphProfile, true);
                                 } else {
-                                    eb.request("registry", graph_id, new DeliveryOptions().addHeader("cmd", "get_graph")
-                                            .addHeader("uid", graph_id), arr -> {
-                                        if (arr.succeeded()) {
-                                            Future<String> fut0 = msm.get(arr.result());
-                                            fut0.onSuccess(res0 -> {
-                                                graphProfile.put("graph_xml", res0);
-                                                deployVerticle(graphProfile, false);
-                                            });
-                                            fut0.onFailure(res0 -> {
-                                                res0.getCause().printStackTrace();
-                                            });
-                                        } else {
-                                            arr.cause().printStackTrace();
-                                        }
-                                    });
+                                    var graph = graphMap.get(graphProfile.getString("graph"));
+                                    String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ?
+                                            LZString.decompressFromUTF16(graph.getString("graph")) :
+                                            graph.getString("graph");
+                                    graphProfile.put("graph_xml", graph_xml);
+                                    deployVerticle(graphProfile, false);
                                 }
                             });
                             fut.onFailure(res -> {
@@ -246,29 +216,8 @@ public class VXMGateway extends AbstractVerticle {
             case "remove":
                 removeGraph(msg);
                 break;
-            case "save":
-                saveGraph(msg);
-                break;
             default:
                 break;
-        }
-    }
-
-    private void saveGraph(Message msg) {
-        String graph_id = msg.headers().get("uid").toLowerCase();
-        String graph_name = msg.headers().get("name");
-        Document document = mxXmlUtils.parseXml(msg.body().toString());
-        if (document != null) {
-            GraphProfile gpf = new GraphProfile();
-            gpf.put("graph_name", graph_name).put("graph_id", graph_id).put("graph_xml", msg.body().toString());
-            eb.request("registry", gpf, new DeliveryOptions().setHeaders(msg.headers().set("cmd", "save")), reg -> {
-                if (reg.succeeded())
-                    msg.reply(reg.result().body());
-                else
-                    msg.fail(-1, reg.cause().getMessage());
-            });
-        } else {
-            msg.fail(10, String.format("Graph \"%s\" has no valid xml.", graph_name));
         }
     }
 
@@ -311,37 +260,17 @@ public class VXMGateway extends AbstractVerticle {
             if (res.succeeded()) {
                 graphProfile.setDeploy_id(res.result());
                 graphProfile.setActive(true);
-                if (!newGraphXml)
-                    graphProfile.remove("graph_xml");
-                eb.request("registry", graphProfile, new DeliveryOptions().addHeader("cmd", "add_or_update"),
-                        res1 -> {
-                            if (res1.succeeded()) {
-                                if (graphProfile.getGraph_xml() != null) {
-                                    Future<String> fut2 = msm.send(res1.result(), graphProfile.getGraph_xml());
-                                    fut2.onFailure(res2 -> {
-                                        res2.getCause().printStackTrace();
-                                    });
-                                }
-                            } else {
-                                res1.cause().printStackTrace();
-                            }
-                        });
-
-                //eb.send("registry", graphProfile, new DeliveryOptions().addHeader("cmd", "add_profile"));
+                String graph_xml = (String) graphProfile.remove("graph_xml");
+                if (newGraphXml) {
+                    String uuid = UUID.randomUUID().toString();
+                    JsonObject graph = graphProfile.copy().put("time", new Date().toInstant()).put("graph", graph_xml);
+                    graphMap.put(uuid, graph);
+                    graphProfile.put("graph", uuid);
+                }
+                eb.send("registry", graphProfile, new DeliveryOptions().addHeader("cmd", "add_or_update"));
                 System.out.printf("Graph Deployed! Name:\"%s\" id:\"%s\" Deploy_id: \"%s\"%n",
                         graphProfile.getGraph_name(), graphProfile.getGraph_id(), res.result());
                 graphProfile.addModification();
-                //msg.reply(graphProfile.getGraph_xml(), new DeliveryOptions().setHeaders(graphProfile.toMultiMap().remove("graph_xml")));
-                /*msg.replyAndRequest(graphProfile.getGraph_xml(),
-                        new DeliveryOptions().setHeaders(graphProfile.toMultiMap().remove("graph_xml")),
-                        (Handler<AsyncResult<Message<String>>>) res1 -> {
-                            if (res1.succeeded()) {
-                                String r = res1.result().body();
-                                System.out.println(r);
-                            } else {
-
-                            }
-                        });*/
                 //Let all know that the flow is now ready to start.
                 eb.publish("vx.mx", "DEPLOYED", new DeliveryOptions()
                         .setHeaders(graphProfile.toSimpleMultiMap())
@@ -349,12 +278,10 @@ public class VXMGateway extends AbstractVerticle {
                         .addHeader("value", "Deployed"));
                 eb.publish(String.join(".", "vx", graphProfile.getGraph_id()), "READY",
                         new DeliveryOptions().setHeaders(graphProfile.toSimpleMultiMap()).addHeader("cmd", "ready"));
-                //.addHeader("profile", graphProfile.toSimpleJsonObject().toString()));
             } else {
                 System.out.println(String.format("Deployment failed! graph_name: %s graph_id %s%n",
                         graphProfile.getGraph_name(), graphProfile.getGraph_id()) + res.cause());
                 res.cause().printStackTrace();
-                //msg.fail(3, "Deployment failed!");
                 eb.publish("vx.mx", "DEPLOY FAILED", new DeliveryOptions()
                         .setHeaders(graphProfile.toSimpleMultiMap())
                         .addHeader("cmd", "status")
@@ -407,12 +334,9 @@ public class VXMGateway extends AbstractVerticle {
                     graphProfile.put("deploy_id", "");
                     graphProfile.setActive(false);
                     eb.send("registry", graphProfile, new DeliveryOptions().addHeader("cmd", "add_or_update"));
-          /*if (msg != null)
-            msg.reply("graph_undeployed", new DeliveryOptions().addHeader("profile", graphProfile.toSimpleJsonObject().toString()));*/
                     //Let all know that the flow is now ready to start.
                     eb.publish(String.join(".", graphProfile.getGraph_id(), "command"), "graph_undeployed",
                             new DeliveryOptions().setHeaders(graphProfile.toSimpleMultiMap()));
-                    //.addHeader("profile", graphProfile.toSimpleJsonObject().toString()));
                     pro.complete();
                 } else {
                     System.out.println(String.format("Undeploying failed! graph_name: %s graph_id %s%n",
@@ -431,69 +355,7 @@ public class VXMGateway extends AbstractVerticle {
         this.eb.request("registry",
                 msg.body(), new DeliveryOptions().setHeaders(msg.headers()), reg -> {
                     if (reg.succeeded()) {
-                        JsonObject jo = new JsonObject(reg.result().body().toString());
-                        msg.replyAndRequest("", new DeliveryOptions()
-                                        //.addHeader("graph_id", jo.getString("graph_id").toLowerCase())
-                                        //.addHeader("graph_name", jo.getString("graph_name"))
-                                        .setHeaders(new GraphProfile(jo).toSimpleMultiMap()),
-                                (Handler<AsyncResult<Message>>) res0 -> {
-                                    if (res0.succeeded()) {
-                                        if (jo.getBoolean("active")) {
-                                            this.eb.request(String.join(".", "vx", jo.getString("graph_id")),
-                                                    msg.body(),
-                                                    new DeliveryOptions().setHeaders(msg.headers()),
-                                                    dg -> {
-                                                        if (dg.succeeded()) {
-                                                            Future<String> fut = msm.get(dg.result());
-                                                            fut.onComplete(res -> {
-                                                                jo.put("graph_xml", res.result());
-                                                                msm.send(res0.result(), res.result(), new GraphProfile(jo));
-                                                            });
-                                                            fut.onFailure(res -> {
-                                                                res.getCause().printStackTrace();
-                                                            });
-                                                        }
-                                                    });
-                                        } else {
-                                            Future<String> fut = msm.get(reg.result());
-                                            fut.onComplete(res -> {
-                                                jo.put("graph_xml", res.result());
-                                                msm.send(res0.result(), res.result(), new GraphProfile(jo));
-                                            });
-                                            fut.onFailure(res -> {
-                                                res.getCause().printStackTrace();
-                                            });
-                                        }
-                                    } else {
-                                        res0.cause().printStackTrace();
-                                    }
-                                });
-                    } else
-                        msg.fail(-1, reg.result().body().toString());
-                });
-    }
-
-    private void getGraphProxy(Message msg) {
-        this.eb.request("registry",
-                msg.body(), new DeliveryOptions().setHeaders(msg.headers()), reg -> {
-                    if (reg.succeeded()) {
-                        JsonObject jo = new JsonObject(reg.result().body().toString());
-                        msg.replyAndRequest("", new DeliveryOptions()
-                                        .setHeaders(new GraphProfile(jo).toMultiMap().remove("graph_xml")),
-                                (Handler<AsyncResult<Message>>) res0 -> {
-                                    if (res0.succeeded()) {
-                                        Future<String> fut = msm.get(reg.result());
-                                        fut.onComplete(res -> {
-                                            jo.put("graph_xml", res.result());
-                                            msm.send(res0.result(), res.result(), new GraphProfile(jo));
-                                        });
-                                        fut.onFailure(res -> {
-                                            res.getCause().printStackTrace();
-                                        });
-                                    } else {
-                                        res0.cause().printStackTrace();
-                                    }
-                                });
+                        msg.reply(reg.result().body());
                     } else
                         msg.fail(-1, reg.result().body().toString());
                 });
@@ -501,7 +363,7 @@ public class VXMGateway extends AbstractVerticle {
 
     private void getGraphList(Message msg) {
         this.eb.request("registry",
-                msg.body(), new DeliveryOptions().setHeaders(msg.headers())/*.addHeader("cmd", "get_graph_list")*/, reg -> {
+                msg.body(), new DeliveryOptions().setHeaders(msg.headers()), reg -> {
                     if (reg.succeeded())
                         msg.reply(reg.result().body());
                     else

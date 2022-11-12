@@ -5,6 +5,7 @@ import com.ceramic.shared.ShareableRouter;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
@@ -18,7 +19,7 @@ public class HealthCheckVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startPromise){
     log.info("Starting verticle {" + this + "}");
-    HttpServer server = vertx.createHttpServer();
+    HttpServer server = vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true));
     HealthCheckHandler healthCheckHandler = ShareableHealthCheckHandler.create(vertx);
     //HealthCheckHandler healthCheckHandler = HealthCheckHandler.create(vertx);
     healthCheckHandler.register(

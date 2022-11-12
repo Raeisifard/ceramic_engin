@@ -6,6 +6,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -77,7 +78,7 @@ public class FreeboardApiVerticle extends AbstractVerticle {
     main.mountSubRouter("/freeboard", router);
     if (config().getBoolean("server")) {
       // start server
-      this.server = vertx.createHttpServer().requestHandler(main).listen(this.http_port, http -> {
+      this.server = vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true)).requestHandler(main).listen(this.http_port, http -> {
         if (http.succeeded()) {
           //vertx.setPeriodic(5000, this::fetchISSPosition);
           startPromise.complete();

@@ -4,6 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -53,7 +54,7 @@ private final Router router = Router.router(vertx);
 
       System.out.println("Last Id: " + sseConnection.lastId());
     });
-    server = vertx.createHttpServer();
+    server = vertx.createHttpServer(new HttpServerOptions().setCompressionSupported(true));
     //vertx.setPeriodic(5000, this::fetchISSPosition);
     server.requestHandler(router);
     server.listen(PORT, http -> {

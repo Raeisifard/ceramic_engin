@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="wsAcctStmt" targetNamespace="http://v1.bankiran.org" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://v1.bankiran.org" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:documentation>v 1.1.0
+---------
+1-new opration FC02
+
+
+v1.0.0
+---------
+This WSDL generated for Novin - SAPTA services(Noor). by Amin Bayat . v1.0.0<wsdl:appinfo source="WMQI_APPINFO">
+      <MRWSDLAppInfo imported="true">
+        <binding hasEncoding="false" imported="true" name="wsAcctStmtMessageSetSOAP_HTTP_Binding" originalBindingStyle="document"/>
+      </MRWSDLAppInfo>
+    </wsdl:appinfo>
+  </wsdl:documentation>
+   
+<wsdl:types>
+    <xsd:schema targetNamespace="http://v1.bankiran.org">
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd0"/>
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd1"/>
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd2"/>
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd3"/> 
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd4"/>
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd5"/> 
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd6"/>
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd7"/> 
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd8"/>
+  	  <xsd:include schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd9"/> 
+  	   
+ 	  <xsd:import namespace="http://schemas.xmlsoap.org/soap/envelope/" schemaLocation="http://192.168.180.15:7836/wsAcctStmt_Service?xsd=xsd10"/>
+  	</xsd:schema> 
+  </wsdl:types>
+  
+     
+  <wsdl:message name="MB60_opr1_in">
+  	<wsdl:part element="tns:msg_MB60TOHOST" name="msg_MB60TOHOST"/>
+  </wsdl:message>
+  <wsdl:message name="MB60_opr1_out">
+  	<wsdl:part element="tns:msg_MB60FROMHOST" name="msg_MB60FROMHOST"/>
+  </wsdl:message>
+
+  <wsdl:message name="FaultMsg">
+    <wsdl:part element="soapenv:Fault" name="Fault"/>
+  </wsdl:message>
+    
+  <wsdl:message name="FC04_opr1_in">
+  	<wsdl:part element="tns:msg_FC04TOHOST" name="msg_FC04TOHOST"/>
+  </wsdl:message>
+  <wsdl:message name="FC04_opr1_out">
+  	<wsdl:part element="tns:msg_FC04FROMHOST" name="msg_FC04FROMHOST"/>
+  </wsdl:message>
+
+  <wsdl:message name="FC87_opr1_in">
+  	<wsdl:part element="tns:msg_FC87TOHOST" name="msg_FC87TOHOST"/>
+  </wsdl:message>
+  <wsdl:message name="FC87_opr1_out">
+  	<wsdl:part element="tns:msg_FC87FROMHOST" name="msg_FC87FROMHOST"/>
+  </wsdl:message>
+
+  <wsdl:message name="FC44_opr1_in">
+  	<wsdl:part element="tns:msg_FC44TOHOST" name="msg_FC44TOHOST"/>
+  </wsdl:message>
+  <wsdl:message name="FC44_opr1_out">
+  	<wsdl:part element="tns:msg_FC44FROMHOST" name="msg_FC44FROMHOST"/>
+  </wsdl:message>
+
+  <wsdl:message name="FC02_opr1_in">
+  	<wsdl:part element="tns:msg_FC02TOHOST" name="msg_FC02TOHOST"/>
+  </wsdl:message>
+  <wsdl:message name="FC02_opr1_out">
+  	<wsdl:part element="tns:msg_FC02FROMHOST" name="msg_FC02FROMHOST"/>
+  </wsdl:message>
+
+    <wsdl:portType name="wsAcctStmtMessageSetPortType">
+
+    
+    <wsdl:operation name="MB60_opr1">
+      <wsdl:input message="tns:MB60_opr1_in" name="MB60_opr1_Input"/>
+      <wsdl:output message="tns:MB60_opr1_out" name="MB60_opr1_Output"/>
+      <wsdl:fault message="tns:FaultMsg" name="FaultMsg"/>      
+    </wsdl:operation>
+
+    <wsdl:operation name="FC04_opr1">
+      <wsdl:input message="tns:FC04_opr1_in" name="FC04_opr1_Input"/>
+      <wsdl:output message="tns:FC04_opr1_out" name="FC04_opr1_Output"/>
+      <wsdl:fault message="tns:FaultMsg" name="FaultMsg"/>
+    </wsdl:operation>   
+
+    <wsdl:operation name="FC87_opr1">
+      <wsdl:input message="tns:FC87_opr1_in" name="FC87_opr1_Input"/>
+      <wsdl:output message="tns:FC87_opr1_out" name="FC87_opr1_Output"/>
+      <wsdl:fault message="tns:FaultMsg" name="FaultMsg"/>
+    </wsdl:operation>   
+   
+    <wsdl:operation name="FC44_opr1">
+      <wsdl:input message="tns:FC44_opr1_in" name="FC44_opr1_Input"/>
+      <wsdl:output message="tns:FC44_opr1_out" name="FC44_opr1_Output"/>
+      <wsdl:fault message="tns:FaultMsg" name="FaultMsg"/>
+    </wsdl:operation>   
+
+    <wsdl:operation name="FC02_opr1">
+      <wsdl:input message="tns:FC02_opr1_in" name="FC02_opr1_Input"/>
+      <wsdl:output message="tns:FC02_opr1_out" name="FC02_opr1_Output"/>
+      <wsdl:fault message="tns:FaultMsg" name="FaultMsg"/>
+    </wsdl:operation>   
+
+  </wsdl:portType>
+    <wsdl:binding name="wsAcctStmtMessageSetSOAP_HTTP_Binding" type="tns:wsAcctStmtMessageSetPortType">
+
+
+
+
+
+
+
+
+
+
+
+    	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    	<wsdl:operation name="MB60_opr1">
+
+    		<soap:operation soapAction="http://v1.bankiran.org/MB60_opr1"/>
+    		<wsdl:input name="MB60_opr1_Input">
+
+    			<soap:body use="literal"/>
+    		</wsdl:input>
+    		<wsdl:output name="MB60_opr1_Output">
+
+    			<soap:body use="literal"/>
+    		</wsdl:output>
+    		<wsdl:fault name="FaultMsg">
+
+    			<soap:fault name="FaultMsg" use="literal"/>
+    		</wsdl:fault>
+    	</wsdl:operation>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    	<wsdl:operation name="FC04_opr1">
+
+    		<soap:operation soapAction="http://v1.bankiran.org/FC04_opr1"/>
+    		<wsdl:input name="FC04_opr1_Input">
+
+    			<soap:body use="literal"/>
+    		</wsdl:input>
+    		<wsdl:output name="FC04_opr1_Output">
+
+    			<soap:body use="literal"/>
+    		</wsdl:output>
+    		<wsdl:fault name="FaultMsg">
+
+    			<soap:fault name="FaultMsg" use="literal"/>
+    		</wsdl:fault>
+    	</wsdl:operation>
+    	<wsdl:operation name="FC87_opr1">
+
+    		<soap:operation soapAction="http://v1.bankiran.org/FC87_opr1"/>
+    		<wsdl:input name="FC87_opr1_Input">
+
+    			<soap:body use="literal"/>
+    		</wsdl:input>
+    		<wsdl:output name="FC87_opr1_Output">
+
+    			<soap:body use="literal"/>
+    		</wsdl:output>
+    		<wsdl:fault name="FaultMsg">
+
+    			<soap:fault name="FaultMsg" use="literal"/>
+    		</wsdl:fault>
+    	</wsdl:operation>
+
+    	<wsdl:operation name="FC44_opr1">
+
+    		<soap:operation soapAction="http://v1.bankiran.org/FC44_opr1"/>
+    		<wsdl:input name="FC44_opr1_Input">
+
+    			<soap:body use="literal"/>
+    		</wsdl:input>
+    		<wsdl:output name="FC44_opr1_Output">
+
+    			<soap:body use="literal"/>
+    		</wsdl:output>
+    		<wsdl:fault name="FaultMsg">
+
+    			<soap:fault name="FaultMsg" use="literal"/>
+    		</wsdl:fault>
+    	</wsdl:operation>
+    	<wsdl:operation name="FC02_opr1">
+    		<soap:operation soapAction="http://v1.bankiran.org/FC02_opr1"/>
+    		<wsdl:input name="FC02_opr1_Input">
+    			<soap:body use="literal"/>
+    		</wsdl:input>
+    		<wsdl:output name="FC02_opr1_Output">
+    			<soap:body use="literal"/>
+    		</wsdl:output>
+    		<wsdl:fault name="FaultMsg">
+    			<soap:fault name="FaultMsg" use="literal"/>
+    		</wsdl:fault>
+    	</wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="wsAcctStmt_Service">
+    <wsdl:port binding="tns:wsAcctStmtMessageSetSOAP_HTTP_Binding" name="wsAcctStmt_Port">
+      <soap:address location="http://192.168.180.15:7836/wsAcctStmt_Service"/>
+    </wsdl:port>
+  </wsdl:service>
+  
+</wsdl:definitions>

@@ -1,4 +1,8 @@
-2022-10-22 18:43:43,257 INFO c.c.a.HttpVerticle [vert.x-eventloop-thread-4] Starting verticle {com.ceramic.api.HttpVerticle@291d2107}
-2022-10-22 18:43:43,322 INFO c.c.a.FreeboardApiVerticle [vert.x-eventloop-thread-5] Starting verticle {com.ceramic.api.FreeboardApiVerticle@279906ae}
-2022-10-22 18:43:43,344 INFO c.c.a.EventBusBridgeVerticle [vert.x-eventloop-thread-8] Starting verticle {com.ceramic.api.EventBusBridgeVerticle@677d5409}
-2022-10-22 18:43:43,344 INFO c.c.a.HealthCheckVerticle [vert.x-eventloop-thread-7] Starting verticle {com.ceramic.api.HealthCheckVerticle@6aa13d20}
+2022-11-12 09:48:42,538 INFO c.c.a.HttpVerticle [vert.x-eventloop-thread-4] Starting verticle {com.ceramic.api.HttpVerticle@5479af1a}
+2022-11-12 09:48:42,601 INFO c.c.a.FreeboardApiVerticle [vert.x-eventloop-thread-5] Starting verticle {com.ceramic.api.FreeboardApiVerticle@444c213b}
+2022-11-12 09:48:42,617 INFO c.c.a.HealthCheckVerticle [vert.x-eventloop-thread-7] Starting verticle {com.ceramic.api.HealthCheckVerticle@210b06be}
+2022-11-12 09:48:42,617 INFO c.c.a.EventBusBridgeVerticle [vert.x-eventloop-thread-8] Starting verticle {com.ceramic.api.EventBusBridgeVerticle@44d4ebee}
+2022-11-12 11:56:05,435 INFO c.c.a.HttpVerticle [vert.x-eventloop-thread-4] Starting verticle {com.ceramic.api.HttpVerticle@68e241f7}
+2022-11-12 11:56:05,513 INFO c.c.a.FreeboardApiVerticle [vert.x-eventloop-thread-5] Starting verticle {com.ceramic.api.FreeboardApiVerticle@5ad6dfc}
+2022-11-12 11:56:05,529 INFO c.c.a.HealthCheckVerticle [vert.x-eventloop-thread-7] Starting verticle {com.ceramic.api.HealthCheckVerticle@46309e73}
+2022-11-12 11:56:05,544 INFO c.c.a.EventBusBridgeVerticle [vert.x-eventloop-thread-8] Starting verticle {com.ceramic.api.EventBusBridgeVerticle@7c6f613b}
