@@ -17,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.Scanner;
 
 public class IbmMqVerticle extends MasterVerticle {
     private String qm, qName;
@@ -25,6 +24,7 @@ public class IbmMqVerticle extends MasterVerticle {
     private MQQueue queue = null;
     private long count = 0;
     private int depth = -1;
+    private final Hashtable<String, Object> mqProperties = new Hashtable<String, Object>();
 
     @Override
     public void initialize(Promise<Void> initPromise) throws Exception {
@@ -70,15 +70,13 @@ public class IbmMqVerticle extends MasterVerticle {
         qm = config.getString("qm");
         qName = config.getString("qName");
         if (!inputConnected) {
-            final Hashtable<String, Object> mqProperties = new Hashtable<String, Object>();
             mqProperties.put(MQConstants.HOST_NAME_PROPERTY, config.getString("ip"));
             mqProperties.put(MQConstants.PORT_PROPERTY, config.getInteger("port"));
             mqProperties.put(MQConstants.USER_ID_PROPERTY, config.getString("user"));
             mqProperties.put(MQConstants.PASSWORD_PROPERTY, config.getString("pass"));
             mqProperties.put(MQConstants.CHANNEL_PROPERTY, config.getString("channelName"));
             mqProperties.put(MQConstants.CCSID_PROPERTY, config.getString("codePage"));
-            qMgr = new MQQueueManager(qm, mqProperties);
-            queue = qMgr.accessQueue(qName, CMQC.MQOO_INPUT_SHARED | CMQC.MQOO_INQUIRE | CMQC.MQOO_NO_READ_AHEAD);
+            connectToMq();
         }
         DeploymentOptions options = new DeploymentOptions().setWorker(false);
         if (config.containsKey("instance")) {
@@ -119,6 +117,12 @@ public class IbmMqVerticle extends MasterVerticle {
             JsonObject jo = (JsonObject) tMessage.body();
             int number = jo.getInteger("number", 1);
             try {
+                if (!(queue.isOpen() || qMgr.isConnected()))
+                    try {
+                        connectToMq();
+                    } catch (Exception e) {
+                        sendException(e);
+                    }
                 depth = queue.getCurrentDepth();
                 eb.publish(addressBook.getError(), new JsonObject().put("depth", depth).put("number", number)
                         .put("count", count).put("queueManagerName", qm).put("queueName", qName), addressBook.getDeliveryOptions());
@@ -185,4 +189,8 @@ public class IbmMqVerticle extends MasterVerticle {
                 });
     }
 
+    private void connectToMq() throws Exception {
+        qMgr = new MQQueueManager(qm, mqProperties);
+        queue = qMgr.accessQueue(qName, CMQC.MQOO_INPUT_SHARED | CMQC.MQOO_INQUIRE | CMQC.MQOO_NO_READ_AHEAD);
+    }
 }

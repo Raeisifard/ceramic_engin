@@ -17,7 +17,7 @@ import java.util.Hashtable;
 public class IbmMqWriteVerticle  extends AbstractVerticle {
 
   private EventBus eb;
-  private final Hashtable<String, Object> mqProperties = new Hashtable<String, Object>();
+  private final Hashtable<String, Object> mqProperties = new Hashtable<>();
   private String qManagerName;
   private String queueName;
   private MQQueueManager qMgr;
@@ -54,24 +54,32 @@ public class IbmMqWriteVerticle  extends AbstractVerticle {
     putMessage.characterSet = 1208;
     try {
       putMessage.writeString(tMessage.body().toString());
+      if (!queue.isOpen()){
+        shutdown();
+        connectMQ();
+      }
       queue.put(putMessage, mQPutMessageOptions);
       tMessage.reply("ok");
     } catch (MQException | IOException e) {
+      e.printStackTrace();
       tMessage.fail(8, e.getMessage());
     }
   }
 
   private void connectMQ(Promise<Void> initPromise) {
     try {
-      qMgr = new MQQueueManager(qManagerName, mqProperties);
-      int openOptions = CMQC.MQOO_OUTPUT | CMQC.MQOO_INQUIRE;
-      queue = qMgr.accessQueue(queueName, openOptions);
-      MQException.logExclude(MQConstants.MQRC_NO_MSG_AVAILABLE);
+      connectMQ();
       initPromise.complete();
     } catch (Exception e) {
       e.printStackTrace();
       initPromise.fail(e);
     }
+  }
+  private void connectMQ() throws MQException {
+    qMgr = new MQQueueManager(qManagerName, mqProperties);
+    int openOptions = CMQC.MQOO_OUTPUT | CMQC.MQOO_INQUIRE;
+    queue = qMgr.accessQueue(queueName, openOptions);
+    MQException.logExclude(MQConstants.MQRC_NO_MSG_AVAILABLE);
   }
 
   @Override

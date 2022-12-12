@@ -93,6 +93,7 @@ public class DeployGraph extends AbstractVerticle {
             jo.put("graph_name", this.graph_name).put("graph_id", this.graph_id);//.put("parent_deploy_id", this.id);
             String type = jo.getString("type");
             String id = jo.getString("id");
+            JsonObject data = jo.getJsonObject("data");
             DeploymentOptions options = new DeploymentOptions();
             Promise<String> pro = Promise.promise();
             futures.add(pro.future());
@@ -102,34 +103,37 @@ public class DeployGraph extends AbstractVerticle {
                     pro.complete();
                     break;
                 case "process":
-                    JsonObject data = jo.getJsonObject("data");
-                    String lang = data.getString("lang");
-                    String fName = data.getString("fName");
-                    String code = data.getString("code");
-                    JsonArray trigger = jo.getJsonArray("Trigger");
-                    JsonArray result = jo.getJsonArray("Result");
-                    JsonArray error = jo.getJsonArray("Error");
-                    JsonArray input = jo.getJsonArray("Input");
-                    jo.put("dataSource", dataSources);
-                    options.setWorker(data.getJsonObject("config").getBoolean("worker", false));
-                    options.setInstances(data.getJsonObject("config").getInteger("instances", 1));
-                    options.setConfig(jo);
-                    FileSystem fs = vertx.fileSystem();
-                    String absoluteFilePath;
-                    if (lang.equalsIgnoreCase("javascript")) {
-                        absoluteFilePath = subTempPath + fName + ".js";
-                        Future.<Void>future(promised -> fs.writeFile(tempPath + absoluteFilePath, Buffer.buffer(code), promised))
-                                .compose(v -> {
-                                    vertx.deployVerticle("js:" + tempPath + absoluteFilePath, options, pro);
-                                    return pro.future();
-                                });
-                    } else { // =="java"
-                        absoluteFilePath = subTempPath + fName + ".java";
-                        Future.<Void>future(promised -> fs.writeFile(tempPath + absoluteFilePath, Buffer.buffer(code), promised))
-                                .compose(v -> {
-                                    vertx.deployVerticle("java:./" + absoluteFilePath, options, pro);
-                                    return pro.future();
-                                });
+                    if (!data.getJsonObject("config").getBoolean("enable", true)) {
+                        pro.complete();
+                    } else {
+                        String lang = data.getString("lang");
+                        String fName = data.getString("fName");
+                        String code = data.getString("code");
+                        JsonArray trigger = jo.getJsonArray("Trigger");
+                        JsonArray result = jo.getJsonArray("Result");
+                        JsonArray error = jo.getJsonArray("Error");
+                        JsonArray input = jo.getJsonArray("Input");
+                        jo.put("dataSource", dataSources);
+                        options.setWorker(data.getJsonObject("config").getBoolean("worker", false));
+                        options.setInstances(data.getJsonObject("config").getInteger("instances", 1));
+                        options.setConfig(jo);
+                        FileSystem fs = vertx.fileSystem();
+                        String absoluteFilePath;
+                        if (lang.equalsIgnoreCase("javascript")) {
+                            absoluteFilePath = subTempPath + fName + ".js";
+                            Future.<Void>future(promised -> fs.writeFile(tempPath + absoluteFilePath, Buffer.buffer(code), promised))
+                                    .compose(v -> {
+                                        vertx.deployVerticle("js:" + tempPath + absoluteFilePath, options, pro);
+                                        return pro.future();
+                                    });
+                        } else { // =="java"
+                            absoluteFilePath = subTempPath + fName + ".java";
+                            Future.<Void>future(promised -> fs.writeFile(tempPath + absoluteFilePath, Buffer.buffer(code), promised))
+                                    .compose(v -> {
+                                        vertx.deployVerticle("java:./" + absoluteFilePath, options, pro);
+                                        return pro.future();
+                                    });
+                        }
                     }
                     break;
                 case "switch":
@@ -139,13 +143,17 @@ public class DeployGraph extends AbstractVerticle {
                     vertx.deployVerticle(new com.vx6.widget.SwitchVerticle(), options, pro);
                     break;
                 case "file":
-                    options.setWorker(false);
-                    jo.put("dataSource", dataSources);
-                    options.setConfig(jo);
-                    if (jo.getJsonArray("Input").size() == 0) {
-                        vertx.deployVerticle(new com.vx6.widget.FileReadVerticle(), options, pro);
-                    } else {
-                        vertx.deployVerticle(new com.vx6.widget.FileWriteVerticle(), options, pro);
+                    if (!data.getJsonObject("config").getBoolean("enable", true)) {
+                        pro.complete();
+                    }else {
+                        options.setWorker(false);
+                        jo.put("dataSource", dataSources);
+                        options.setConfig(jo);
+                        if (jo.getJsonArray("Input").size() == 0) {
+                            vertx.deployVerticle(new com.vx6.widget.FileReadVerticle(), options, pro);
+                        } else {
+                            vertx.deployVerticle(new com.vx6.widget.FileWriteVerticle(), options, pro);
+                        }
                     }
                     break;
                 case "chart":
@@ -155,16 +163,24 @@ public class DeployGraph extends AbstractVerticle {
                     vertx.deployVerticle(new com.vx6.widget.ChartVerticle(), options, pro);
                     break;
                 case "webspheremq":
-                    options.setWorker(false);
-                    jo.put("dataSource", dataSources);
-                    options.setConfig(jo);
-                    vertx.deployVerticle(new com.vx6.widget.IbmMqVerticle(), options, pro);
+                    if (!data.getJsonObject("config").getBoolean("enable", true)) {
+                        pro.complete();
+                    }else {
+                        options.setWorker(false);
+                        jo.put("dataSource", dataSources);
+                        options.setConfig(jo);
+                        vertx.deployVerticle(new com.vx6.widget.IbmMqVerticle(), options, pro);
+                    }
                     break;
                 case "database":
-                    options.setWorker(false);
-                    jo.put("dataSource", dataSources);
-                    options.setConfig(jo);
-                    vertx.deployVerticle(new com.vx6.widget.DbVerticle(), options, pro);
+                    if (!data.getJsonObject("config").getBoolean("enable", true)) {
+                        pro.complete();
+                    }else {
+                        options.setWorker(false);
+                        jo.put("dataSource", dataSources);
+                        options.setConfig(jo);
+                        vertx.deployVerticle(new com.vx6.widget.DbVerticle(), options, pro);
+                    }
                     break;
                 case "parquet":
                     options.setWorker(false);

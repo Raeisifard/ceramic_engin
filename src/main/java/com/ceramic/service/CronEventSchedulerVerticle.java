@@ -15,10 +15,10 @@ import java.util.Arrays;
 import java.util.TimeZone;
 import java.util.UUID;
 
-public class CronEventSchedulerVertical extends AbstractVerticle {
+public class CronEventSchedulerVerticle extends AbstractVerticle {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CronEventSchedulerVertical() {
+    public CronEventSchedulerVerticle() {
     }
 
     public void start(Promise<Void> startPromise) throws Exception {

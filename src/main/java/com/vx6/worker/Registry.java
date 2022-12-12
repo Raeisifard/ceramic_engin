@@ -1,6 +1,5 @@
 package com.vx6.worker;
 
-import com.github.diogoduailibe.lzstring4j.LZString;
 import com.mxgraph.io.mxCodec;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGraphModel;
@@ -73,7 +72,7 @@ public class Registry extends AbstractVerticle {
                 gp = new GraphProfile(body);
                 if (body.containsKey("graph")) {
                     JsonObject graph = graphMap.get(body.getString("graph"));
-                    gp.put("graph_xml", (graph.containsKey("zip") && graph.getBoolean("zip")) ? LZString.decompressFromUTF16(graph.getString("graph")) : graph.getString("graph"));
+                    gp.put("graph_xml", graph.getString("graph"));
                     gp.addRevision();
                 } else {
                     gp.addModification();
@@ -91,7 +90,7 @@ public class Registry extends AbstractVerticle {
                 String graph_id = body.getString("uid");
                 String graph_name = body.getString("name");
                 JsonObject graph = graphMap.get(body.getString("graph"));
-                String graphXml = (graph.containsKey("zip") && graph.getBoolean("zip")) ? LZString.decompressFromUTF16(graph.getString("graph")) : graph.getString("graph");
+                String graphXml =graph.getString("graph");
                 Document document = mxXmlUtils.parseXml(graphXml);
                 if (document != null) {
                     GraphProfile graphProfile = root.getProfile(graph_id);
@@ -233,7 +232,7 @@ public class Registry extends AbstractVerticle {
         if (gp != null) {
             UUID uuid = UUID.randomUUID();
             graphMap.put(uuid.toString(), new JsonObject()
-                    .put("graph", LZString.compressToUTF16(gp.getGraph_xml()))
+                    .put("graph", gp.getGraph_xml())
                     .put("uid", gp.getGraph_id())
                     .put("graphName", gp.getGraph_name())
                     .put("active", gp.isActive())

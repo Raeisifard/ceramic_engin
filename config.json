@@ -141,7 +141,7 @@
     {
       "name": "CronScheduler",
       "description": "Cron Scheduler for Eclipse Vert.x",
-      "main": "com.ceramic.service.CronEventSchedulerVertical",
+      "main": "com.ceramic.service.CronEventSchedulerVerticle",
       "deploy": true,
       "options": {
         "config": {

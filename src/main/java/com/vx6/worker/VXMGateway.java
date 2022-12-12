@@ -1,6 +1,5 @@
 package com.vx6.worker;
 
-import com.github.diogoduailibe.lzstring4j.LZString;
 import com.vx6.tools.GraphProfile;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -49,7 +48,7 @@ public class VXMGateway extends AbstractVerticle {
         if ("load".equals(msg.headers().get("cmd"))) {
             JsonObject body = (JsonObject) msg.body();
             JsonObject graph = graphMap.get(body.getString("graph"));
-            String garphXml = (graph.containsKey("zip") && graph.getBoolean("zip")) ? LZString.decompressFromUTF16(graph.getString("graph")) : graph.getString("graph");
+            String garphXml = graph.getString("graph");
             GraphProfile graphProfile = new GraphProfile(body);
             graphProfile.put("graph_xml", garphXml);
             deployVerticle(graphProfile, false);
@@ -105,26 +104,24 @@ public class VXMGateway extends AbstractVerticle {
                             graphProfile.setGraph_name(graph_name);
                             if (finalBody.containsKey("graph") && finalBody.getString("graph").length() == 36) {
                                 var graph = graphMap.get(finalBody.getString("graph"));
-                                graphProfile.put("graph_xml", (graph.containsKey("zip") && graph.getBoolean("zip")) ?
-                                        LZString.decompressFromUTF16(graph.getString("graph")) :
-                                        graph.getString("graph"));
+                                graphProfile.put("graph_xml", graph.getString("graph"));
                                 deployVerticle(graphProfile, true);
                             } else {
                                 JsonObject graph = graphMap.get(graphProfile.getString("graph"));
-                                String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ? LZString.decompressFromUTF16(graph.getString("graph")) : graph.getString("graph");
+                                String graph_xml = graph.getString("graph");
                                 graphProfile.put("graph_xml", graph_xml);
                                 deployVerticle(graphProfile, false);
                             }
+                            msg.reply("deployed");
                         }
                     } else {
                         //register new one.
                         var graph = graphMap.get(finalBody.getString("graph"));
-                        String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ?
-                                LZString.decompressFromUTF16(graph.getString("graph")) :
-                                graph.getString("graph");
+                        String graph_xml = graph.getString("graph");
                         GraphProfile gpf = new GraphProfile();
                         gpf.put("graph_name", graph_name).put("graph_id", graph_id).put("graph_xml", graph_xml);
                         deployVerticle(gpf, true);
+                        msg.reply("deployed");
                     }
                 });
                 break;
@@ -145,21 +142,19 @@ public class VXMGateway extends AbstractVerticle {
                                         .addHeader("value", "Undeployed"));
                                 if (finalBody1.containsKey("graph")) {
                                     var graph = graphMap.get(finalBody1.getString("graph"));
-                                    String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ?
-                                            LZString.decompressFromUTF16(graph.getString("graph")) :
-                                            graph.getString("graph");
+                                    String graph_xml = graph.getString("graph");
                                     graphProfile.put("graph_xml", graph_xml);
                                     deployVerticle(graphProfile, true);
                                 } else {
                                     var graph = graphMap.get(graphProfile.getString("graph"));
-                                    String graph_xml = (graph.containsKey("zip") && graph.getBoolean("zip")) ?
-                                            LZString.decompressFromUTF16(graph.getString("graph")) :
-                                            graph.getString("graph");
+                                    String graph_xml = graph.getString("graph");
                                     graphProfile.put("graph_xml", graph_xml);
                                     deployVerticle(graphProfile, false);
                                 }
+                                msg.reply("redeployed");
                             });
                             fut.onFailure(res -> {
+                                msg.fail(7, String.format("Failed to undeploy Graph \"%s\"", graphProfile.getGraph_name()));
                                 System.out.println("Undeploying failed!!!!");
                             });
                         } else {

@@ -18,7 +18,7 @@ public class FileWriteVerticle extends MasterVerticle {
     private String tStamp = "";
     private String currentFileName;
     private String newFileName;
-    private String currentUsedTime;
+    private String currentUsedTime = "";
     private final String lineSep = System.getProperty("line.separator");
     private long timerID;
 

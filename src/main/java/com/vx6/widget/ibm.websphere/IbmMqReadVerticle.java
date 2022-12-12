@@ -54,6 +54,10 @@ public class IbmMqReadVerticle extends AbstractVerticle {
     private <T> void process(Message<T> tMessage) {
         MQMessage getMessage = new MQMessage();
         try {
+            if (!queue.isOpen()){
+                shutdown();
+                connectMQ();
+            }
             queue.get(getMessage, new MQGetMessageOptions());
             String format = getMessage.format.trim();
             String txt = "";
@@ -107,12 +111,22 @@ public class IbmMqReadVerticle extends AbstractVerticle {
                 tMessage.fail(8, "mq exception");
                 e.printStackTrace();
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             tMessage.fail(0, "general exception");
         }
     }
 
     private void connectMQ(Promise<Void> initPromise) {
+        try {
+            connectMQ();
+            initPromise.complete();
+        } catch (Exception e) {
+            e.printStackTrace();
+            initPromise.fail(e);
+        }
+    }
+
+    private void connectMQ() throws MQException {
         try {
             qMgr = new MQQueueManager(qManagerName, mqProperties);
             int openOptions;
@@ -122,10 +136,8 @@ public class IbmMqReadVerticle extends AbstractVerticle {
                 openOptions = CMQC.MQOO_INPUT_SHARED | CMQC.MQOO_INQUIRE | CMQC.MQOO_NO_READ_AHEAD;
             queue = qMgr.accessQueue(queueName, openOptions);
             MQException.logExclude(MQConstants.MQRC_NO_MSG_AVAILABLE);
-            initPromise.complete();
         } catch (Exception e) {
-            e.printStackTrace();
-            initPromise.fail(e);
+            throw e;
         }
     }
 
