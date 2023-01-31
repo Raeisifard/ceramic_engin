@@ -11,6 +11,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.Status;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CorsHandler;
 
 public class HealthCheckVerticle extends AbstractVerticle {
   private static final Logger log = LoggerFactory.getLogger(HealthCheckVerticle.class);
@@ -44,7 +45,7 @@ public class HealthCheckVerticle extends AbstractVerticle {
             promise.complete(Status.KO());
           });
       });*/
-    healthCheckHandler.register(
+    /*healthCheckHandler.register(
       "status/foo-verticle",
       promise -> {
         vertx.eventBus().request("foo.verticle.health", "ping")
@@ -54,8 +55,31 @@ public class HealthCheckVerticle extends AbstractVerticle {
           .onFailure(err -> {
             promise.complete(Status.KO());
           });
-      });
+      });*/
 
+    // enable CORS
+    router.options("/*").handler(CorsHandler.create("*")
+            .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+            .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+            .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+            .allowCredentials(true)
+            .allowedHeader("Access-Control-Allow-Headers")
+            .allowedHeader("Authorization")
+            .allowedHeader("Access-Control-Allow-Method")
+            .allowedHeader("Access-Control-Allow-Origin")
+            .allowedHeader("Access-Control-Allow-Credentials")
+            .allowedHeader("Content-Type"));
+    router.get("/*").handler(CorsHandler.create("*")
+            .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+            .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+            .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+            .allowCredentials(true)
+            .allowedHeader("Access-Control-Allow-Headers")
+            .allowedHeader("Authorization")
+            .allowedHeader("Access-Control-Allow-Method")
+            .allowedHeader("Access-Control-Allow-Origin")
+            .allowedHeader("Access-Control-Allow-Credentials")
+            .allowedHeader("Content-Type"));
     router.get("/*").handler(healthCheckHandler);
     final Router main = ShareableRouter.router(vertx);
     main.mountSubRouter("/health", router);

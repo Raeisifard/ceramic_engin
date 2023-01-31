@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.sse.EventBusSSEBridge;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,6 +39,29 @@ public class FreeboardApiVerticle extends AbstractVerticle {
     eventBusSSEBridge.mapping(request -> EB_ADDRESS);
     //final Router router = Router.router(vertx);
     //router.route("/sse").handler(eventBusSSEBridge);
+    // enable CORS
+    router.options("/*").handler(CorsHandler.create("*")
+            .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+            .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+            .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+            .allowCredentials(true)
+            .allowedHeader("Access-Control-Allow-Headers")
+            .allowedHeader("Authorization")
+            .allowedHeader("Access-Control-Allow-Method")
+            .allowedHeader("Access-Control-Allow-Origin")
+            .allowedHeader("Access-Control-Allow-Credentials")
+            .allowedHeader("Content-Type"));
+    router.get("/*").handler(CorsHandler.create("*")
+            .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+            .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+            .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+            .allowCredentials(true)
+            .allowedHeader("Access-Control-Allow-Headers")
+            .allowedHeader("Authorization")
+            .allowedHeader("Access-Control-Allow-Method")
+            .allowedHeader("Access-Control-Allow-Origin")
+            .allowedHeader("Access-Control-Allow-Credentials")
+            .allowedHeader("Content-Type"));
     router.get("/").handler(rc -> rc.response().setStatusCode(302).putHeader("location", config().getString("location")).end());
     router.get("/sse/*").handler(EventBusSSEBridge.create());
     router.get("/:req").handler(ctx -> {

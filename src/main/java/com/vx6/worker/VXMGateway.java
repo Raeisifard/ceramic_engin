@@ -1,12 +1,15 @@
 package com.vx6.worker;
 
 import com.vx6.tools.GraphProfile;
+import com.vx6.worker.test.SqlServer;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
 
@@ -22,6 +25,7 @@ public class VXMGateway extends AbstractVerticle {
     private EventBus eb;
     private List<Future> futures = new ArrayList<>();
     private LocalMap<String, JsonObject> graphMap;
+    private static final Logger log = LoggerFactory.getLogger(VXMGateway.class);
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
@@ -31,6 +35,7 @@ public class VXMGateway extends AbstractVerticle {
         this.eb.consumer("registry.vx", this::processRegistry);
         this.eb.consumer("mx.vx", this::processMessage);
         this.eb.consumer("vx", this::sendOutMessage);
+        log.info("Starting verticle {" + this + "}");
         startPromise.complete();
     }
 

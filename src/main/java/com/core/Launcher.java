@@ -1,12 +1,16 @@
 package com.core;
 
+import com.vx6.tools.JsonArrayByIDMessageCodec;
+import com.vx6.tools.JsonObjectByIDMessageCodec;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
+import test.RegisterCustomCodec;
 
 import java.io.*;
 import java.util.Objects;
@@ -30,7 +34,7 @@ public class Launcher extends io.vertx.core.Launcher {
     @Override
     public void beforeStartingVertx(VertxOptions options) {
         //System.out.println("vertx options: " + options.toJson().encodePrettily());
-        System.out.println("\n");
+        System.out.println("");
         System.out.println(new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/banner.txt"))))
                 .lines().parallel().collect(Collectors.joining("\n")));
         System.out.println("");
@@ -42,6 +46,12 @@ public class Launcher extends io.vertx.core.Launcher {
     @Override
     public void afterStartingVertx(Vertx vertx) {
         this.vertx = vertx;
+        //Register new codecs "JsonObjectByIDMessageCodec" & "JsonArrayByIDMessageCodec"
+        EventBus eb = vertx.eventBus();
+        JsonObjectByIDMessageCodec jsonObjectByIDMessageCodec = new JsonObjectByIDMessageCodec();
+        JsonArrayByIDMessageCodec jsonArrayByIDMessageCodec = new JsonArrayByIDMessageCodec();
+        eb.registerCodec(jsonObjectByIDMessageCodec);
+        eb.registerCodec(jsonArrayByIDMessageCodec);
     }
 
     @Override

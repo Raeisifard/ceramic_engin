@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+	<Appenders>
+		<!--<Console name="LogToConsole" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+		</Console>-->
+		<RollingFile name="LogToSaptaRollingFile"
+					 filePattern="logs/sapta/$${date:yyyy-MM}/trans-%d{yyyy-MM-dd hh-mm}.txt">
+			<PatternLayout>
+				<PatternLayout pattern="%m"/>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<!--<SizeBasedTriggeringPolicy size="10 MB"/>-->
+			</Policies>
+		</RollingFile>
+		<Console name="LogToConsole" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+		</Console>
+		<RollingFile name="LogToRollingFile" fileName="logs/app.log"
+					 filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log">
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+		</RollingFile>
+		<!--<SplunkHttp
+				name="httpconf"
+				url="http://192.168.166.7:8088"
+				token="8e514702-9572-4eb1-946b-cc00b93c74ef"
+				host=""
+				index=""
+				source="splunktest"
+				sourcetype="battlecat"
+				messageFormat="text"
+				batch_interval="0"
+				batch_size_bytes="0"
+				batch_size_count="0"
+				disableCertificateValidation="true"
+				middleware="HttpEventCollectorUnitTestMiddleware"
+		>
+			<PatternLayout pattern="%m"/>
+		</SplunkHttp>-->
+	</Appenders>
+	<!--<Loggers>
+		&lt;!&ndash; avoid duplicated logs with additivity=false &ndash;&gt;
+		&lt;!&ndash;<Logger name="sapta.data.in.trans" level="info" additivity="false">
+			<AppenderRef ref="LogToSaptaRollingFile"/>
+		</Logger>&ndash;&gt;
+		&lt;!&ndash;<Root level="error">
+			<AppenderRef ref="LogToConsole"/>
+		</Root>&ndash;&gt;
+		&lt;!&ndash;<Logger name="splunk.logger" level="info">
+			<AppenderRef ref="httpconf"/>
+		</Logger>&ndash;&gt;
+	</Loggers>-->

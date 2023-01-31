@@ -7,6 +7,8 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.SQLClient;
@@ -26,10 +28,12 @@ public class SQLServer extends AbstractVerticle {
   private List<JsonObject> rows = null;
   private int No = 0, count = 0;
   private boolean autoNext = true;
+  private static final Logger log = LoggerFactory.getLogger(SQLServer.class);
 
   @Override
   public void start(Promise<Void> startPromise) {
     this.eb = vertx.eventBus();
+    log.info("Starting verticle {" + this + "}");
     String ip = config().getString("ip");
     Integer port = config().getInteger("port");
     String userName = config().getString("user");

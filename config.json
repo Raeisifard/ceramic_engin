@@ -28,7 +28,58 @@
           "location": "/stt/index.html"
         },
         "instances": 1,
-        "worker": false
+        "worker": true
+      }
+    },
+    {
+      "name": "HttpStaticResourceVerticle",
+      "description": "Http server for static resource",
+      "main": "com.ceramic.api.HttpStaticVerticle",
+      "deploy": false,
+      "options": {
+        "config": {
+          "http-port": 8091,
+          "server": "default",
+          "location": "index.html"
+        },
+        "instances": 1,
+        "worker": true
+      }
+    },
+    {
+      "name": "JLHTTP2.6",
+      "description": "Http server for static resource",
+      "main": "com.ceramic.api.MainVerticle",
+      "deploy": true,
+      "options": {
+        "config": {
+          "http-port": 8888,
+          "location": "C:\\nginx-1.19.6\\www\\ceramic",
+          "bus": {
+            "about": {
+              "name": "Ceramic",
+              "version": "2.3.0",
+              "license": "Apache2"
+            },
+            "editor": {
+              "connect": true,
+              "side_bar": true
+            },
+            "vertxbus": {
+              "BusAddress": "192.168.160.133:8090",
+              "enableReconnect": true,
+              "reconnect": {
+                "attemts_max": "Infinity",
+                "delay_min": 1000,
+                "delay_max": 5000,
+                "exponent": 2
+              },
+              "randomization_factor": 0.5
+            }
+          }
+        },
+        "instances": 1,
+        "worker": true
       }
     },
     {

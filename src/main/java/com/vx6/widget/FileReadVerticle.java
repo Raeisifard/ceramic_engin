@@ -1,6 +1,7 @@
 package com.vx6.widget;
 
 import com.ceramic.shared.ShareableHealthCheckHandler;
+import com.google.common.util.concurrent.RateLimiter;
 import com.stevesoft.pat.FileRegex;
 import com.vx6.master.MasterVerticle;
 import com.vx6.utils.Library;
@@ -15,6 +16,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class FileReadVerticle extends MasterVerticle {
     private String filePath, FileNameMask, FileNameDoneExt, FileNameLockExt;
@@ -23,6 +25,7 @@ public class FileReadVerticle extends MasterVerticle {
     private String mode = "SELECT";
     private BufferedReader in = null;
     private Integer rate = null;
+    private static final RateLimiter rateLimiter = RateLimiter.create(1, 5L, TimeUnit.SECONDS);
 
     @Override
     public void initialize(Promise<Void> initPromise) throws Exception {
@@ -44,32 +47,46 @@ public class FileReadVerticle extends MasterVerticle {
     public <T> void noCmd(Message<T> msg, String cmd) {
         JsonObject jo = (JsonObject) msg.body();
         if (jo.containsKey("autoNext"))
-            autoNext = jo.getBoolean("autoNext");
-        if (jo.containsKey("rate"))
+            autoNext = jo.getBoolean("autoNext", false);
+        if (jo.containsKey("rate")) {
             this.rate = jo.getInteger("rate");
-        if (autoNext && !holdOn) {
+            rateLimiter.setRate(this.rate);
+        }
+        if (!holdOn) {
             eb.publish(addressBook.getTrigger(), "Next message", addressBook.getDeliveryOptions().addHeader("cmd", "next"));
         }
     }
 
     @Override
     public <T> void next(Message<T> tMessage) {
+        next();
+    }
+
+    private void next() {
         try {
-            if (autoNext && this.rate != null && this.rate == 0)
-                return;
-            if (autoNext && this.rate != null && this.rate > 0)
-                this.rate--;
             String msg = getNextLineFromFile();
             if (msg != null) {
-                DeliveryOptions dOpt = addressBook.getDeliveryOptions();
-                dOpt.addHeader("count", count.toString());
-                if (this.rate != null) {
-                    dOpt.addHeader("rate", this.rate + "");
-                }
-                eb.publish(addressBook.getResult(), msg, dOpt);
-                this.resultOutboundCount++;
-                if (autoNext) {
+                if (rate != null && rate > 0) {
+                    vertx.executeBlocking(promise -> {
+                        double result = rateLimiter.acquire();
+                        promise.complete(result);
+                    }, res -> {
+                        DeliveryOptions dOpt = addressBook.getDeliveryOptions();
+                        dOpt.addHeader("count", count.toString());
+                        dOpt.addHeader("rate", this.rate + "");
+                        eb.publish(addressBook.getResult(), msg, dOpt);
+                        this.resultOutboundCount++;
+                        eb.publish(addressBook.getTrigger(), "Next message", addressBook.getDeliveryOptions().addHeader("cmd", "next"));
+                    });
+                } else if (autoNext) {
+                    DeliveryOptions dOpt = addressBook.getDeliveryOptions();
+                    dOpt.addHeader("count", count.toString());
+                    eb.publish(addressBook.getResult(), msg, dOpt);
                     eb.publish(addressBook.getTrigger(), "Next message", addressBook.getDeliveryOptions().addHeader("cmd", "next"));
+                } else {//No mode
+                    DeliveryOptions dOpt = addressBook.getDeliveryOptions();
+                    dOpt.addHeader("count", count.toString());
+                    eb.publish(addressBook.getResult(), msg, dOpt);
                 }
             }
         } catch (Exception e) {

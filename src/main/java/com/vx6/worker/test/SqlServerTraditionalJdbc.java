@@ -6,6 +6,8 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -14,11 +16,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class SqlServerTraditionalJdbc extends AbstractVerticle {
+    private static final Logger log = LoggerFactory.getLogger(SqlServerTraditionalJdbc.class);
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
         EventBus eb = vertx.eventBus();
         eb.consumer("mx.vx.test.sqlserver", this::processMessage);
+        log.info("Starting verticle {" + this + "}");
         startPromise.complete();
     }
 

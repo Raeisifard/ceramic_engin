@@ -15,11 +15,9 @@ import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 
@@ -54,8 +52,34 @@ public class HttpVerticle extends AbstractVerticle {
                 }
             }
         });
-        router.get("/*").handler(staticFiles);
+        //router.get("/*").handler(staticFiles);
         router.post("/form").handler(BodyHandler.create()/*.setMergeFormAttributes(true)*/);
+        // enable CORS
+        router.options("/form").handler(CorsHandler.create("*")
+                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .allowCredentials(true)
+                .allowedHeader("Access-Control-Allow-Headers")
+                .allowedHeader("Authorization")
+                .allowedHeader("Access-Control-Allow-Method")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Access-Control-Allow-Credentials")
+                .allowedHeader("Content-Type")
+                .allowedHeader("Content-Encoding"));
+        router.post("/form").handler(CorsHandler.create("*")
+                .allowedMethod(io.vertx.core.http.HttpMethod.GET)
+                .allowedMethod(io.vertx.core.http.HttpMethod.POST)
+                .allowedMethod(io.vertx.core.http.HttpMethod.OPTIONS)
+                .allowCredentials(true)
+                .allowedHeader("Access-Control-Allow-Headers")
+                .allowedHeader("Authorization")
+                .allowedHeader("Access-Control-Allow-Method")
+                .allowedHeader("Access-Control-Allow-Origin")
+                .allowedHeader("Access-Control-Allow-Credentials")
+                .allowedHeader("Content-Type")
+                .allowedHeader("Content-Encoding"));
+
         router.post("/form").handler(ctx -> {
             //ctx.request().setExpectMultipart(true);
             ctx.next();
@@ -117,6 +141,7 @@ public class HttpVerticle extends AbstractVerticle {
             } else
                 ctx.response().end(body.copy().toString());
         });
+        router.get("/*").handler(staticFiles);
         //mount the router as subrouter to the shared router
         final Router main = ShareableRouter.router(vertx);
         main.mountSubRouter("/stt", router);

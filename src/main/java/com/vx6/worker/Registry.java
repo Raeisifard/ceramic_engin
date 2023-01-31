@@ -11,6 +11,8 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.SharedData;
 import one.microstream.storage.configuration.Configuration;
@@ -27,6 +29,7 @@ public class Registry extends AbstractVerticle {
     private static final String data_dir = "data";
     private static final String backup_dir = "data_backup";
     private LocalMap<String, JsonObject> graphMap;
+    private static final Logger log = LoggerFactory.getLogger(Registry.class);
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
@@ -52,6 +55,7 @@ public class Registry extends AbstractVerticle {
                 }
             });
         }
+        log.info("Starting verticle {" + this + "}");
         startPromise.complete();
     }
 
@@ -90,7 +94,7 @@ public class Registry extends AbstractVerticle {
                 String graph_id = body.getString("uid");
                 String graph_name = body.getString("name");
                 JsonObject graph = graphMap.get(body.getString("graph"));
-                String graphXml =graph.getString("graph");
+                String graphXml = graph.getString("graph");
                 Document document = mxXmlUtils.parseXml(graphXml);
                 if (document != null) {
                     GraphProfile graphProfile = root.getProfile(graph_id);

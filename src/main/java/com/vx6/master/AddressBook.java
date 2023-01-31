@@ -1,5 +1,6 @@
 package com.vx6.master;
 
+import com.vx6.tools.JsonObjectByIDMessageCodec;
 import io.netty.util.internal.StringUtil;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
@@ -18,6 +19,7 @@ public class AddressBook {
     private final List<String> pushBackAddresses = new ArrayList<>(); //Address for pub.
     private JsonObject port;
     protected long triggerInboundCount = 0, inputInboundCount = 0, errorOutboundCount = 0, resultOutboundCount = 0;
+
     public AddressBook(String graph_id) {
         this.graph_id = graph_id;
     }
@@ -51,7 +53,7 @@ public class AddressBook {
                 inputIns.add(String.join(".", graph_id, adrs.toString()).toLowerCase());
             });
         }
-        inputIns.forEach(port -> this.pushBackAddresses.add( port.substring(0, port.lastIndexOf(".")).toLowerCase()));
+        inputIns.forEach(port -> this.pushBackAddresses.add(port.substring(0, port.lastIndexOf(".")).toLowerCase()));
     }
 
     public final DeliveryOptions getDeliveryOptions() {
@@ -82,6 +84,14 @@ public class AddressBook {
 
     public final DeliveryOptions getDeliveryOptions(DeliveryOptions deliveryOptions, Message tMessage) {
         return deliveryOptions.setHeaders(tMessage.headers()).addHeader("type", type).addHeader("id", id).addHeader("graph_id", graph_id);
+    }
+
+    public final DeliveryOptions getDeliveryOptionsWithCodec(String codecName) {
+        if (codecName.equalsIgnoreCase("object"))
+            return getDeliveryOptions().setCodecName("JsonObjectByIDMessageCodec");
+        else if (codecName.equalsIgnoreCase("array"))
+            return getDeliveryOptions().setCodecName("JsonArrayByIDMessageCodec");
+        else return getDeliveryOptions().setCodecName(codecName);
     }
 
     public String getGraph_id() {

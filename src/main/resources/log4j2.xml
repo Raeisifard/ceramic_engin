@@ -1,19 +1,86 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="DEBUG">
+<Configuration status="warn">
+	<Properties>
+		<Property name="baseLogDir">logs</Property>
+		<Property name="baseDataDir">archive</Property>
+	</Properties>
 	<Appenders>
 		<Console name="LogToConsole" target="SYSTEM_OUT">
 			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
 		</Console>
-		<RollingFile name="LogToRollingFile" fileName="logs/app.log"
-					 filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+		<Routing name="Router">
+			<Routes pattern="$${ctx:logPath:-data}">
+				<Route>
+					<RollingFile name="Rolling-${ctx:logPath}" fileName="${baseDataDir}/${ctx:logPath}/${ctx:logName}.txt"
+								 filePattern="${baseDataDir}/${ctx:logPath}/$${date:yyyy-MM}/$${date:dd}/${ctx:logName}-%d{yyyyMMdd-HHmm}-%i.txt.zip">
+						<PatternLayout>
+							<Pattern>%m logPath=%X{logPath}%n</Pattern>
+						</PatternLayout>
+						<Policies>
+							<OnStartupTriggeringPolicy />
+							<SizeBasedTriggeringPolicy size="100 MB" />
+							<TimeBasedTriggeringPolicy />
+						</Policies>
+						<!--<DefaultRolloverStrategy>
+							<Delete basePath="${baseDataDir}" maxDepth="5">
+								<IfFileName glob="*.zip" />
+								<IfAccumulatedFileSize exceeds="1MB" />
+								<IfAccumulatedFileCount exceeds='3' />
+								&lt;!&ndash;<IfLastModified age="P365D" />&ndash;&gt;
+								<IfLastModified age="PT2M" />
+							</Delete>
+						</DefaultRolloverStrategy>-->
+						<DefaultRolloverStrategy max="100">
+							<Delete basePath="${baseDataDir}" maxDepth="5">
+								<IfFileName glob="*.zip">
+									<IfLastModified age="PT2M">
+										<IfAny>
+											<IfAccumulatedFileSize exceeds="1MB" />
+											<IfAccumulatedFileCount exceeds="3" />
+										</IfAny>
+									</IfLastModified>
+								</IfFileName>
+							</Delete>
+						</DefaultRolloverStrategy>
+					</RollingFile>
+				</Route>
+			</Routes>
+		</Routing>
+		<RollingFile name="LogToRollingFile" fileName="${baseLogDir}/app.log"
+					 filePattern="${baseLogDir}/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.zip">
 			<PatternLayout>
 				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
 			</PatternLayout>
 			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="5 KB" />
 				<TimeBasedTriggeringPolicy />
-				<SizeBasedTriggeringPolicy size="10 MB"/>
 			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="${baseLogDir}" maxDepth="2">
+					<IfFileName glob="*/app.*.log.zip" />
+					<IfLastModified age="P1D" />
+				</Delete>
+			</DefaultRolloverStrategy>
 		</RollingFile>
+		<!--<RollingFile name="LogToDataRollingFile" fileName="${baseDataDir}/data.txt"
+					 filePattern="${baseDataDir}/$${date:yyyy-MM}/$${date:dd}/trans-%d{yyyyMMdd-HHmm}-%i.txt.zip">
+			<PatternLayout>
+				<Pattern>%m logPath=%X{logPath}%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="100 MB" />
+				<TimeBasedTriggeringPolicy />
+			</Policies>
+			<DefaultRolloverStrategy>
+				<Delete basePath="${baseDataDir}" maxDepth="3">
+					<IfFileName glob="data.*.txt.zip" />
+					&lt;!&ndash;<IfLastModified age="P365D" />&ndash;&gt;
+					<IfLastModified age="P1D" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingFile>-->
 		<SplunkHttp
 				name="httpconf"
 				url="http://192.168.166.7:8088"
@@ -36,6 +103,13 @@
 		<!-- avoid duplicated logs with additivity=false -->
 		<Logger name="com.ceramic" level="debug" additivity="false">
 			<AppenderRef ref="LogToRollingFile"/>
+		</Logger>
+		<Logger name="com.vx6" level="debug" additivity="false">
+			<AppenderRef ref="LogToRollingFile"/>
+		</Logger>
+		<Logger name="sapta.data.in.trans" level="info" additivity="false">
+			<!--<AppenderRef ref="LogToDataRollingFile"/>-->
+			<AppenderRef ref="Router" />
 		</Logger>
 		<Root level="error">
 			<AppenderRef ref="LogToConsole"/>

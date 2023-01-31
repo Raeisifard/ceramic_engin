@@ -1,14 +1,18 @@
 package com.ceramic.api;
 
+import com.vx6.worker.DeployGraph;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class SyncVerticle extends AbstractVerticle {
+    private static final Logger log = LoggerFactory.getLogger(SyncVerticle.class);
     private Long timerId;
 
     @Override
@@ -21,7 +25,7 @@ public class SyncVerticle extends AbstractVerticle {
                 vertx.eventBus().publish("vx.mx", sync);
             }
         });
-
+        log.info("Starting verticle {" + this + "}");
         startPromise.complete();
     }
 

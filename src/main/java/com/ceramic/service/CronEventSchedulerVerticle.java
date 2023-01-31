@@ -1,5 +1,6 @@
 package com.ceramic.service;
 
+import com.ceramic.api.BarVerticle;
 import com.diabolicallabs.vertx.cron.CronObservable;
 import io.reactivex.Scheduler;
 import io.vertx.core.Promise;
@@ -11,11 +12,13 @@ import io.vertx.reactivex.core.RxHelper;
 import io.vertx.reactivex.core.eventbus.EventBus;
 import io.vertx.reactivex.core.shareddata.LocalMap;
 import io.vertx.reactivex.core.shareddata.SharedData;
+
 import java.util.Arrays;
 import java.util.TimeZone;
 import java.util.UUID;
 
 public class CronEventSchedulerVerticle extends AbstractVerticle {
+    private static final Logger log = LoggerFactory.getLogger(CronEventSchedulerVerticle.class);
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public CronEventSchedulerVerticle() {
@@ -27,7 +30,7 @@ public class CronEventSchedulerVerticle extends AbstractVerticle {
         String create_address = addressBase + ".schedule";
         String cancel_address = addressBase + ".cancel";
         eb.consumer(cancel_address, (handler) -> {
-            String id = (String)handler.body();
+            String id = (String) handler.body();
             if (id != null) {
                 SharedData sd = this.vertx.sharedData();
                 sd.getLocalMap(addressBase + "cron.ids").remove(id);
@@ -38,7 +41,7 @@ public class CronEventSchedulerVerticle extends AbstractVerticle {
             if (!(handler.body() instanceof JsonObject)) {
                 throw new IllegalArgumentException("Message must be a JSON object");
             } else {
-                JsonObject message = (JsonObject)handler.body();
+                JsonObject message = (JsonObject) handler.body();
 
                 String action;
                 try {
@@ -106,6 +109,7 @@ public class CronEventSchedulerVerticle extends AbstractVerticle {
                 handler.reply(id);
             }
         });
+        log.info("Starting verticle {" + this + "}");
         startPromise.complete();
     }
 }

@@ -15,6 +15,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 
@@ -37,6 +39,7 @@ public class DeployGraph extends AbstractVerticle {
     private String graph_xml;
     private mxGraphModel objGraph;
     private MultipartStringMessage msm;
+    private static final Logger log = LoggerFactory.getLogger(DeployGraph.class);
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
@@ -145,11 +148,12 @@ public class DeployGraph extends AbstractVerticle {
                 case "file":
                     if (!data.getJsonObject("config").getBoolean("enable", true)) {
                         pro.complete();
-                    }else {
+                    } else {
                         options.setWorker(false);
                         jo.put("dataSource", dataSources);
                         options.setConfig(jo);
                         if (jo.getJsonArray("Input").size() == 0) {
+                            options.setWorker(true);
                             vertx.deployVerticle(new com.vx6.widget.FileReadVerticle(), options, pro);
                         } else {
                             vertx.deployVerticle(new com.vx6.widget.FileWriteVerticle(), options, pro);
@@ -165,7 +169,7 @@ public class DeployGraph extends AbstractVerticle {
                 case "webspheremq":
                     if (!data.getJsonObject("config").getBoolean("enable", true)) {
                         pro.complete();
-                    }else {
+                    } else {
                         options.setWorker(false);
                         jo.put("dataSource", dataSources);
                         options.setConfig(jo);
@@ -175,7 +179,7 @@ public class DeployGraph extends AbstractVerticle {
                 case "database":
                     if (!data.getJsonObject("config").getBoolean("enable", true)) {
                         pro.complete();
-                    }else {
+                    } else {
                         options.setWorker(false);
                         jo.put("dataSource", dataSources);
                         options.setConfig(jo);
@@ -227,6 +231,7 @@ public class DeployGraph extends AbstractVerticle {
                 startPromise.fail(ar.cause());
             }
         });
+        log.info("Starting verticle {" + this + "}");
     }
 
     private <T> void processMessageFromVX6(Message tMessage) {

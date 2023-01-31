@@ -4,6 +4,7 @@ import com.mxgraph.io.mxCodec;
 import com.mxgraph.io.mxCodecRegistry;
 import com.mxgraph.io.mxObjectCodec;
 import com.vx6.tools.VueComponent;
+import com.vx6.worker.DeployGraph;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonArray;
@@ -24,7 +25,8 @@ import java.util.Scanner;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class Deployer extends AbstractVerticle {
-    Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    //Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private static final Logger log = LoggerFactory.getLogger(Deployer.class);
     private static final String configPath = "vx6.conf";
 
     // Convenience method so you can run it in your IDE
@@ -102,7 +104,7 @@ public class Deployer extends AbstractVerticle {
 
                             String deploymentID = res.result();
 
-                            System.out.println("BusVerticle \"" + vName + "\" deployed [OK], deploymentID = " + deploymentID);
+                            System.out.println("BusVerticle \"" + vName + "\" deployed [OK], deploymentID = " + deploymentID + " worker[" + dO.isWorker() + "] instance[" + dO.getInstances() + "]");
 
                         } else {
                             res.cause().printStackTrace();
@@ -111,6 +113,7 @@ public class Deployer extends AbstractVerticle {
                 }
             }
         }
+        log.info("Starting verticle {" + this + "}");
     }
 
     private JsonObject readConfig() throws FileNotFoundException {

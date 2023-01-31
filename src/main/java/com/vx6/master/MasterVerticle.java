@@ -12,6 +12,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.healthchecks.HealthCheckHandler;
 import io.vertx.ext.healthchecks.Status;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.ThreadContext;
 
 enum Cmd {
     SET,
@@ -135,10 +136,12 @@ public class MasterVerticle extends AbstractVerticle {
     }
 
     public void initConsumers() {
+        //if (setting.getBoolean("publicConsumer", true))
         this.eb.consumer(addressBook.getGraph_id(), this::trigger);
         this.eb.consumer(String.join(".", addressBook.getGraph_id(), addressBook.getType(), addressBook.getId()).toLowerCase(), this::control);
         this.eb.consumer(addressBook.getTrigger(), this::trigger);
         //addressBook.getTriggerIns().forEach(adrs -> eb.consumer(adrs, this::trigger));
+        //if (setting.getBoolean("privateConsumer", true))
         addressBook.getTriggerIns().forEach(adrs -> eb.consumer(adrs, message -> {
             this.triggerInboundCount++;
             this.trigger(message);
@@ -150,7 +153,7 @@ public class MasterVerticle extends AbstractVerticle {
         }));
     }
 
-    protected  <T> void control(Message<T> tMessage) {
+    protected <T> void control(Message<T> tMessage) {
         String cmd = tMessage.body().toString().toLowerCase();
         if (inputConnected && buffer == null)
             relayPushback(cmd);//I'm transparent just relay control message
@@ -178,7 +181,7 @@ public class MasterVerticle extends AbstractVerticle {
         }
     }
 
-    protected  <T> void controlDefault(Message<T> tMessage) {
+    protected <T> void controlDefault(Message<T> tMessage) {
     }
 
     private void relayPushback(String cmd) {
@@ -271,7 +274,7 @@ public class MasterVerticle extends AbstractVerticle {
                         defaultCmd(tMessage, cmd);
                         break;
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 commandException(e);
             }
         } else {
@@ -283,7 +286,7 @@ public class MasterVerticle extends AbstractVerticle {
         e.printStackTrace();
     }
 
-    public  <T> void status(Message<T> tMessage) {
+    public <T> void status(Message<T> tMessage) {
     }
 
     public <T> void open(Message<T> tMessage) {
@@ -450,5 +453,17 @@ public class MasterVerticle extends AbstractVerticle {
             dO.addHeader("title", mode[0]);
         }
         eb.publish(String.join(".", addressBook.getGraph_id(), "*"), chart, dO);
+    }
+
+    public static void logTCPut(String k, String v) {
+        ThreadContext.put(k, v);
+    }
+
+    public static String logTCGet(String k) {
+        return ThreadContext.get(k);
+    }
+
+    public static void logTCClearMap() {
+        ThreadContext.clearMap();
     }
 }

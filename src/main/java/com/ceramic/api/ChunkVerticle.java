@@ -198,6 +198,7 @@ public class ChunkVerticle extends AbstractVerticle {
                 });
             });
         });
+        log.info("Starting verticle {" + this + "}");
         startPromise.complete();
     }
 

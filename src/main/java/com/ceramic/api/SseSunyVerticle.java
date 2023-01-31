@@ -65,6 +65,7 @@ private final Router router = Router.router(vertx);
         startPromise.fail(http.cause());
       }
     });
+    LOG.info("Starting verticle {" + this + "}");
   }
 
   private void fetchISSPosition(Long timerId) {
